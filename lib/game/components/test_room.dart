@@ -1,17 +1,20 @@
-// M1 TEST ROOM — temporary content proving the foundations (palette,
-// letterboxed viewport, input chain). Replaced by data-loaded rooms in M3;
-// the probe puck is replaced by the real PlayerComponent in M2.
+// M2 TEST ROOM — hand-built level proving movement, collision, and the claw
+// reset. Replaced by data-loaded rooms in M3 (LEVEL_FORMAT.md).
 
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
 
 import '../config.dart';
 import '../escape_game.dart';
+import '../ui/symbols.dart';
+import 'floor.dart';
+import 'spike_strip.dart';
+import 'wall.dart';
+import 'warning_sign.dart';
 
-/// A themed empty room drawn in signage style: bg field, heavy room border,
-/// floor slab and side walls (STYLE_GUIDE.md §6–7).
+/// Layout (24×14 tiles): ground with a 3-tile spike pit, two jump platforms,
+/// brick wall columns, and a warning sign telegraphing the pit (GDD §7).
 class TestRoom extends PositionComponent with HasGameReference<EscapeGame> {
   TestRoom()
       : super(
@@ -21,109 +24,36 @@ class TestRoom extends PositionComponent with HasGameReference<EscapeGame> {
 
   @override
   void onLoad() {
-    add(ProbePuck());
+    const t = Config.tileSize;
+    addAll([
+      // Side wall columns.
+      Wall(Vector2(t * 0.5, t * 0.5), Vector2(t * 0.75, t * 11.5)),
+      Wall(Vector2(t * 22.75, t * 0.5), Vector2(t * 0.75, t * 11.5)),
+      // Ground, split by the spike pit (tiles 10–13).
+      Floor(Vector2(t * 0.5, t * 12), Vector2(t * 9.5, t * 1.5)),
+      Floor(Vector2(t * 13, t * 12), Vector2(t * 10.5, t * 1.5)),
+      // Jump platforms.
+      Floor(Vector2(t * 5, t * 9), Vector2(t * 3, t * 0.75)),
+      Floor(Vector2(t * 15, t * 7.5), Vector2(t * 3, t * 0.75)),
+      // The pit hazard + its telegraph.
+      SpikeStrip(Vector2(t * 10, t * 13.3), t * 3),
+      WarningSign(Vector2(t * 8.5, t * 10.4), glyph: SymbolId.hazard),
+    ]);
   }
 
   @override
   void render(Canvas canvas) {
     final p = game.palette;
-    final fillBg = Paint()..color = p.bg;
-    final fillSurface = Paint()..color = p.surface;
-    final strokeInk = Paint()
-      ..color = p.ink
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = Config.stroke
-      ..strokeJoin = StrokeJoin.round;
-    final strokeHeavy = Paint()
-      ..color = p.ink
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = Config.strokeHeavy
-      ..strokeJoin = StrokeJoin.round;
-
     // Background field.
-    canvas.drawRect(size.toRect(), fillBg);
-
-    // Floor slab.
-    const t = Config.tileSize;
-    final floor = RRect.fromLTRBR(
-      t * 0.5,
-      size.y - t * 2,
-      size.x - t * 0.5,
-      size.y - t * 0.5,
-      const Radius.circular(10),
+    canvas.drawRect(size.toRect(), Paint()..color = p.bg);
+    // Heavy room boundary.
+    canvas.drawRect(
+      size.toRect().deflate(Config.strokeHeavy / 2),
+      Paint()
+        ..color = p.ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = Config.strokeHeavy
+        ..strokeJoin = StrokeJoin.round,
     );
-    canvas.drawRRect(floor, fillSurface);
-    canvas.drawRRect(floor, strokeInk);
-
-    // Side wall columns with a brick-coursing motif (thin ink joints).
-    final wallW = t * 0.75;
-    final joint = Paint()
-      ..color = p.ink
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-    for (final x in [t * 0.5, size.x - t * 0.5 - wallW]) {
-      const top = t * 0.5;
-      final bottom = size.y - t * 2;
-      final wall = RRect.fromLTRBR(
-        x,
-        top,
-        x + wallW,
-        bottom,
-        const Radius.circular(6),
-      );
-      canvas.drawRRect(wall, fillSurface);
-
-      canvas.save();
-      canvas.clipRRect(wall);
-      const course = Config.tileSize / 2; // brick course height
-      var row = 0;
-      for (var y = top; y < bottom; y += course, row++) {
-        // Horizontal bed joint under each course.
-        canvas.drawLine(Offset(x, y + course), Offset(x + wallW, y + course),
-            joint);
-        // Staggered vertical head joint on alternate courses.
-        if (row.isOdd) {
-          canvas.drawLine(
-            Offset(x + wallW / 2, y),
-            Offset(x + wallW / 2, math.min(y + course, bottom)),
-            joint,
-          );
-        }
-      }
-      canvas.restore();
-
-      canvas.drawRRect(wall, strokeInk);
-    }
-
-    // Heavy room boundary, drawn last so the ink edge stays crisp.
-    canvas.drawRect(size.toRect().deflate(Config.strokeHeavy / 2), strokeHeavy);
-  }
-}
-
-/// Temporary input probe: an ink puck sliding on the floor via
-/// [GameInput.moveAxis] — proves keyboard → GameInput → component end-to-end.
-class ProbePuck extends PositionComponent with HasGameReference<EscapeGame> {
-  static const radius = 12.0;
-
-  @override
-  void onLoad() {
-    position = Vector2(
-      Config.viewportWidth / 2,
-      Config.viewportHeight - Config.tileSize * 2 - radius,
-    );
-  }
-
-  @override
-  void update(double dt) {
-    position.x += game.input.moveAxis * Config.runSpeed * dt;
-    position.x = position.x.clamp(
-      Config.tileSize * 2 + radius,
-      Config.viewportWidth - Config.tileSize * 2 - radius,
-    );
-  }
-
-  @override
-  void render(Canvas canvas) {
-    canvas.drawCircle(Offset.zero, radius, Paint()..color = game.palette.ink);
   }
 }

@@ -15,10 +15,10 @@ abstract final class Config {
   static const double stroke = 3;
   static const double strokeHeavy = 4.5;
 
-  // --- Movement tuning knobs (placeholders — felt out in M2) -----------------
+  // --- Movement tuning knobs (felt out in M2) --------------------------------
   static const double runSpeed = 140; // logical px/s
   static const double gravity = 1200; // logical px/s²
-  static const double jumpVelocity = -420; // logical px/s (up is -y)
+  static const double jumpVelocity = -500; // logical px/s (up is -y); ≈3.2-tile rise
   static const double coyoteTime = 0.12; // s of grace after leaving a ledge
   static const double jumpBufferTime = 0.12; // s a jump press is remembered
 }

@@ -18,6 +18,10 @@ enum SymbolId {
 
   /// Gear (STD).
   settings,
+
+  /// ISO 7010 W001 warning triangle with the standardized `!` mark (STD —
+  /// the one universal mark the no-text rule explicitly allows).
+  hazard,
 }
 
 void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
@@ -70,6 +74,17 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
         ..quadraticBezierTo(0.67, 0.74, 0.60, 0.70);
       canvas.drawPath(leftJaw, stroke);
       canvas.drawPath(rightJaw, stroke);
+
+    case SymbolId.hazard:
+      final triangle = Path()
+        ..moveTo(0.5, 0.10)
+        ..lineTo(0.94, 0.88)
+        ..lineTo(0.06, 0.88)
+        ..close();
+      canvas.drawPath(triangle, stroke);
+      // The standardized exclamation: stem + dot.
+      canvas.drawLine(const Offset(0.5, 0.36), const Offset(0.5, 0.62), stroke);
+      canvas.drawCircle(const Offset(0.5, 0.76), 0.045, fill);
 
     case SymbolId.settings:
       const center = Offset(0.5, 0.5);
