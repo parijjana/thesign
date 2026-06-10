@@ -1,0 +1,21 @@
+# Local Claude Code settings (per-machine permissions)
+.claude/settings.local.json
+
+# OS cruft
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Flutter/Dart (takes effect once the project is created in M0)
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+android/.gradle/
+ios/Pods/
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/
