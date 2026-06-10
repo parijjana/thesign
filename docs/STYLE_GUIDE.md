@@ -39,9 +39,9 @@ raw hex. This is what makes "different background colors later / multiple palett
 ### 3.1 Current palette — "Dungeon Amber" (the default)
 | Token | Role | Value | Notes |
 |---|---|---|---|
-| `bg` | Room/corridor background | `#C9A227` (darkish yellow / amber) | The current chosen background. Swappable per theme. |
+| `bg` | Room/corridor background | `#E6E619` (bright signage yellow — tuned on-screen during M0; was `#C9A227`) | The current chosen background. Swappable per theme. |
 | `ink` | All outlines & the figure | `#101010` (near-black) | The universal stroke color. |
-| `surface` | Walls / solid floor fill | `#B8941F` (a touch darker than bg) | Reads as "solid" against bg without breaking palette. |
+| `surface` | Walls / solid floor fill | `#D2D215` (a touch darker than bg) | Reads as "solid" against bg without breaking palette. |
 | `accentDanger` | Hazards (spikes, boulders, warning) | `#B5341F` (sign red) | "Avoid" — touching resets you (no death). Never decorative. |
 | `accentGoal` | Exit door, goal markers | `#1F6F4E` (sign green) | "Go / safe / exit" semantics. |
 | `accentInteract` | Levers, plates, keys, pushables | `#1E4E8C` (sign blue) | Signals "you can act on this." |

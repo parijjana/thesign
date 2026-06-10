@@ -10,9 +10,9 @@ import 'package:flutter/services.dart';
 
 // Dungeon Amber tokens (docs/STYLE_GUIDE.md §3.1) — hard-coded here only
 // because this file is throwaway; the real game uses palette.dart tokens.
-const bg = Color(0xFFC9A227);
+const bg = Color(0xFFE6E619);
 const ink = Color(0xFF101010);
-const surface = Color(0xFFB8941F);
+const surface = Color(0xFFD2D215);
 const accentInteract = Color(0xFF1E4E8C);
 
 void main() {
