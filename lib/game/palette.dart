@@ -1,0 +1,65 @@
+import 'dart:ui';
+
+/// Color tokens — the single source of color in the game (STYLE_GUIDE.md §3).
+///
+/// Components reference tokens, never raw hex. Adding a discipline palette
+/// (PUZZLES.md §Theme↔color) = one more [Palette] const with the same roles.
+class Palette {
+  const Palette({
+    required this.bg,
+    required this.ink,
+    required this.surface,
+    required this.accentDanger,
+    required this.accentGoal,
+    required this.accentInteract,
+    required this.accentNeutral,
+    required this.beam,
+    required this.accentHint,
+  });
+
+  /// Room/corridor background.
+  final Color bg;
+
+  /// All outlines & the player figure.
+  final Color ink;
+
+  /// Walls / solid floor fill — a touch darker than [bg].
+  final Color surface;
+
+  /// Hazards & warnings. Never decorative.
+  final Color accentDanger;
+
+  /// Exit doors, goal markers. "Go / safe."
+  final Color accentGoal;
+
+  /// Levers, plates, keys, pushables. "You can act on this."
+  final Color accentInteract;
+
+  /// Inactive/secondary fills, panels.
+  final Color accentNeutral;
+
+  /// Light beams (optics).
+  final Color beam;
+
+  /// Hints & feedback (lightbulb, hint halo, fb_idea popups).
+  final Color accentHint;
+}
+
+/// Palette registry. Rooms declare `"palette": "<id>"` (LEVEL_FORMAT.md §3);
+/// hubs/corridors use the castle palette (`amber`).
+abstract final class Palettes {
+  /// "Dungeon Amber" — the castle/default palette (bg tuned on-screen in M0).
+  static const Palette amber = Palette(
+    bg: Color(0xFFE6E619),
+    ink: Color(0xFF101010),
+    surface: Color(0xFFD2D215),
+    accentDanger: Color(0xFFB5341F),
+    accentGoal: Color(0xFF1F6F4E),
+    accentInteract: Color(0xFF1E4E8C),
+    accentNeutral: Color(0xFFE6D38A),
+    beam: Color(0xFFF2E27A),
+    accentHint: Color(0xFFF2C94C),
+  );
+
+  static const Map<String, Palette> byId = {'amber': amber};
+}
