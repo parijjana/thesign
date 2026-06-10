@@ -89,7 +89,7 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 ## 6. Object construction vocabulary
 | Object | Construction | Fill token | Read |
 |---|---|---|---|
-| Floor / wall | rounded-rect blocks, heavy outline | `surface` | solid, immovable |
+| Floor / wall | rounded-rect blocks, heavy outline; **walls carry a sparse brick-coursing motif** (thin ink bed joints + staggered head joints) so masonry reads as masonry | `surface` | solid, immovable |
 | Door / exit | rounded portal arch + frame | `accentGoal` | "way out" |
 | Locked door | same + a keyhole pictogram | `surface` + `ink` keyhole | "needs a key" |
 | Lever | post + handle (clear up/down states) | `accentInteract` | "pull me" |
@@ -245,3 +245,26 @@ the widget itself (a lit sensor, a depressed plate). Puzzle scripts emit the eve
 - ❌ An invented symbol that isn't registered in the Symbol Legend (causes inconsistency).
 - ❌ Detail that doesn't aid recognition.
 - ❌ Inconsistent line weights between objects of the same importance tier.
+
+## 11. Authoring SVG assets (the art-side rules)
+Engineering pipeline in [ARCHITECTURE.md §5.2b](ARCHITECTURE.md). When drawing an asset in a vector
+editor (Inkscape etc.) instead of code:
+1. **Design on the tile grid:** 1 tile = 32 px. Size the canvas in whole tiles (the claw ≈ 3×3
+   tiles → 96×96 viewBox). Snap major geometry to the grid.
+2. **Line weights match code-drawn art:** 3 px base stroke, 4–5 px heavy, rounded joins/caps
+   (§4) — at the 32 px/tile design scale.
+3. **Colors must be palette hexes:** use only the amber-palette token values (§3.1) as fills/strokes;
+   the loader remaps hex → token for theming. Any other color fails loudly in dev.
+4. **Flat fills + ink strokes only** — no gradients, filters, masks, embedded rasters, or text
+   elements (§2, §8b).
+5. **One file per moving part** for animated set-pieces (claw: cable / hinge / jaw_l / jaw_r), each
+   part's origin placed at its pivot so code can rotate it naturally.
+6. **Glyphs register in SYMBOLS.md** like any other symbol; third-party files go in
+   `assets/credits.json` (ARCHITECTURE §5.10).
+
+## 12. The visual overhaul stage (pre-publication)
+MVP visuals are **functional signage art** — good enough to play, not final. A dedicated
+**visual style overhaul** milestone (ROADMAP §M7.5) runs before release: a full audit of every
+component against this guide, authored-SVG replacements where art deserves an artist (the claw
+above all), a palette tuning pass on real screens, and motion polish. Don't gold-plate visuals
+before M7.5 — ship the slice, then make it beautiful in one deliberate pass.

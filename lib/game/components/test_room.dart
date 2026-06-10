@@ -2,6 +2,7 @@
 // letterboxed viewport, input chain). Replaced by data-loaded rooms in M3;
 // the probe puck is replaced by the real PlayerComponent in M2.
 
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -54,16 +55,43 @@ class TestRoom extends PositionComponent with HasGameReference<EscapeGame> {
     canvas.drawRRect(floor, fillSurface);
     canvas.drawRRect(floor, strokeInk);
 
-    // Side wall blocks.
-    for (final x in [t * 0.5, size.x - t * 1.5]) {
+    // Side wall columns with a brick-coursing motif (thin ink joints).
+    final wallW = t * 0.75;
+    final joint = Paint()
+      ..color = p.ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+    for (final x in [t * 0.5, size.x - t * 0.5 - wallW]) {
+      const top = t * 0.5;
+      final bottom = size.y - t * 2;
       final wall = RRect.fromLTRBR(
         x,
-        t * 0.5,
-        x + t,
-        size.y - t * 2,
-        const Radius.circular(8),
+        top,
+        x + wallW,
+        bottom,
+        const Radius.circular(6),
       );
       canvas.drawRRect(wall, fillSurface);
+
+      canvas.save();
+      canvas.clipRRect(wall);
+      const course = Config.tileSize / 2; // brick course height
+      var row = 0;
+      for (var y = top; y < bottom; y += course, row++) {
+        // Horizontal bed joint under each course.
+        canvas.drawLine(Offset(x, y + course), Offset(x + wallW, y + course),
+            joint);
+        // Staggered vertical head joint on alternate courses.
+        if (row.isOdd) {
+          canvas.drawLine(
+            Offset(x + wallW / 2, y),
+            Offset(x + wallW / 2, math.min(y + course, bottom)),
+            joint,
+          );
+        }
+      }
+      canvas.restore();
+
       canvas.drawRRect(wall, strokeInk);
     }
 

@@ -96,6 +96,7 @@ lib/
 assets/
   levels/                       # *.json room & corridor files
   levels/world.json             # the world graph (hub-and-spoke nodes + connections)
+  svg/                          # authored vector art (claw parts, wordmark — see §5.2b)
   audio/                        # CC0 music & SFX (post-MVP; every file registered in credits.json)
   credits.json                  # attribution registry — rendered by app/screens/credits.dart
 docs/                           # these documents
@@ -113,9 +114,27 @@ Forge2D rooms let the physics engine own its step.
 ### 5.2 Rendering (procedural vector)
 - Every visible component overrides `render(Canvas c)` and draws `Path`s with two `Paint`s:
   a **fill** (flat color token) and a **stroke** (black ink, fixed logical line weight).
-- No images, no shaders for MVP. See [STYLE_GUIDE.md](STYLE_GUIDE.md) for line weights & construction.
+- No raster images, no shaders for MVP. See [STYLE_GUIDE.md](STYLE_GUIDE.md) for line weights &
+  construction.
 - All colors come from `palette.dart` tokens — never hard-coded hex in components. This is what makes
   "swap background color later / multiple palettes" a one-line change.
+
+### 5.2b Authored vector assets (the SVG pipeline)
+Procedural drawing stays the default, but **complex/characterful art may be authored as SVG** in a
+vector editor (Inkscape etc.) instead of hand-coding paths — first candidates: the **claw
+set-piece**, the title **wordmark**, possibly intricate glyphs. Rules (authoring side in
+[STYLE_GUIDE.md §11](STYLE_GUIDE.md)):
+- Files live in `assets/svg/`; rendered via `flame_svg` (dependency added when the first asset lands).
+- **Palette mapping:** SVGs are authored using the exact amber-palette hex values as placeholder
+  colors; the loader remaps hex → token at load, so authored art re-themes with the active palette
+  exactly like procedural art. An SVG containing a hex not in the palette fails loudly in dev.
+- **Animated set-pieces are authored as one SVG per moving part** (e.g. `claw_cable.svg`,
+  `claw_hinge.svg`, `claw_jaw_l.svg`, `claw_jaw_r.svg`), composed and transformed by the component —
+  the art is the *look*, code remains the *motion*.
+- `ui/symbols.dart` remains the **single access point** for glyphs: whether a symbol is drawn
+  procedurally or loads an SVG is an implementation detail behind the same API.
+- Third-party SVGs go through the attribution pipeline (§5.10) like any other asset; self-made art
+  doesn't need it but may be credited anyway.
 
 ### 5.3 Physics & collision
 - **Player:** custom kinematic AABB. Per fixed step: apply input → integrate velocity → resolve X
@@ -237,6 +256,7 @@ repo together with its attribution record**, never separately (a missing credit 
 - `flame_forge2d` — physics for forge2d rooms only.
 - `shared_preferences` — save.
 - `url_launcher` — clickable artist links on the credits screen (M7).
+- `flame_svg` — authored vector assets (§5.2b); added when the first SVG asset lands.
 - (later, audio pass) an audio plugin, e.g. `flame_audio` — pick at M7.
 - (dev) `flutter_test`, `flame_test`.
 Keep the dependency surface small; prefer engine primitives over plugins.

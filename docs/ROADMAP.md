@@ -32,7 +32,8 @@ something runnable on **web + Windows**. Mobile is validated early but polished 
 - `reset_controller.dart`: teleport-to-`start` + re-init kinematic bodies (the whole no-death model),
   with logic skippable for headless tests.
 - `claw_reset.dart`: the excavator-claw animation (descend → scoop → carry → place → whirlwind →
-  retract); state mutation fires on the whirlwind beat; input locked during play.
+  retract); state mutation fires on the whirlwind beat; input locked during play. Procedural
+  placeholder visuals are fine — the claw gets its authored multi-part SVG sprite in M7.5.
 - Static `floor`/`wall` components rendered in signage style.
 - Tune until "minimal & simple" feels right (forgiving, no momentum mastery).
 - Unit tests for the AABB resolver and reset.
@@ -130,6 +131,22 @@ something runnable on **web + Windows**. Mobile is validated early but polished 
 - Discipline palettes filled in beyond amber + indigo (chemistry teal, fluids blue, …) per PUZZLES.md.
 - CI/lint guard: **no user-facing strings / number rendering** in gameplay paths.
 - **Exit criteria:** no rough edges in the core loop; a stranger (or a child) can play unaided.
+
+## M7.5 — Visual style overhaul *(the dedicated art stage, pre-release)*
+**Goal:** MVP ships with functional programmer-drawn signage art; this stage makes it *beautiful*
+in one deliberate pass, with the whole game playable as the test bed.
+- **Style-guide audit** of every component: silhouettes, line weights, construction consistency,
+  the §2 rules (incl. the color-redundancy rule 8) — fix every deviation.
+- **Authored SVG art** (pipeline: ARCHITECTURE §5.2b, rules: STYLE_GUIDE §11) replacing
+  programmer art where it pays: the **claw multi-part sprite** first (cable/hinge/jaws), the title
+  **wordmark**, intricate glyphs. Hand-drawn or CC0-sourced (→ credits.json).
+- **Palette tuning pass on real screens**: all discipline palettes side by side; fix the flagged
+  contrast debts (`accentNeutral` and `accentHint` vs the bright bg).
+- **Motion polish:** player posture curves, squash/lean feel, claw beat timing, room-transition
+  choreography, telegraph animations.
+- Readability playtest (kid + a fresh adult) and a colorblind-simulation check.
+- **Exit criteria:** the game looks intentionally designed, not functional; every visible element
+  passes the style-guide audit; the claw is a character, not a placeholder.
 
 ## M8 — Release prep
 **Goal:** ship to the chosen storefronts.

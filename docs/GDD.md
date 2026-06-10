@@ -252,7 +252,7 @@ in game:  pause overlay · inventory/Field Kit · collection (the achievements s
   save/resume, keyboard + touch.
 - **Out (later):** sound design, the full game shell (§10b — splash, title, settings, inventory,
   collection, attributions), level select, additional palettes, extra puzzle types, lore etchings,
-  app-store polish.
+  the **visual style overhaul** (functional MVP art is fine until ROADMAP M7.5), app-store polish.
 - The first build target is a **vertical slice** (see [ROADMAP.md](ROADMAP.md)).
 
 ## 12. Audio (placeholder — post-MVP)
