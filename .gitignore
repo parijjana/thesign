@@ -1,6 +1,12 @@
 # Local Claude Code settings (per-machine permissions)
 .claude/settings.local.json
 
+# Policy: LLM-collaboration files stay local — never on GitHub.
+# (Coding standards, design principles, lessons-learnt, UI/UX guidelines
+# about how we work — anything not about the game itself.)
+# Convention: such files live in meta/ so this rule catches them automatically.
+meta/
+
 # OS cruft
 Thumbs.db
 Desktop.ini
