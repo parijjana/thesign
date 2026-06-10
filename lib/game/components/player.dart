@@ -33,6 +33,14 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
   double _squash = 0; // 1 → 0 land-squash envelope
   double _runPhase = 0;
 
+  // Carried-pose pendulum: the claw grips the scruff; the body swings
+  // beneath, driven by the claw's own acceleration.
+  double _dangle = 0; // rad
+  double _dangleVel = 0;
+  double _prevX = 0;
+  double _prevVx = 0;
+  bool _wasCarried = false;
+
   Aabb get aabb => Aabb(position.x, position.y, size.x, size.y);
 
   void teleport(Vector2 to) {
@@ -45,7 +53,22 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
 
   @override
   void update(double dt) {
-    if (carried) return; // the claw owns position and pose
+    if (carried) {
+      // The claw owns position; we own the limp sway.
+      if (!_wasCarried) {
+        // Just grabbed: inherit a bit of swing from our momentum.
+        _dangle = 0;
+        _dangleVel = (velocity.x / 250).clamp(-0.5, 0.5);
+        _prevX = position.x;
+        _prevVx = 0;
+        _wasCarried = true;
+      }
+      _updateDangle(dt);
+      return;
+    }
+    _wasCarried = false;
+    _dangle = 0;
+    _dangleVel = 0;
 
     // Jump press is buffered here (the edge flag lasts one frame only).
     if (game.input.jumpPressed && !game.resetting) {
@@ -65,6 +88,21 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     } else {
       _runPhase = 0;
     }
+  }
+
+  /// Damped pendulum about the grip point, driven by the pivot's horizontal
+  /// acceleration — the body trails the claw's motion and settles when still.
+  void _updateDangle(double dt) {
+    if (dt <= 0) return;
+    final vx = (position.x - _prevX) / dt;
+    final ax = (vx - _prevVx) / dt;
+    _prevX = position.x;
+    _prevVx = vx;
+    const omega2 = 30.0; // g/L stiffness
+    const damping = 4.5;
+    const drive = 1 / 130.0; // how strongly pivot accel swings the body
+    _dangleVel += (-omega2 * _dangle - damping * _dangleVel - ax * drive) * dt;
+    _dangle = (_dangle + _dangleVel * dt).clamp(-0.7, 0.7);
   }
 
   void _physicsStep(double h) {
@@ -124,12 +162,22 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     final cx = w / 2;
 
     canvas.save();
-    // Squash about the feet; slight lean into the run.
-    canvas.translate(cx, h);
-    final sq = _squash * 0.16;
-    canvas.scale(1 + sq * 0.8, 1 - sq);
-    canvas.rotate(carried ? 0 : velocity.x / Config.runSpeed * 0.07);
-    canvas.translate(-cx, -h);
+    if (carried) {
+      // Hang from the scruff: the figure pendulums about the shoulder-line
+      // grip point, so the body sways below and the head tips gently above.
+      final px = cx;
+      final py = h * 0.26;
+      canvas.translate(px, py);
+      canvas.rotate(_dangle);
+      canvas.translate(-px, -py);
+    } else {
+      // Squash about the feet; slight lean into the run.
+      canvas.translate(cx, h);
+      final sq = _squash * 0.16;
+      canvas.scale(1 + sq * 0.8, 1 - sq);
+      canvas.rotate(velocity.x / Config.runSpeed * 0.07);
+      canvas.translate(-cx, -h);
+    }
 
     // Pose endpoints.
     final swing = math.sin(_runPhase * math.pi);

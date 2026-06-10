@@ -32,11 +32,13 @@ class TestRoom extends PositionComponent with HasGameReference<EscapeGame> {
       // Ground, split by the spike pit (tiles 10–13).
       Floor(Vector2(t * 0.5, t * 12), Vector2(t * 9.5, t * 1.5)),
       Floor(Vector2(t * 13, t * 12), Vector2(t * 10.5, t * 1.5)),
+      // Pit bottom — the world is sealed; spikes rest on it.
+      Floor(Vector2(t * 10, t * 13.5), Vector2(t * 3, t * 0.5)),
       // Jump platforms.
       Floor(Vector2(t * 5, t * 9), Vector2(t * 3, t * 0.75)),
       Floor(Vector2(t * 15, t * 7.5), Vector2(t * 3, t * 0.75)),
       // The pit hazard + its telegraph.
-      SpikeStrip(Vector2(t * 10, t * 13.3), t * 3),
+      SpikeStrip(Vector2(t * 10, t * 13), t * 3),
       WarningSign(Vector2(t * 8.5, t * 10.4), glyph: SymbolId.hazard),
     ]);
   }

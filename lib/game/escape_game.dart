@@ -88,6 +88,11 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     _clock += dt;
     super.update(dt); // components read edges during their update...
     if (input.restartPressed) requestReset(); // R = voluntary claw
+    // Failsafe: should the player ever escape the room bounds, the claw
+    // retrieves them — nobody falls out of the world.
+    if (!_resetting && player.position.y > Config.viewportHeight + 60) {
+      requestReset();
+    }
     input.clearEdges(); // ...then edges expire, lasting exactly one tick
   }
 }
