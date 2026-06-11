@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "id": "hub_01",
+  "type": "hub",
+  "name": "First cul-de-sac (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "entryPoints": {
+    "west": { "x": 3, "y": 11 },
+    "east": { "x": 20, "y": 11 },
+    "room_s1": { "x": 8.6, "y": 11 },
+    "room_s2": { "x": 14.6, "y": 11 }
+  },
+  "start": { "x": 3, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0.5, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "wall", "x": 22.75, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "floor", "x": 0.5, "y": 12, "w": 23, "h": 1.5 },
+
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west" } },
+    { "id": "doorRoom1", "type": "door", "x": 8, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "room_s1" } },
+    { "id": "doorRoom2", "type": "door", "x": 14, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "room_s2" } },
+    { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "east", "locked": true } }
+  ]
+}

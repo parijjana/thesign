@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "start": "corridor_01",
+  "nodes": [
+    {
+      "id": "corridor_01",
+      "type": "corridor",
+      "file": "corridor_01.json",
+      "exits": { "east": "hub_01" }
+    },
+    {
+      "id": "hub_01",
+      "type": "hub",
+      "file": "hub_01.json",
+      "rooms": ["room_s1", "room_s2"],
+      "unlock": { "rule": "anyOf", "count": 1 },
+      "exits": { "west": "corridor_01", "east": "corridor_02" }
+    },
+    {
+      "id": "room_s1",
+      "type": "room",
+      "file": "room_s1.json",
+      "parent": "hub_01"
+    },
+    {
+      "id": "room_s2",
+      "type": "room",
+      "file": "room_s2.json",
+      "parent": "hub_01"
+    },
+    {
+      "id": "corridor_02",
+      "type": "corridor",
+      "file": "corridor_02.json",
+      "exits": { "west": "hub_01" }
+    }
+  ]
+}

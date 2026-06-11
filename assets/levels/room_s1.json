@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "room_s1",
+  "type": "room",
+  "name": "Stub: floor switch (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "puzzle": "stub_switch",
+  "entryPoints": { "back": { "x": 2.5, "y": 11 } },
+  "start": { "x": 2.5, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0.5, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "wall", "x": 22.75, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "floor", "x": 0.5, "y": 12, "w": 23, "h": 1.5 },
+
+    { "id": "doorBack", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "back" } },
+
+    { "id": "switch", "type": "lever", "x": 16, "y": 10.75, "w": 1, "h": 1.25 }
+  ]
+}

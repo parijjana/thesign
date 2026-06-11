@@ -22,6 +22,9 @@ enum SymbolId {
   /// ISO 7010 W001 warning triangle with the standardized `!` mark (STD —
   /// the one universal mark the no-text rule explicitly allows).
   hazard,
+
+  /// Closed padlock (STD) — locked door/state.
+  locked,
 }
 
 void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
@@ -85,6 +88,21 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
       // The standardized exclamation: stem + dot.
       canvas.drawLine(const Offset(0.5, 0.36), const Offset(0.5, 0.62), stroke);
       canvas.drawCircle(const Offset(0.5, 0.76), 0.045, fill);
+
+    case SymbolId.locked:
+      // Body.
+      canvas.drawRRect(
+        RRect.fromLTRBR(0.22, 0.46, 0.78, 0.88, const Radius.circular(0.07)),
+        fill,
+      );
+      // Shackle.
+      canvas.drawArc(
+        Rect.fromCircle(center: const Offset(0.5, 0.46), radius: 0.19),
+        math.pi,
+        math.pi,
+        false,
+        stroke,
+      );
 
     case SymbolId.settings:
       const center = Offset(0.5, 0.5);

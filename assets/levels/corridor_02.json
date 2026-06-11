@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "id": "corridor_02",
+  "type": "corridor",
+  "name": "Onward! (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "entryPoints": { "west": { "x": 3, "y": 11 } },
+  "start": { "x": 3, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0.5, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "wall", "x": 22.75, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "floor", "x": 0.5, "y": 12, "w": 23, "h": 1.5 },
+
+    { "type": "floor", "x": 7, "y": 9.5, "w": 2.5, "h": 0.75 },
+    { "type": "floor", "x": 11.5, "y": 7.5, "w": 2.5, "h": 0.75 },
+    { "type": "floor", "x": 16, "y": 5.5, "w": 2.5, "h": 0.75 },
+
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west" } }
+  ]
+}
