@@ -8,6 +8,13 @@ library;
 
 enum NodeType { corridor, hub, room }
 
+/// Thickness (tiles) of the brick ceiling synthesized on every node:
+/// thin in rooms/hubs (a hall with a roof), massive in corridors (a tunnel
+/// at half room height). Shared by the loader AND the path checker so they
+/// can never disagree about the playable space.
+double synthesizedCeilingTiles(NodeType type) =>
+    type == NodeType.corridor ? 5.5 : 1.0;
+
 class WorldData {
   WorldData({required this.version, required this.start, required this.nodes});
 

@@ -123,12 +123,10 @@ class RoomComponent extends PositionComponent
     // Every node gets a brick ceiling — THIN in rooms (a hall with a roof),
     // MASSIVE in corridors (a tunnel at half room height) — so the two can
     // never be confused (GDD §4 corridor identity) while all masonry stays
-    // consistent. (Whether the corridor mass later reveals adjacent
-    // corridors above/below: decision deferred.)
-    final ceilingTiles = data.type == NodeType.corridor ? 5.5 : 1.0;
+    // consistent. Thickness rule shared with the path checker.
     add(Wall(
       Vector2(t * 0.5, t * 0.5),
-      Vector2(size.x - t, t * ceilingTiles),
+      Vector2(size.x - t, t * synthesizedCeilingTiles(data.type)),
     ));
 
     final puzzleId = data.puzzle;

@@ -16,7 +16,7 @@
     { "type": "wall", "x": 22.75, "y": 0.5, "w": 0.75, "h": 11.5 },
     { "type": "floor", "x": 0.5, "y": 12, "w": 23, "h": 1.5 },
 
-    { "id": "pillar", "type": "wall", "x": 14, "y": 4, "w": 2, "h": 8 },
+    { "id": "pillar", "type": "wall", "x": 14, "y": 4, "w": 2, "h": 5 },
 
     { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "west" } },

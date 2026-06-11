@@ -200,6 +200,13 @@ abstract class PuzzleScript {
   elevated mechanism (a mirror half-way up a wall) gets a ground-level **`crank`** + chain — the
   gear column stands on a floor/platform at a fixed kid height. The chain is visible by default;
   `hideChain` (routing it "behind the wall") is a deliberate later-game difficulty knob.
+- **Every door must be PROVABLY reachable: the path checker enforces it.**
+  `lib/game/level/path_checker.dart` flood-fills the level's playable space (walls, ceilings, and
+  jump height respected; gates checked open, blocks treated as movable aids) and
+  `test/path_checker_test.dart` runs it over **every node in world.json** — an unreachable door
+  fails the test suite before the level can ship. The checker is deliberately optimistic about
+  horizontal air control (it won't catch a too-wide gap — playtest for those); arc-accurate
+  checking can come with the M5.7 pass.
 - Prefer `kinematic` physics; set `physics: "forge2d"` **only** when a puzzle truly needs rolling/
   emergent physics, and keep such rooms rare and well-tested.
 - Use stable, descriptive `id`s — they're the contract between JSON and the puzzle script.
