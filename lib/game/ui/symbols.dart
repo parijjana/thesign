@@ -25,6 +25,11 @@ enum SymbolId {
 
   /// Closed padlock (STD) — locked door/state.
   locked,
+
+  /// Open hand (STD*) — the interact verb. Labels the contextual prompt
+  /// above in-range interactables AND the touch/controller interact button,
+  /// so the association is learned once.
+  interact,
 }
 
 void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
@@ -103,6 +108,22 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
         false,
         stroke,
       );
+
+    case SymbolId.interact:
+      // Open hand: palm + four fingers + thumb, mitten-simple.
+      final palm = RRect.fromLTRBR(
+          0.30, 0.46, 0.72, 0.84, const Radius.circular(0.12));
+      canvas.drawRRect(palm, fill);
+      for (final (x, top) in const [
+        (0.35, 0.22),
+        (0.46, 0.16),
+        (0.57, 0.18),
+        (0.67, 0.26),
+      ]) {
+        canvas.drawLine(Offset(x, 0.50), Offset(x, top), stroke);
+      }
+      // Thumb.
+      canvas.drawLine(const Offset(0.32, 0.62), const Offset(0.14, 0.48), stroke);
 
     case SymbolId.settings:
       const center = Offset(0.5, 0.5);

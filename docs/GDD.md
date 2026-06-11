@@ -212,6 +212,17 @@ and all play-space UI use symbols/pictograms only — no text or numerals**; the
 text-permitted but symbol-first (boundary in [STYLE_GUIDE.md §8b](STYLE_GUIDE.md)).
 The labels in this table are dev-facing only.
 
+**Contextual verb prompt (wordless key hint):** any interactable the player is in range of shows a
+small bobbing bubble with the **hand glyph** (SYMBOLS `interact`) above it. The same glyph labels
+the touch interact button (and a controller's face button later), so "hand = act" is learned once
+by association and the hint works identically on every input device. Locked things don't prompt —
+their state glyph (padlock) already communicates.
+
+**The verb/button budget is FIXED:** move + jump + interact, with restart and pause as meta
+actions. That's one stick/d-pad + two face buttons + two meta — sized for keyboard, touch, and a
+future controller. **A new mechanic must reuse the existing verbs; adding a button is a design
+failure** (Pillar 2: think, don't twitch).
+
 ## 10b. Screens & flow (the game shell)
 The product must flow like a finished game, not a tech demo. Built in M7 (ROADMAP); listed here so
 nothing is forgotten. **The no-text rule applies to the play space, not the shell** (boundary in

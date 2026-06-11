@@ -30,10 +30,13 @@ class Door extends PositionComponent
   Aabb get interactZone =>
       Aabb(position.x - 6, position.y, size.x + 12, size.y);
 
+  /// Locked doors don't prompt — the padlock already says it all.
+  @override
+  bool get canInteract => open;
+
   @override
   void onInteract() {
     if (open) game.goThrough(exitName);
-    // Locked: nothing happens for now — fb_error popup arrives in M4.
   }
 
   @override

@@ -18,6 +18,7 @@ import 'level/room_registry.dart';
 import 'palette.dart';
 import 'puzzles/puzzle_script.dart';
 import 'ui/hud.dart';
+import 'ui/interact_prompt.dart';
 
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
@@ -44,6 +45,10 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Interactables in the current node (doors, levers) — registered by the
   /// components themselves on mount/remove.
   final List<Interactable> interactables = [];
+
+  /// What the player can act on right now (drives the hand-glyph prompt and
+  /// the interact dispatch). Recomputed every frame.
+  Interactable? focusedInteractable;
 
   late final Player player;
   late final ClawReset claw;
@@ -81,6 +86,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     await loadNode(registry.world.start);
     world.add(player);
     world.add(claw);
+    world.add(InteractPrompt());
     camera.viewport.add(Hud());
   }
 
@@ -157,15 +163,18 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     _clock += dt;
     super.update(dt); // components read edges during their update...
 
-    // Interact: the context button acts on the first overlapping target.
-    if (input.interactPressed && !_resetting) {
-      final box = player.aabb;
-      for (final i in List.of(interactables)) {
-        if (i.interactZone.overlaps(box)) {
-          i.onInteract();
-          break;
-        }
+    // What can the player act on? (Drives the prompt + the dispatch.)
+    focusedInteractable = null;
+    final box = player.aabb;
+    for (final i in interactables) {
+      if (i.canInteract && i.interactZone.overlaps(box)) {
+        focusedInteractable = i;
+        break;
       }
+    }
+    // Interact: the context button acts on the focused target.
+    if (input.interactPressed && !_resetting) {
+      focusedInteractable?.onInteract();
     }
 
     // A flipped puzzle marks the room solved (feeds the hub unlock rule).

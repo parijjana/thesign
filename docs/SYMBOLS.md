@@ -59,7 +59,7 @@
 |---|---|---|---|---|
 | `move` | Move left/right | d-pad / opposed arrows | STD | tutorial corridor |
 | `jump` | Jump | up arrow over a baseline | STD* | first gap |
-| `interact` | Use / actuate | open hand | STD* | first lever/mirror |
+| `interact` | Use / actuate | open hand | STD* | contextual bubble above any in-range interactable (GDD §10); same glyph labels the touch/controller button |
 | `carry` | Pick up / carry | hand holding a box | INV | first carryable object |
 
 ## 4. Hazards (telegraphs — `accentDanger`)

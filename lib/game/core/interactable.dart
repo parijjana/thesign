@@ -5,5 +5,10 @@ import 'aabb.dart';
 /// the first registered interactable overlapping the player.
 abstract interface class Interactable {
   Aabb get interactZone;
+
+  /// False hides the contextual hand-glyph prompt and ignores presses
+  /// (e.g. a rule-locked door until its hub unlock is satisfied).
+  bool get canInteract;
+
   void onInteract();
 }
