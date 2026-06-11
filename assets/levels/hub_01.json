@@ -20,18 +20,12 @@
       "props": { "exit": "west" } },
 
     { "id": "doorPlates", "type": "door", "x": 6.5, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "plates" } },
-    { "type": "sign", "x": 6.65, "y": 7.5, "w": 0.9, "h": 0.9,
-      "props": { "glyph": "d_mechanics" } },
+      "props": { "exit": "plates", "glyph": "d_mechanics" } },
 
     { "id": "doorStack", "type": "door", "x": 11, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "stack" } },
-    { "type": "sign", "x": 11.15, "y": 7.5, "w": 0.9, "h": 0.9,
-      "props": { "glyph": "d_mechanics" } },
+      "props": { "exit": "stack", "glyph": "d_mechanics" } },
 
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "east", "opensOnSolve": true } },
-    { "type": "sign", "x": 21.15, "y": 7.5, "w": 0.9, "h": 0.9,
-      "props": { "glyph": "d_optics" } }
+      "props": { "exit": "east", "opensOnSolve": true, "glyph": "d_optics" } }
   ]
 }

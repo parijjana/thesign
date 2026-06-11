@@ -17,11 +17,16 @@ class Door extends PositionComponent
   Door(Vector2 position, Vector2 size,
       {required this.exitName,
       this.lockedByRule = false,
-      this.opensOnSolve = false})
+      this.opensOnSolve = false,
+      this.glyph})
       : super(position: position, size: size);
 
   /// Name resolved through the world graph (LEVEL_FORMAT.md §2).
   final String exitName;
+
+  /// Discipline marker drawn directly on the door body (SYMBOLS §5) —
+  /// what kind of puzzle lies through here.
+  final SymbolId? glyph;
 
   /// Optional special gate: shut until the node's `unlock` rule is satisfied.
   final bool lockedByRule;
@@ -86,12 +91,21 @@ class Door extends PositionComponent
         ..strokeWidth = Config.stroke
         ..strokeJoin = StrokeJoin.round,
     );
-    if (!isOpen) {
-      // Padlock pictogram on the door body.
-      final glyph = size.x * 0.7;
+    // Discipline glyph on the upper door body.
+    final discipline = glyph;
+    if (discipline != null) {
+      final g = size.x * 0.62;
       canvas.save();
-      canvas.translate((size.x - glyph) / 2, size.y * 0.3);
-      drawSymbol(canvas, SymbolId.locked, glyph, p.ink);
+      canvas.translate((size.x - g) / 2, size.y * 0.12);
+      drawSymbol(canvas, discipline, g, p.ink);
+      canvas.restore();
+    }
+    if (!isOpen) {
+      // Padlock pictogram on the lower door body.
+      final g = size.x * 0.6;
+      canvas.save();
+      canvas.translate((size.x - g) / 2, size.y * 0.5);
+      drawSymbol(canvas, SymbolId.locked, g, p.ink);
       canvas.restore();
     }
 

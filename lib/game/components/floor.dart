@@ -8,14 +8,10 @@ import '../escape_game.dart';
 import 'brickwork.dart';
 
 /// Solid floor/platform slab in signage style (STYLE_GUIDE.md §6).
-/// Registers itself as collision geometry on mount. Corridor floors render
-/// with the shared brick motif (GDD §4 corridor identity); room floors stay
-/// plain slabs — one more cue that can't be confused.
+/// Registers itself as collision geometry on mount. All masonry — floors,
+/// walls, ceilings — carries the same shared brick motif, consistently.
 class Floor extends PositionComponent with HasGameReference<EscapeGame> {
-  Floor(Vector2 position, Vector2 size, {this.brick = false})
-      : super(position: position, size: size);
-
-  final bool brick;
+  Floor(Vector2 position, Vector2 size) : super(position: position, size: size);
 
   @override
   void onMount() {
@@ -28,7 +24,7 @@ class Floor extends PositionComponent with HasGameReference<EscapeGame> {
     final p = game.palette;
     final r = RRect.fromRectAndRadius(size.toRect(), const Radius.circular(8));
     canvas.drawRRect(r, Paint()..color = p.surface);
-    if (brick) paintBrickCourses(canvas, r, p.ink);
+    paintBrickCourses(canvas, r, p.ink);
     canvas.drawRRect(
       r,
       Paint()

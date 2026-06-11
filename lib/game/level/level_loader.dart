@@ -55,8 +55,7 @@ class RoomComponent extends PositionComponent
       final pos = Vector2(e.x * t, e.y * t);
       final size = Vector2(e.w * t, e.h * t);
       final component = switch (e.type) {
-        // Corridor floors carry the brick motif (corridor identity, GDD §4).
-        'floor' => Floor(pos, size, brick: data.type == NodeType.corridor),
+        'floor' => Floor(pos, size),
         'wall' => Wall(pos, size),
         'spike_pit' => SpikeStrip(pos, size.x),
         'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
@@ -67,6 +66,8 @@ class RoomComponent extends PositionComponent
             exitName: e.props['exit'] as String? ?? 'back',
             lockedByRule: e.props['locked'] as bool? ?? false,
             opensOnSolve: e.props['opensOnSolve'] as bool? ?? false,
+            glyph:
+                e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
           ),
         'lever' => Lever(
             pos,
@@ -119,17 +120,16 @@ class RoomComponent extends PositionComponent
       ));
     }
 
-    // Corridors are TUNNELS at HALF room height: a massive brick ceiling
-    // fills the upper half of every corridor (solid + visual), so corridors
-    // and rooms can never be confused (GDD §4 corridor identity). Rooms keep
-    // their open, full-height halls. (Whether adjacent corridors above/below
-    // become visible through this mass: decision deferred — see GDD §13.)
-    if (data.type == NodeType.corridor) {
-      add(Wall(
-        Vector2(t * 0.5, t * 0.5),
-        Vector2(size.x - t, t * 5.5),
-      ));
-    }
+    // Every node gets a brick ceiling — THIN in rooms (a hall with a roof),
+    // MASSIVE in corridors (a tunnel at half room height) — so the two can
+    // never be confused (GDD §4 corridor identity) while all masonry stays
+    // consistent. (Whether the corridor mass later reveals adjacent
+    // corridors above/below: decision deferred.)
+    final ceilingTiles = data.type == NodeType.corridor ? 5.5 : 1.0;
+    add(Wall(
+      Vector2(t * 0.5, t * 0.5),
+      Vector2(size.x - t, t * ceilingTiles),
+    ));
 
     final puzzleId = data.puzzle;
     if (puzzleId != null) {

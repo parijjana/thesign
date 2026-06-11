@@ -92,7 +92,7 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | Floor / wall | rounded-rect blocks, heavy outline; **walls carry a sparse brick-coursing motif** (thin ink bed joints + staggered head joints) so masonry reads as masonry | `surface` | solid, immovable |
 | Door (open) | rounded portal arch + frame, **status sign above: open padlock in `accentGoal`** | `accentGoal` | "you can pass" |
 | Door (closed) | same arch + padlock pictogram on the body, **status sign above: ISO no-entry (red circle-slash)** | `surface` + `ink` padlock | "not yet — solve to open" |
-| | *Status signs appear only on doors with a lock condition on that side (always-open entry doors say nothing); the sign flips live on solve. Discipline glyph signs sit higher, above the status sign.* | | |
+| | *Status signs appear only on doors with a lock condition on that side (always-open entry doors say nothing); the sign flips live on solve. The discipline glyph is drawn **directly on the upper door body** (padlock sits below it when closed).* | | |
 | Lever | post + handle (clear up/down states) | `accentInteract` | "pull me" |
 | Pressure plate | flat tab on the floor, depresses | `accentInteract` | "step / weigh down" |
 | Pushable block | rounded square with grip marks | `accentInteract` | "push me" |
@@ -105,11 +105,11 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 ## 7. Backgrounds & space
 - Background is a **flat field** of `bg` — no parallax, no scenery clutter for MVP.
 - Depth/place is implied by sparse signage motifs on walls (etchings in `ink`), used rarely.
-- **Corridors are tunnels, rooms are halls — never confusable** (GDD §4): corridors run at **half
-  room height** — a massive brick ceiling fills their upper half (synthesized automatically) — and
-  their **floors are brick** too (rooms keep plain slab floors). One shared brick painter keeps
-  all masonry identical. Same palette family; the *shape and texture of the space* is the signal.
-  (Whether the ceiling mass later reveals adjacent corridors above/below: deferred decision.)
+- **All masonry is brick, consistently** — floors, walls, and ceilings share one brick painter.
+  Every node gets a ceiling: **thin in rooms** (a hall with a roof), **massive in corridors**
+  (a tunnel at half room height) — proportion is what makes the two never confusable (GDD §4).
+  Same palette family; the *shape of the space* is the signal. (Whether the corridor mass later
+  reveals adjacent corridors above/below: deferred decision.)
 - Keep negative space generous — legibility over density. The emptiness is the aesthetic.
 
 ## 8. UI / HUD

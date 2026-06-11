@@ -22,9 +22,7 @@
       "props": { "exit": "west", "opensOnSolve": true } },
 
     { "id": "doorMirror", "type": "door", "x": 12, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "mirror" } },
-    { "type": "sign", "x": 12.15, "y": 7.5, "w": 0.9, "h": 0.9,
-      "props": { "glyph": "d_optics" } },
+      "props": { "exit": "mirror", "glyph": "d_optics" } },
 
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "east", "opensOnSolve": true } }
