@@ -16,9 +16,9 @@
     { "type": "floor", "x": 0.5, "y": 12, "w": 11.5, "h": 1.5 },
     { "type": "floor", "x": 13.5, "y": 12, "w": 10, "h": 1.5 },
     { "type": "floor", "x": 12, "y": 13.5, "w": 1.5, "h": 0.5 },
-    { "type": "spike_pit", "x": 12, "y": 13, "w": 1.5, "h": 0.5 },
+    { "type": "water", "x": 12, "y": 13, "w": 1.5, "h": 0.5 },
     { "type": "warning_sign", "x": 11, "y": 10.4, "w": 1.1, "h": 1.1,
-      "props": { "glyph": "hazard" } },
+      "props": { "glyph": "no_swimming" } },
 
     { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "west" } },

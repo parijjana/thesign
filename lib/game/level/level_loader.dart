@@ -10,8 +10,8 @@ import '../components/optics.dart';
 import '../components/pressure_plate.dart';
 import '../components/pushable_block.dart';
 import '../components/sign.dart';
-import '../components/spike_strip.dart';
 import '../components/wall.dart';
+import '../components/water_pool.dart';
 import '../components/warning_sign.dart';
 import '../config.dart';
 import '../escape_game.dart';
@@ -57,7 +57,7 @@ class RoomComponent extends PositionComponent
       final component = switch (e.type) {
         'floor' => Floor(pos, size),
         'wall' => Wall(pos, size),
-        'spike_pit' => SpikeStrip(pos, size.x),
+        'water' => WaterPool(pos, size.x),
         'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
         'sign' => Sign(pos, size, glyph: _glyph(e.props['glyph'])),
         'door' => Door(
@@ -149,6 +149,7 @@ class RoomComponent extends PositionComponent
 
   static SymbolId _glyph(Object? id) => switch (id) {
         'hazard' || null => SymbolId.hazard,
+        'no_swimming' => SymbolId.noSwimming,
         'd_mechanics' => SymbolId.dMechanics,
         'd_optics' => SymbolId.dOptics,
         final other => throw FormatException('unknown sign glyph "$other"'),

@@ -120,7 +120,7 @@ spaces whose `door` entities lead to rooms + the onward corridor.
 | `pushable_block` | `PushableBlockComponent` | `weight` (number) |
 | `key` | `KeyComponent` | `keyId` (string) |
 | `moving_platform` | `MovingPlatformComponent` | `path` (array of `{x,y}` tiles), `speed`, `loop` (bool) |
-| `spike_pit` | `SpikePitComponent` | — (reset trigger: contact returns player to node `start`, no death) |
+| `water` | `WaterPool` | — (reset trigger: fall in → the claw fishes the player out to node `start`, no death; sunk blocks snap home). The kid-friendly hazard, no-swimming-sign motifs. |
 | `boulder` | `BoulderComponent` (scripted) | `track` (array of `{x,y}`), `trigger` (zone id / `"proximity"`); contact = reset, not death |
 | `boulder_forge2d` | `BoulderForge2DComponent` | `radius`, `density` — **only in `physics: forge2d` rooms** |
 | `trigger_zone` | invisible `TriggerZone` | `zoneId` (string) — fires enter/exit to the puzzle script |

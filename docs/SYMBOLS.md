@@ -66,7 +66,8 @@
 | id | Meaning | Glyph | Source | Teach |
 |---|---|---|---|---|
 | `hazard` | General danger ahead | triangle + `!` | STD (ISO 7010 W001) | before the first hazard |
-| `spike` | Spikes | row of triangles | STD* | painted at the first spike pit |
+| `no_swimming` | Water pool ahead | prohibition ring over swimmer + signage waves | STD (ISO P049) | posted at the first pool |
+| `spike` | Spikes (unused — water replaced spikes for kid-friendliness) | row of triangles | STD* | — |
 | `boulder` | Falling/rolling boulder | circle + down chevrons | INV | wind-up before first boulder |
 | `crusher` | Crusher / press | two converging blocks + arrows | INV | before the first crusher |
 | `no_entry` | Blocked / not this way | circle with diagonal slash | STD (prohibition) | on a sealed door |

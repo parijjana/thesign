@@ -30,6 +30,10 @@ enum SymbolId {
   /// The closed-door status sign (GDD §4 passage doors).
   noEntry,
 
+  /// ISO P049 no-swimming (STD) — prohibition ring over a swimmer in waves.
+  /// Telegraphs water pools (the kid-friendly hazard).
+  noSwimming,
+
   /// Press-the-button pictogram (STD* — arrow pressing a button cap, like an
   /// elevator call sign) — the interact verb. Labels the contextual prompt
   /// above in-range interactables AND the touch/controller interact button,
@@ -127,6 +131,35 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
       // The 45° slash, top-left → bottom-right (ISO prohibition).
       canvas.drawLine(
           const Offset(0.26, 0.26), const Offset(0.74, 0.74), ring);
+
+    case SymbolId.noSwimming:
+      final thin = Paint()
+        ..color = ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.07
+        ..strokeCap = StrokeCap.round;
+      // Swimmer: head + a reaching arm-stroke above the water line.
+      canvas.drawCircle(const Offset(0.40, 0.38), 0.065, fill);
+      canvas.drawLine(const Offset(0.48, 0.44), const Offset(0.66, 0.40), thin);
+      // Two signage wave lines.
+      for (final yy in const [0.56, 0.70]) {
+        final wavePath = Path()..moveTo(0.20, yy);
+        for (var i = 0; i < 3; i++) {
+          final x0 = 0.20 + i * 0.20;
+          wavePath.quadraticBezierTo(x0 + 0.05, yy - 0.08, x0 + 0.10, yy);
+          wavePath.quadraticBezierTo(x0 + 0.15, yy + 0.08, x0 + 0.20, yy);
+        }
+        canvas.drawPath(wavePath, thin);
+      }
+      // Prohibition ring + slash, over everything.
+      final ring = Paint()
+        ..color = ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.11
+        ..strokeCap = StrokeCap.butt;
+      canvas.drawCircle(const Offset(0.5, 0.5), 0.40, ring);
+      canvas.drawLine(
+          const Offset(0.22, 0.22), const Offset(0.78, 0.78), ring);
 
     case SymbolId.locked:
       // Body.

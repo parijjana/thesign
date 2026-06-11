@@ -15,6 +15,7 @@ class Palette {
     required this.accentNeutral,
     required this.beam,
     required this.accentHint,
+    required this.water,
   });
 
   /// Room/corridor background.
@@ -43,6 +44,10 @@ class Palette {
 
   /// Hints & feedback (lightbulb, hint halo, fb_idea popups).
   final Color accentHint;
+
+  /// Water pools (the kid-friendly hazard): reads as WATER — the hazard
+  /// semantics are carried by the no-swimming sign, not by danger-red.
+  final Color water;
 }
 
 /// Palette registry. Rooms declare `"palette": "<id>"` (LEVEL_FORMAT.md §3);
@@ -59,6 +64,7 @@ abstract final class Palettes {
     accentNeutral: Color(0xFFE6D38A),
     beam: Color(0xFFF2E27A),
     accentHint: Color(0xFFF2C94C),
+    water: Color(0xFF2F6DA4),
   );
 
   /// Optics discipline palette — deep indigo so beams pop
@@ -73,6 +79,7 @@ abstract final class Palettes {
     accentNeutral: Color(0xFF8B84C2),
     beam: Color(0xFFF2E27A),
     accentHint: Color(0xFFF2C94C),
+    water: Color(0xFF3D77B5),
   );
 
   static const Map<String, Palette> byId = {'amber': amber, 'optics': optics};

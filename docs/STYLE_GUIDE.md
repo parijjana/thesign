@@ -54,6 +54,7 @@ raw hex. This is what makes "different background colors later / multiple palett
 | `accentNeutral` | Inactive/secondary fills | `#E6D38A` (pale amber) | Light fill for highlights/panels. |
 | `beam` | Light beams (optics) | `#F2E27A` (bright pale yellow) | Flat bright line, no glow; spark mark at reflections. Used by optics puzzles. |
 | `accentHint` | Hints & feedback (lightbulb, hint halo, `fb_idea` popup) | `#F2C94C` (warm yellow) | Assistance/feedback moments only — never decorative. Tune per palette for contrast (must pop on every bg). |
+| `water` | Water pools (the kid-friendly hazard) | `#2F6DA4` (signage blue) | Reads as WATER; hazard semantics carried by the no-swimming sign, never danger-red. |
 
 > These hex values are the *starting point* to encode in `palette.dart`; tune on-screen.
 > The **roles** (semantics) are the contract — future palettes must keep the same roles.
@@ -103,7 +104,7 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | Pressure plate | flat tab on the floor, depresses | `accentInteract` | "step / weigh down" |
 | Pushable block | rounded square with grip marks | `accentInteract` | "push me" |
 | Key | classic key pictogram | `accentInteract` | "carry to lock" |
-| Spike pit | row of hard triangles | `accentDanger` | "avoid — sends you back to the start" |
+| Water pool | flat `water` fill with the wavy no-swimming-sign surface line, gently undulating | `water` + `ink` waves | "no swimming — the claw fishes you out" |
 | Boulder | solid circle, heavy outline | `accentDanger` | "dodge it — it'll bump you back" |
 | Moving platform | rounded bar, maybe motion arrows | `surface` + `ink` arrows | "rides a path" |
 | Warning sign | triangle/!, on the wall before a hazard | `accentDanger` | telegraph (Pillar 2) |

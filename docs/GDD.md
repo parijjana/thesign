@@ -116,7 +116,9 @@ Corridors are short, side-scrolling, puzzle-light, hazard-heavy connective tissu
 **Hazards never kill.** Touching one simply **resets the player to the start of the corridor** (the
 hub they entered from) — a "whoops, try again," not a death. This keeps the no-death promise while
 still giving corridors a bit of tension and timing.
-- **Spike pits** — touch = reset to corridor start; the floor sign reads "careful."
+- **Water pools** — the signature kid-friendly hazard: fall in and the claw *fishes you out*,
+  back to the node start. Drawn with no-swimming-sign motifs (wavy signage surface); telegraphed
+  by the ISO **no-swimming** sign. Blocks that sink are fished home too (anti-soft-lock).
 - **Falling boulders** — drop on a track or roll; trigger by proximity/plate. Being caught = reset.
   (Forge2D-eligible.)
 - **Moving platforms** — scripted paths over a pit; miss the platform = reset to corridor start.
@@ -124,7 +126,7 @@ still giving corridors a bit of tension and timing.
 Every hazard must be **telegraphed** (a warning sign motif, a wind-up, or a visible track) so a reset
 always feels fair — supports Pillars 2 & 3.
 
-**Rooms carry light jeopardies too** (a telegraphed spike pit or similar): forgiving but not
+**Rooms carry light jeopardies too** (a telegraphed water pool or similar): forgiving but not
 trivial — the room's challenge stays the puzzle, but a careless step still earns a friendly claw
 ride back to the room start (puzzle progress preserved). This keeps the claw present everywhere
 and the player attentive.
@@ -274,7 +276,7 @@ in game:  pause overlay · inventory/Field Kit · collection (the achievements s
   plain ink-on-bg typography.
 
 ## 11. Scope guardrails (MVP)
-- **In:** a **mini maze-loop** proving the §4 passage model: corridor → junction plaza → three
+- **In:** a **mini maze-loop** proving the §4 passage model: a water-pool corridor → junction plaza → three
   passage rooms spanning two disciplines (pressure plates + box stacking [mechanics], mirror
   routing [optics]) whose exit doors open on solve → a loop corridor reachable from multiple
   doors, closing one honest cycle. Full aesthetic, forgiving movement, no-death reset model,
