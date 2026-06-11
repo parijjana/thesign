@@ -213,10 +213,10 @@ text-permitted but symbol-first (boundary in [STYLE_GUIDE.md §8b](STYLE_GUIDE.m
 The labels in this table are dev-facing only.
 
 **Contextual verb prompt (wordless key hint):** any interactable the player is in range of shows a
-small bobbing bubble with the **hand glyph** (SYMBOLS `interact`) above it. The same glyph labels
-the touch interact button (and a controller's face button later), so "hand = act" is learned once
-by association and the hint works identically on every input device. Locked things don't prompt —
-their state glyph (padlock) already communicates.
+small bobbing bubble with the **press glyph** (SYMBOLS `interact` — an arrow pressing a button)
+above it. The same glyph labels the touch interact button (and a controller's face button later),
+so "press = act" is learned once by association and the hint works identically on every input
+device. Locked things don't prompt — their state glyph (padlock) already communicates.
 
 **The verb/button budget is FIXED:** move + jump + interact, with restart and pause as meta
 actions. That's one stick/d-pad + two face buttons + two meta — sized for keyboard, touch, and a

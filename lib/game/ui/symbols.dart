@@ -26,9 +26,11 @@ enum SymbolId {
   /// Closed padlock (STD) — locked door/state.
   locked,
 
-  /// Open hand (STD*) — the interact verb. Labels the contextual prompt
+  /// Press-the-button pictogram (STD* — arrow pressing a button cap, like an
+  /// elevator call sign) — the interact verb. Labels the contextual prompt
   /// above in-range interactables AND the touch/controller interact button,
-  /// so the association is learned once.
+  /// so the association is learned once. (History: an open palm reads as
+  /// "stop"; a drawn finger doesn't survive 20 px. Geometry wins.)
   interact,
 }
 
@@ -110,20 +112,21 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
       );
 
     case SymbolId.interact:
-      // Open hand: palm + four fingers + thumb, mitten-simple.
-      final palm = RRect.fromLTRBR(
-          0.30, 0.46, 0.72, 0.84, const Radius.circular(0.12));
-      canvas.drawRRect(palm, fill);
-      for (final (x, top) in const [
-        (0.35, 0.22),
-        (0.46, 0.16),
-        (0.57, 0.18),
-        (0.67, 0.26),
-      ]) {
-        canvas.drawLine(Offset(x, 0.50), Offset(x, top), stroke);
-      }
-      // Thumb.
-      canvas.drawLine(const Offset(0.32, 0.62), const Offset(0.14, 0.48), stroke);
+      // Press-the-button: bold arrow pressing down onto a button cap.
+      // Button cap on its housing.
+      canvas.drawRRect(
+        RRect.fromLTRBR(0.26, 0.64, 0.74, 0.80, const Radius.circular(0.07)),
+        fill,
+      );
+      canvas.drawLine(const Offset(0.14, 0.88), const Offset(0.86, 0.88), stroke);
+      // Arrow: shaft + solid head, pressing down.
+      canvas.drawLine(const Offset(0.5, 0.10), const Offset(0.5, 0.34), stroke);
+      final head = Path()
+        ..moveTo(0.32, 0.32)
+        ..lineTo(0.68, 0.32)
+        ..lineTo(0.5, 0.56)
+        ..close();
+      canvas.drawPath(head, fill);
 
     case SymbolId.settings:
       const center = Offset(0.5, 0.5);
