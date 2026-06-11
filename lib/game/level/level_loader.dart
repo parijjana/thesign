@@ -57,7 +57,7 @@ class RoomComponent extends PositionComponent
       final component = switch (e.type) {
         'floor' => Floor(pos, size),
         'wall' => Wall(pos, size),
-        'water' => WaterPool(pos, size.x),
+        'water' => WaterPool(pos, size),
         'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
         'sign' => Sign(pos, size, glyph: _glyph(e.props['glyph'])),
         'door' => Door(

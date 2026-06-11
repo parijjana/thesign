@@ -3,49 +3,53 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../config.dart';
 import '../core/aabb.dart';
 import '../escape_game.dart';
 
 /// Water hazard — the kid-friendly jeopardy (GDD §7): fall in and the claw
 /// fishes you out, back to the node start. No death, barely even a splash.
-/// Drawn with no-swimming-sign motifs: flat water fill with the wavy
-/// signage surface line, gently undulating (motion doubles as telegraph).
+///
+/// Drawn with no-swimming-sign motifs: a flat water fill with the wavy
+/// signage surface line, gently undulating. Renders BENEATH the floor slabs
+/// (negative priority) and is authored slightly overlapping them, so the
+/// pool reads as set INTO the ground — seamless, not taped on.
+///
+/// Blocks dropped in SINK with buoyant drag, and once fully submerged are
+/// fished home to their start (anti-soft-lock).
 class WaterPool extends PositionComponent with HasGameReference<EscapeGame> {
-  WaterPool(Vector2 position, double width)
-      : super(position: position, size: Vector2(width, Config.tileSize * 0.5));
+  WaterPool(Vector2 position, Vector2 size)
+      : super(position: position, size: size, priority: -2);
 
   double _t = 0;
 
-  /// Trigger box: slightly submerged, so brushing the surface is forgiven.
+  /// Player trigger: starts a little below the surface, so brushing the
+  /// waterline is forgiven.
   Aabb get trigger =>
-      Aabb(position.x + 2, position.y + 4, size.x - 4, size.y - 2);
+      Aabb(position.x + 2, position.y + 6, size.x - 4, size.y - 6);
 
   @override
   void update(double dt) {
     _t += dt;
     final player = game.player;
     if (!player.carried && trigger.overlaps(player.aabb)) {
-      game.requestReset();
+      game.requestReset(); // the claw fishes the player out
     }
-    // Blocks are fished out too — a block sunk in a pool must never
-    // soft-lock its puzzle (same kindness the player gets).
+    // Blocks sink slowly (buoyant drag); once fully under, they're fished
+    // home — a block lost in a pool must never soft-lock its puzzle.
     final zone = trigger;
     for (final b in List.of(game.blocks)) {
-      if (!b.held && b.aabb.overlaps(zone)) b.rescueHome();
+      if (b.held || !b.aabb.overlaps(zone)) continue;
+      b.applyWaterDrag();
+      if (b.aabb.y > position.y + 8) b.rescueHome(); // fully submerged
     }
   }
 
   @override
   void render(Canvas canvas) {
     final p = game.palette;
-    // The pool.
-    canvas.drawRRect(
-      RRect.fromRectAndCorners(
-        Rect.fromLTRB(0, 3, size.x, size.y),
-        bottomLeft: const Radius.circular(6),
-        bottomRight: const Radius.circular(6),
-      ),
+    // Flat fill, square edges — the floor slabs draw over our rim.
+    canvas.drawRect(
+      Rect.fromLTRB(0, 3, size.x, size.y),
       Paint()..color = p.water,
     );
     // The signage wave surface: an undulating polyline, like the waves on a

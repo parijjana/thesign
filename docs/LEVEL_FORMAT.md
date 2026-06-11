@@ -120,7 +120,7 @@ spaces whose `door` entities lead to rooms + the onward corridor.
 | `pushable_block` | `PushableBlockComponent` | `weight` (number) |
 | `key` | `KeyComponent` | `keyId` (string) |
 | `moving_platform` | `MovingPlatformComponent` | `path` (array of `{x,y}` tiles), `speed`, `loop` (bool) |
-| `water` | `WaterPool` | — (reset trigger: fall in → the claw fishes the player out to node `start`, no death; sunk blocks snap home). The kid-friendly hazard, no-swimming-sign motifs. |
+| `water` | `WaterPool` | — (reset trigger: fall in → the claw fishes the player out to node `start`, no death; blocks sink with buoyant drag, then snap home). The kid-friendly hazard, no-swimming-sign motifs. **Authoring:** make pools ~1 tile deep reaching the room's bottom edge, and ~0.25 t wider than the floor gap on each side — water renders *beneath* floor slabs, so the overlap tucks under their outlines and the pool reads as set into the ground. |
 | `boulder` | `BoulderComponent` (scripted) | `track` (array of `{x,y}`), `trigger` (zone id / `"proximity"`); contact = reset, not death |
 | `boulder_forge2d` | `BoulderForge2DComponent` | `radius`, `density` — **only in `physics: forge2d` rooms** |
 | `trigger_zone` | invisible `TriggerZone` | `zoneId` (string) — fires enter/exit to the puzzle script |

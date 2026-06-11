@@ -80,10 +80,17 @@ class PushableBlock extends PositionComponent
     _vy = 0;
   }
 
-  /// Spikes reject blocks like they reject the player: snap home to the
-  /// authored start (otherwise a block lost in a pit would soft-lock the
+  /// Water rejects blocks like it rejects the player: snap home to the
+  /// authored start (otherwise a block lost in a pool would soft-lock the
   /// puzzle — unacceptable under the kindness law).
   void rescueHome() => placeAt(Aabb(_home.x, _home.y, size.x, size.y));
+
+  /// Buoyant drag while sinking through water (applied each frame by an
+  /// overlapping WaterPool): the block settles under, slowly — glub, glub.
+  void applyWaterDrag() {
+    _settled = false;
+    if (_vy > 42) _vy = 42;
+  }
 
   @override
   void update(double dt) {
