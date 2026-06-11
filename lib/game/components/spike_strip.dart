@@ -23,6 +23,12 @@ class SpikeStrip extends PositionComponent with HasGameReference<EscapeGame> {
     if (!player.carried && trigger.overlaps(player.aabb)) {
       game.requestReset();
     }
+    // Blocks are rejected home too — a block lost in a pit must never
+    // soft-lock its puzzle.
+    final zone = trigger;
+    for (final b in List.of(game.blocks)) {
+      if (!b.held && b.aabb.overlaps(zone)) b.rescueHome();
+    }
   }
 
   @override

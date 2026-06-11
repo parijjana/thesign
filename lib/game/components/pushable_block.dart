@@ -18,6 +18,7 @@ class PushableBlock extends PositionComponent
       : super(position: position, size: size);
 
   late final Aabb _solid = Aabb(position.x, position.y, size.x, size.y);
+  late final Vector2 _home = position.clone(); // authored start
   bool held = false;
   bool _settled = true;
   double _vy = 0;
@@ -72,10 +73,17 @@ class PushableBlock extends PositionComponent
       ..x = target.x
       ..y = target.y;
     position.setValues(target.x, target.y);
-    game.collisionWorld.solids.add(_solid);
+    game.collisionWorld.solids
+      ..remove(_solid) // idempotent: may already be registered
+      ..add(_solid);
     _settled = false;
     _vy = 0;
   }
+
+  /// Spikes reject blocks like they reject the player: snap home to the
+  /// authored start (otherwise a block lost in a pit would soft-lock the
+  /// puzzle — unacceptable under the kindness law).
+  void rescueHome() => placeAt(Aabb(_home.x, _home.y, size.x, size.y));
 
   @override
   void update(double dt) {
