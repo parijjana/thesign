@@ -26,11 +26,16 @@ class GameInput {
   /// Edge: pause was pressed this tick.
   bool pausePressed = false;
 
+  /// Edge: DEV ONLY — full progress wipe + restart (F2). Not a player verb;
+  /// the real "new game" lives in the profile UI (M7).
+  bool devResetPressed = false;
+
   /// Called by the game after each update tick, so edges last exactly one tick.
   void clearEdges() {
     jumpPressed = false;
     interactPressed = false;
     restartPressed = false;
     pausePressed = false;
+    devResetPressed = false;
   }
 }

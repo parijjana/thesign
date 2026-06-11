@@ -36,6 +36,7 @@ class KeyboardInput extends Component with KeyboardHandler {
       if (_interact.contains(key)) input.interactPressed = true;
       if (key == LogicalKeyboardKey.keyR) input.restartPressed = true;
       if (key == LogicalKeyboardKey.escape) input.pausePressed = true;
+      if (key == LogicalKeyboardKey.f2) input.devResetPressed = true;
     }
     return true;
   }

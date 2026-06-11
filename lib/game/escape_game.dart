@@ -113,6 +113,14 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     camera.viewport.add(Hud());
   }
 
+  /// DEV: wipe the save and restart from the very beginning (F2).
+  /// (Room state needs no clearing — every node rebuilds from data on load.)
+  void _devFullReset() {
+    _saves.wipe();
+    solvedRooms.clear();
+    loadNode(registry.world.start);
+  }
+
   void _autosave() {
     _saves.save(Progress(
       currentNode: currentNodeId,
@@ -249,6 +257,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     }
 
     if (input.restartPressed) requestReset(); // R = voluntary claw
+    if (input.devResetPressed && !_resetting) _devFullReset(); // F2 = new game
     // Failsafe: should the player ever escape the room bounds, the claw
     // retrieves them — nobody falls out of the world.
     if (!_resetting && player.position.y > Config.viewportHeight + 60) {
