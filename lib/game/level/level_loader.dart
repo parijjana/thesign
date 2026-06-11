@@ -4,7 +4,12 @@ import 'package:flame/components.dart';
 
 import '../components/door.dart';
 import '../components/floor.dart';
+import '../components/gate.dart';
 import '../components/lever.dart';
+import '../components/optics.dart';
+import '../components/pressure_plate.dart';
+import '../components/pushable_block.dart';
+import '../components/sign.dart';
 import '../components/spike_strip.dart';
 import '../components/wall.dart';
 import '../components/warning_sign.dart';
@@ -42,6 +47,10 @@ class RoomComponent extends PositionComponent
   @override
   void onLoad() {
     const t = Config.tileSize;
+    final sources = <LightSource>[];
+    final mirrors = <Mirror>[];
+    final sensors = <LightSensor>[];
+
     for (final e in data.entities) {
       final pos = Vector2(e.x * t, e.y * t);
       final size = Vector2(e.w * t, e.h * t);
@@ -50,6 +59,7 @@ class RoomComponent extends PositionComponent
         'wall' => Wall(pos, size),
         'spike_pit' => SpikeStrip(pos, size.x),
         'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
+        'sign' => Sign(pos, size, glyph: _glyph(e.props['glyph'])),
         'door' => Door(
             pos,
             size,
@@ -62,11 +72,42 @@ class RoomComponent extends PositionComponent
             entityId: e.id ?? 'lever',
             startsOn: e.props['startsOn'] as bool? ?? false,
           ),
+        'pushable_block' => PushableBlock(pos, size),
+        'pressure_plate' => PressurePlate(pos, size),
+        'gate' => Gate(pos, size),
+        'light_source' => LightSource(pos, size,
+            dir: e.props['dir'] as String? ?? 'east'),
+        'mirror' => Mirror(
+            pos,
+            size,
+            entityId: e.id ?? 'mirror',
+            state: e.props['start'] as String? ?? '/',
+            rotatable: e.props['rotatable'] as bool? ?? true,
+          ),
+        'light_sensor' => LightSensor(pos, size, entityId: e.id ?? 'sensor'),
         _ => throw FormatException(
             '${data.id}: unknown entity type "${e.type}"'),
       };
       if (e.id != null) _byId[e.id!] = component;
+      switch (component) {
+        case LightSource():
+          sources.add(component);
+        case Mirror():
+          mirrors.add(component);
+        case LightSensor():
+          sensors.add(component);
+        default:
+      }
       add(component);
+    }
+
+    if (sources.isNotEmpty) {
+      add(OpticsSystem(
+        sources: sources,
+        mirrors: mirrors,
+        sensors: sensors,
+        roomSize: size,
+      ));
     }
 
     final puzzleId = data.puzzle;
@@ -89,6 +130,8 @@ class RoomComponent extends PositionComponent
 
   static SymbolId _glyph(Object? id) => switch (id) {
         'hazard' || null => SymbolId.hazard,
+        'd_mechanics' => SymbolId.dMechanics,
+        'd_optics' => SymbolId.dOptics,
         final other => throw FormatException('unknown sign glyph "$other"'),
       };
 

@@ -21,4 +21,5 @@ abstract final class Config {
   static const double jumpVelocity = -500; // logical px/s (up is -y); ≈3.2-tile rise
   static const double coyoteTime = 0.12; // s of grace after leaving a ledge
   static const double jumpBufferTime = 0.12; // s a jump press is remembered
+  static const double carryJumpFactor = 0.82; // carrying limits jump (GDD §5)
 }

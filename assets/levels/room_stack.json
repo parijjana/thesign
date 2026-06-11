@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "id": "room_s1",
+  "id": "room_stack",
   "type": "room",
-  "name": "Stub: floor switch (dev label)",
+  "name": "P2: Box stacking (dev label)",
   "size": { "w": 24, "h": 14 },
-  "puzzle": "stub_switch",
+  "puzzle": "p2_box_stack",
   "entryPoints": { "back": { "x": 2.5, "y": 11 } },
   "start": { "x": 2.5, "y": 11 },
   "entities": [
@@ -12,9 +12,14 @@
     { "type": "wall", "x": 22.75, "y": 0.5, "w": 0.75, "h": 11.5 },
     { "type": "floor", "x": 0.5, "y": 12, "w": 23, "h": 1.5 },
 
+    { "type": "floor", "x": 18, "y": 7, "w": 5, "h": 0.75 },
+
     { "id": "doorBack", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "back" } },
 
-    { "id": "switch", "type": "lever", "x": 16, "y": 10.75, "w": 1, "h": 1.25 }
+    { "id": "blockA", "type": "pushable_block", "x": 6, "y": 11, "w": 1, "h": 1 },
+    { "id": "blockB", "type": "pushable_block", "x": 9.5, "y": 11, "w": 1, "h": 1 },
+
+    { "id": "switch", "type": "lever", "x": 20.5, "y": 5.75, "w": 1, "h": 1.25 }
   ]
 }

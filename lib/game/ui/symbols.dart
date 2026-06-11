@@ -32,6 +32,23 @@ enum SymbolId {
   /// so the association is learned once. (History: an open palm reads as
   /// "stop"; a drawn finger doesn't survive 20 px. Geometry wins.)
   interact,
+
+  /// Open padlock (STD) — unlocked/solved; the fb_success popup glyph.
+  unlocked,
+
+  /// Bold exclamation (STD*, from the ISO warning mark) — the fb_error
+  /// popup: "that didn't work".
+  error,
+
+  /// Lightbulb (STD*) — hint/idea; the fb_idea popup glyph and the future
+  /// HUD hint button.
+  hint,
+
+  /// Discipline marker: Mechanics — lever on a fulcrum triangle (SYMBOLS §5).
+  dMechanics,
+
+  /// Discipline marker: Optics — sun with a single long ray (SYMBOLS §5).
+  dOptics,
 }
 
 void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
@@ -127,6 +144,63 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
         ..lineTo(0.5, 0.56)
         ..close();
       canvas.drawPath(head, fill);
+
+    case SymbolId.unlocked:
+      // Body + shackle swung open to the side.
+      canvas.drawRRect(
+        RRect.fromLTRBR(0.22, 0.46, 0.78, 0.88, const Radius.circular(0.07)),
+        fill,
+      );
+      canvas.drawArc(
+        Rect.fromCircle(center: const Offset(0.30, 0.42), radius: 0.19),
+        math.pi * 0.95,
+        math.pi * 0.85,
+        false,
+        stroke,
+      );
+
+    case SymbolId.error:
+      final bold = Paint()
+        ..color = ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.16
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(const Offset(0.5, 0.12), const Offset(0.5, 0.58), bold);
+      canvas.drawCircle(const Offset(0.5, 0.82), 0.08, fill);
+
+    case SymbolId.hint:
+      // Bulb + base + two light ticks.
+      canvas.drawCircle(const Offset(0.5, 0.42), 0.22, stroke);
+      canvas.drawLine(const Offset(0.42, 0.66), const Offset(0.42, 0.78), stroke);
+      canvas.drawLine(const Offset(0.58, 0.66), const Offset(0.58, 0.78), stroke);
+      canvas.drawLine(const Offset(0.44, 0.84), const Offset(0.56, 0.84), stroke);
+      canvas.drawLine(const Offset(0.16, 0.20), const Offset(0.24, 0.28), stroke);
+      canvas.drawLine(const Offset(0.84, 0.20), const Offset(0.76, 0.28), stroke);
+
+    case SymbolId.dMechanics:
+      // Fulcrum triangle + tilted lever bar with a load dot.
+      final fulcrum = Path()
+        ..moveTo(0.5, 0.52)
+        ..lineTo(0.66, 0.80)
+        ..lineTo(0.34, 0.80)
+        ..close();
+      canvas.drawPath(fulcrum, fill);
+      canvas.drawLine(const Offset(0.12, 0.40), const Offset(0.88, 0.56), stroke);
+      canvas.drawCircle(const Offset(0.16, 0.32), 0.08, fill);
+
+    case SymbolId.dOptics:
+      // Sun + one long ray.
+      canvas.drawCircle(const Offset(0.38, 0.38), 0.15, stroke);
+      for (var i = 0; i < 6; i++) {
+        final a = i * math.pi / 3;
+        final dir = Offset(math.cos(a), math.sin(a));
+        canvas.drawLine(
+          Offset(0.38 + dir.dx * 0.21, 0.38 + dir.dy * 0.21),
+          Offset(0.38 + dir.dx * 0.30, 0.38 + dir.dy * 0.30),
+          stroke,
+        );
+      }
+      canvas.drawLine(const Offset(0.52, 0.52), const Offset(0.86, 0.86), stroke);
 
     case SymbolId.settings:
       const center = Offset(0.5, 0.5);

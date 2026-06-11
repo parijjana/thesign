@@ -27,10 +27,26 @@ class Hud extends PositionComponent with HasGameReference<EscapeGame> {
 
   @override
   void render(Canvas canvas) {
+    final p = game.palette;
     for (var i = 0; i < _glyphs.length; i++) {
       canvas.save();
       canvas.translate(i * (glyphSize + gap), 0);
-      drawSymbol(canvas, _glyphs[i], glyphSize, game.palette.ink);
+      // Neutral chip behind each glyph keeps the HUD readable on every
+      // discipline palette (ink on indigo would vanish).
+      final chip = RRect.fromRectAndRadius(
+        Rect.fromLTWH(-4, -4, glyphSize + 8, glyphSize + 8),
+        const Radius.circular(6),
+      );
+      canvas.drawRRect(
+          chip, Paint()..color = p.accentNeutral.withValues(alpha: 0.85));
+      canvas.drawRRect(
+        chip,
+        Paint()
+          ..color = p.ink
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+      drawSymbol(canvas, _glyphs[i], glyphSize, p.ink);
       canvas.restore();
     }
   }

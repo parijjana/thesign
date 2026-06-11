@@ -6,6 +6,8 @@ import 'package:flame/components.dart';
 import '../config.dart';
 import '../core/aabb.dart';
 import '../escape_game.dart';
+import '../ui/feedback_popups.dart';
+import 'pushable_block.dart';
 
 /// The pictogram player (GDD.md §5, STYLE_GUIDE.md §5).
 ///
@@ -26,6 +28,13 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
   /// While true (claw sequence), physics and input are suspended and the
   /// figure renders in the limp "carried" pose.
   bool carried = false;
+
+  /// The block in our arms, if any (the Carry verb — GDD §5, one object max).
+  PushableBlock? carrying;
+  bool get isCarrying => carrying != null;
+
+  /// Which way the figure faces (placement direction); +1 right, -1 left.
+  int facing = 1;
 
   double _accumulator = 0;
   double _coyoteLeft = 0;
@@ -51,11 +60,56 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     _squash = 0;
   }
 
+  /// Pick up a block (called by the block's onInteract).
+  void pickUp(PushableBlock block) {
+    if (isCarrying || carried) return;
+    carrying = block;
+    block.pickUp();
+  }
+
+  /// Set the carried block down in front of us; tries ground level first,
+  /// then one and two block-heights up (which is how stacking works).
+  void tryPlace() {
+    final block = carrying;
+    if (block == null) return;
+    final bw = block.size.x;
+    final bh = block.size.y;
+    final baseX =
+        facing > 0 ? position.x + size.x + 3 : position.x - bw - 3;
+    final baseY = position.y + size.y - bh;
+    for (final lift in [0.0, bh, bh * 2]) {
+      final target = Aabb(baseX, baseY - lift, bw, bh);
+      final blocked = game.collisionWorld.solids.any(target.overlaps) ||
+          target.overlaps(aabb);
+      if (!blocked) {
+        carrying = null;
+        block.placeAt(target);
+        return;
+      }
+    }
+    // Nowhere to put it — say so, wordlessly.
+    game.feedback.emit(
+      FeedbackKind.error,
+      Vector2(position.x + size.x / 2, position.y - 16),
+    );
+  }
+
+  /// Drop the carried block where we stand (used when the claw grabs us).
+  void _dropCarried() {
+    final block = carrying;
+    if (block == null) return;
+    carrying = null;
+    block.placeAt(Aabb(
+        position.x + size.x / 2 - block.size.x / 2, position.y, block.size.x,
+        block.size.y));
+  }
+
   @override
   void update(double dt) {
     if (carried) {
       // The claw owns position; we own the limp sway.
       if (!_wasCarried) {
+        _dropCarried(); // hands open when the claw grabs us
         // Just grabbed: inherit a bit of swing from our momentum.
         _dangle = 0;
         _dangleVel = (velocity.x / 250).clamp(-0.5, 0.5);
@@ -109,6 +163,8 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     final input = game.input;
     // Control locks during the claw sequence (physics keeps running).
     final axis = game.resetting ? 0.0 : input.moveAxis;
+    if (axis > 0) facing = 1;
+    if (axis < 0) facing = -1;
 
     // Horizontal: approach target speed (forgiving, no momentum mastery).
     final target = axis * Config.runSpeed;
@@ -125,7 +181,9 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     _coyoteLeft = grounded ? Config.coyoteTime : _coyoteLeft - h;
     _bufferLeft -= h;
     if (_bufferLeft > 0 && _coyoteLeft > 0) {
-      velocity.y = Config.jumpVelocity;
+      // Carrying a block limits jump height (GDD §5 — a puzzle lever).
+      velocity.y =
+          Config.jumpVelocity * (isCarrying ? Config.carryJumpFactor : 1);
       _bufferLeft = 0;
       _coyoteLeft = 0;
     }
@@ -191,6 +249,20 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
       armR = Offset(cx + 6, h * 0.10);
       legL = Offset(cx - 4, h * 0.96);
       legR = Offset(cx + 5, h * 0.98);
+    } else if (isCarrying) {
+      // Arms up, holding the block overhead; legs keep working.
+      armL = Offset(cx - 7, h * 0.02);
+      armR = Offset(cx + 7, h * 0.02);
+      if (grounded && velocity.x.abs() > 20) {
+        legL = Offset(cx - 7 * swing, h * 0.97);
+        legR = Offset(cx + 7 * swing, h * 0.97);
+      } else if (!grounded) {
+        legL = Offset(cx - 6, h * 0.84);
+        legR = Offset(cx + 7, h * 0.88);
+      } else {
+        legL = Offset(cx - 5, h * 0.97);
+        legR = Offset(cx + 5, h * 0.97);
+      }
     } else if (!grounded) {
       // Airborne tuck.
       armL = Offset(cx - 9, h * 0.36);

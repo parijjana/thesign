@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "room_mirror",
+  "type": "room",
+  "name": "First Light (dev label, per worked example)",
+  "size": { "w": 24, "h": 14 },
+  "palette": "optics",
+  "puzzle": "optics_mirror",
+  "entryPoints": { "back": { "x": 2.5, "y": 11 } },
+  "start": { "x": 2.5, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0.5, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "wall", "x": 22.75, "y": 0.5, "w": 0.75, "h": 11.5 },
+    { "type": "floor", "x": 0.5, "y": 12, "w": 23, "h": 1.5 },
+
+    { "id": "pillar", "type": "wall", "x": 14, "y": 4, "w": 2, "h": 8 },
+
+    { "id": "doorBack", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "back" } },
+
+    { "id": "src", "type": "light_source", "x": 1.5, "y": 5.5, "w": 1, "h": 1,
+      "props": { "dir": "east" } },
+
+    { "id": "m1", "type": "mirror", "x": 8, "y": 5.5, "w": 1, "h": 1,
+      "props": { "rotatable": true, "start": "\\" } },
+    { "id": "m2", "type": "mirror", "x": 8, "y": 1.5, "w": 1, "h": 1,
+      "props": { "rotatable": true, "start": "\\" } },
+
+    { "id": "sensorA", "type": "light_sensor", "x": 21, "y": 1.5, "w": 1, "h": 1 }
+  ]
+}

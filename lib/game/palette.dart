@@ -61,5 +61,19 @@ abstract final class Palettes {
     accentHint: Color(0xFFF2C94C),
   );
 
-  static const Map<String, Palette> byId = {'amber': amber};
+  /// Optics discipline palette — deep indigo so beams pop
+  /// (PUZZLES.md §Theme↔color). Values are first-pass; tuned in M7.5.
+  static const Palette optics = Palette(
+    bg: Color(0xFF241F4A),
+    ink: Color(0xFF101010),
+    surface: Color(0xFF332D63),
+    accentDanger: Color(0xFFC4452E),
+    accentGoal: Color(0xFF2E9468),
+    accentInteract: Color(0xFF5B7FD4),
+    accentNeutral: Color(0xFF8B84C2),
+    beam: Color(0xFFF2E27A),
+    accentHint: Color(0xFFF2C94C),
+  );
+
+  static const Map<String, Palette> byId = {'amber': amber, 'optics': optics};
 }

@@ -6,6 +6,7 @@ import 'package:flame/game.dart';
 
 import 'components/claw_reset.dart';
 import 'components/player.dart';
+import 'components/pushable_block.dart';
 import 'config.dart';
 import 'core/collision_world.dart';
 import 'core/interactable.dart';
@@ -17,6 +18,9 @@ import 'level/level_model.dart';
 import 'level/room_registry.dart';
 import 'palette.dart';
 import 'puzzles/puzzle_script.dart';
+import 'save/progress.dart';
+import 'save/save_service.dart';
+import 'ui/feedback_popups.dart';
 import 'ui/hud.dart';
 import 'ui/interact_prompt.dart';
 
@@ -50,9 +54,14 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// the interact dispatch). Recomputed every frame.
   Interactable? focusedInteractable;
 
+  /// Blocks in the current node (registered on mount; plates query them).
+  final List<PushableBlock> blocks = [];
+
   late final Player player;
   late final ClawReset claw;
   late final RoomRegistry registry;
+  late final FeedbackPopups feedback;
+  final SaveService _saves = SaveService();
 
   RoomComponent? _room;
   String currentNodeId = '';
@@ -83,19 +92,39 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     registry = await RoomRegistry.load(assets);
     player = Player();
     claw = ClawReset();
-    await loadNode(registry.world.start);
+    feedback = FeedbackPopups();
+
+    // Resume where the player left off (GDD §9); fresh start otherwise.
+    final progress = await _saves.load();
+    if (progress != null) solvedRooms.addAll(progress.solvedRooms);
+    final startNode =
+        (progress != null && registry.world.nodes.containsKey(progress.currentNode))
+            ? progress.currentNode
+            : registry.world.start;
+    await loadNode(startNode);
+
     world.add(player);
     world.add(claw);
     world.add(InteractPrompt());
+    world.add(feedback);
     camera.viewport.add(Hud());
+  }
+
+  void _autosave() {
+    _saves.save(Progress(
+      currentNode: currentNodeId,
+      solvedRooms: solvedRooms,
+    )); // fire-and-forget; nothing blocks on the disk
   }
 
   /// Tears down the current node and builds [nodeId] from its JSON, placing
   /// the player at [entryKey] (or the node's `start`).
   Future<void> loadNode(String nodeId, {String? entryKey}) async {
+    player.carrying = null; // carried objects stay in their room
     _room?.removeFromParent();
     collisionWorld.solids.clear();
     interactables.clear();
+    blocks.clear();
 
     final data = await registry.level(nodeId, assets);
     currentNodeId = nodeId;
@@ -109,6 +138,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     final entry =
         (entryKey != null ? data.entryPoints[entryKey] : null) ?? data.start;
     player.teleport(_feetToTopLeft(entry));
+    _autosave();
   }
 
   /// Entry/start points are authored as the tile the player STANDS ON
@@ -164,22 +194,48 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     super.update(dt); // components read edges during their update...
 
     // What can the player act on? (Drives the prompt + the dispatch.)
+    // While carrying, the verb means "place" — so nothing else focuses.
     focusedInteractable = null;
     final box = player.aabb;
-    for (final i in interactables) {
-      if (i.canInteract && i.interactZone.overlaps(box)) {
-        focusedInteractable = i;
-        break;
+    if (!player.isCarrying) {
+      for (final i in interactables) {
+        if (i.canInteract && i.interactZone.overlaps(box)) {
+          focusedInteractable = i;
+          break;
+        }
       }
     }
-    // Interact: the context button acts on the focused target.
+    // Interact: place what we carry, else act on the focused target,
+    // else — if something locked is in range — an honest red "nope".
     if (input.interactPressed && !_resetting) {
-      focusedInteractable?.onInteract();
+      if (player.isCarrying) {
+        player.tryPlace();
+      } else if (focusedInteractable != null) {
+        focusedInteractable!.onInteract();
+      } else {
+        for (final i in interactables) {
+          if (!i.canInteract && i.interactZone.overlaps(box)) {
+            final z = i.interactZone;
+            feedback.emit(
+                FeedbackKind.error, Vector2(z.x + z.w / 2, z.y - 10));
+            break;
+          }
+        }
+      }
     }
 
     // A flipped puzzle marks the room solved (feeds the hub unlock rule).
     final puzzle = roomPuzzle;
-    if (puzzle != null && puzzle.isSolved) solvedRooms.add(currentNodeId);
+    if (puzzle != null &&
+        puzzle.isSolved &&
+        !solvedRooms.contains(currentNodeId)) {
+      solvedRooms.add(currentNodeId);
+      feedback.emit(
+        FeedbackKind.success,
+        Vector2(player.position.x + player.size.x / 2, player.position.y - 18),
+      );
+      _autosave();
+    }
 
     if (input.restartPressed) requestReset(); // R = voluntary claw
     // Failsafe: should the player ever escape the room bounds, the claw
