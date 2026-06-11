@@ -31,6 +31,12 @@ no texture, no shadows, instantly legible silhouettes.
    dotted) and their sensors show the matching pattern; chemistry reagents get distinct container
    silhouettes or fill patterns; acid/base bars carry a centered tick mark, not just a color shift.
    ~1 in 12 boys is red-green colorblind — for a kids' game this is a hard rule, not a nice-to-have.
+9. **Architecture vs. ephemera.** Anything that IS the world — objects, their glyphs, signs, state
+   markers (a door's discipline glyph, its open/closed status) — is drawn **as part of the
+   architecture**: static, attached, painted on the thing itself. Anything that is HELP — the
+   interact prompt, feedback popups, hint halos — is **ephemeral**: it floats above the world,
+   bobs and wiggles, fades in and out, and is never permanent. A player tells at a glance what is
+   castle and what is coaching.
 
 ## 3. Color tokens
 Colors live **only** in `lib/game/palette.dart` as named tokens. Components reference tokens, never
@@ -90,9 +96,9 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | Object | Construction | Fill token | Read |
 |---|---|---|---|
 | Floor / wall | rounded-rect blocks, heavy outline; **walls carry a sparse brick-coursing motif** (thin ink bed joints + staggered head joints) so masonry reads as masonry | `surface` | solid, immovable |
-| Door (open) | rounded portal arch + frame, **status sign above: open padlock in `accentGoal`** | `accentGoal` | "you can pass" |
-| Door (closed) | same arch + padlock pictogram on the body, **status sign above: ISO no-entry (red circle-slash)** | `surface` + `ink` padlock | "not yet — solve to open" |
-| | *Status signs appear only on doors with a lock condition on that side (always-open entry doors say nothing); the sign flips live on solve. The discipline glyph is drawn **directly on the upper door body** (padlock sits below it when closed).* | | |
+| Door (open) | rounded portal arch; **discipline glyph on the upper body, small open-padlock on the lower body** | `accentGoal`, `ink` glyphs | "you can pass" |
+| Door (closed) | same arch; **discipline glyph above, small ISO no-entry (red circle-slash) below** | `surface`, `accentDanger` status | "not yet — solve to open" |
+| | *All door glyphs are painted ON the body (rule 9: architecture, not floating UI). The status glyph appears only on sides with a lock condition (always-open entry doors say nothing) and flips live on solve.* | | |
 | Lever | post + handle (clear up/down states) | `accentInteract` | "pull me" |
 | Pressure plate | flat tab on the floor, depresses | `accentInteract` | "step / weigh down" |
 | Pushable block | rounded square with grip marks | `accentInteract` | "push me" |

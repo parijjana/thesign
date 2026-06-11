@@ -81,6 +81,13 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   PuzzleScript? get roomPuzzle => _room?.puzzle;
 
+  /// World-y of the current node's ceiling underside (thin in rooms, deep
+  /// in corridors) — the claw's trolley rail hangs from here, never from
+  /// the window edge.
+  double get ceilingY =>
+      (0.5 + synthesizedCeilingTiles(registry.node(currentNodeId).type)) *
+      Config.tileSize;
+
   /// Entity lookup in the current room (cranks resolve their targets here).
   T? roomEntity<T>(String id) => _room?.byId<T>(id);
 

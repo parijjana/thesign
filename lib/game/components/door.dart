@@ -91,54 +91,29 @@ class Door extends PositionComponent
         ..strokeWidth = Config.stroke
         ..strokeJoin = StrokeJoin.round,
     );
-    // Discipline glyph on the upper door body.
+    // Everything a door says is painted ON the door — glyphs are
+    // architecture, not floating UI (STYLE_GUIDE §2 rule 9).
+    // Upper body: the discipline glyph (what kind of puzzle lies through).
     final discipline = glyph;
     if (discipline != null) {
-      final g = size.x * 0.62;
+      final g = size.x * 0.55;
       canvas.save();
-      canvas.translate((size.x - g) / 2, size.y * 0.12);
+      canvas.translate((size.x - g) / 2, size.y * 0.14);
       drawSymbol(canvas, discipline, g, p.ink);
       canvas.restore();
     }
-    if (!isOpen) {
-      // Padlock pictogram on the lower door body.
-      final g = size.x * 0.6;
-      canvas.save();
-      canvas.translate((size.x - g) / 2, size.y * 0.5);
-      drawSymbol(canvas, SymbolId.locked, g, p.ink);
-      canvas.restore();
-    }
-
-    // Status sign above the door (standard signage — ISO no-entry when
-    // closed, open padlock in goal-green when open). Only on the side that
-    // can be locked; flips live when the room is solved.
+    // Lower body: the status glyph (standard signage — ISO no-entry when
+    // closed, open padlock when solved). Only on sides that can be locked;
+    // flips live on solve.
     if (_lockable) {
-      const glyphSize = 22.0;
-      final cx = size.x / 2;
-      const top = -36.0;
-      final board = RRect.fromLTRBR(
-        cx - glyphSize / 2 - 4,
-        top - 4,
-        cx + glyphSize / 2 + 4,
-        top + glyphSize + 4,
-        const Radius.circular(5),
-      );
-      canvas.drawRRect(board, Paint()..color = p.accentNeutral);
-      canvas.drawRRect(
-        board,
-        Paint()
-          ..color = p.ink
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.2
-          ..strokeJoin = StrokeJoin.round,
-      );
+      final g = size.x * 0.5;
       canvas.save();
-      canvas.translate(cx - glyphSize / 2, top);
+      canvas.translate((size.x - g) / 2, size.y * 0.55);
       drawSymbol(
         canvas,
         isOpen ? SymbolId.unlocked : SymbolId.noEntry,
-        glyphSize,
-        isOpen ? p.accentGoal : p.accentDanger,
+        g,
+        isOpen ? p.ink : p.accentDanger,
       );
       canvas.restore();
     }

@@ -20,9 +20,12 @@ import 'player.dart';
 class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
   ClawReset() : super(priority: 100); // draws over room geometry
 
-  static const _ceilingY = Config.tileSize * 0.75; // hinge's "home" height
   static const _descendSpeed = 560.0; // px/s while chasing the player
   static const _grabTimeout = 1.4; // s — failsafe snap if the chase drags
+
+  /// The claw hangs from the CURRENT node's ceiling (thin room roof or deep
+  /// corridor mass) — never from the window edge.
+  double get _ceilingY => game.ceilingY;
 
   _Phase _phase = _Phase.idle;
   double _t = 0; // 0..1 within tweened phases
@@ -84,7 +87,7 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
       case _Phase.whirlwind:
         _to.setValues(Config.viewportWidth / 2, Config.viewportHeight / 2);
       case _Phase.retract:
-        _to.setValues(position.x, -Config.tileSize);
+        _to.setValues(position.x, _ceilingY - 44); // up into the brickwork
       case _Phase.idle || _Phase.descend || _Phase.place:
         _to.setFrom(position);
     }
@@ -209,12 +212,13 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
       return;
     }
 
-    // Cable: from the room ceiling straight down to the hinge.
-    if (position.y > 6) {
-      canvas.drawLine(Offset(0, 4 - position.y), Offset.zero, stroke);
-      // Trolley block at the ceiling the cable hangs from.
+    // Cable: from the node's ceiling underside straight down to the hinge,
+    // with the trolley block embedded at the ceiling line.
+    final ceilDy = _ceilingY - position.y; // negative while hanging below
+    if (ceilDy < -4) {
+      canvas.drawLine(Offset(0, ceilDy), Offset.zero, stroke);
       canvas.drawRRect(
-        RRect.fromLTRBR(-9, 2 - position.y, 9, 12 - position.y,
+        RRect.fromLTRBR(-9, ceilDy - 8, 9, ceilDy + 4,
             const Radius.circular(3)),
         fill,
       );

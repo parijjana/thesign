@@ -124,6 +124,11 @@ still giving corridors a bit of tension and timing.
 Every hazard must be **telegraphed** (a warning sign motif, a wind-up, or a visible track) so a reset
 always feels fair — supports Pillars 2 & 3.
 
+**Rooms carry light jeopardies too** (a telegraphed spike pit or similar): forgiving but not
+trivial — the room's challenge stays the puzzle, but a careless step still earns a friendly claw
+ride back to the room start (puzzle progress preserved). This keeps the claw present everywhere
+and the player attentive.
+
 ## 8. Failure model (no death) — the excavator claw
 There is **no death, no lives, no game-over**, and **no death animation**. "Failure" only ever means
 *reset to a start point*, and the reset is performed by a friendly **excavator/grabber claw** that
