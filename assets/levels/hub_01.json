@@ -2,14 +2,13 @@
   "version": 1,
   "id": "hub_01",
   "type": "hub",
-  "name": "First cul-de-sac (dev label)",
+  "name": "Junction plaza (dev label)",
   "size": { "w": 24, "h": 14 },
   "entryPoints": {
     "west": { "x": 3, "y": 11 },
-    "east": { "x": 20, "y": 11 },
-    "room_plates": { "x": 7.1, "y": 11 },
-    "room_stack": { "x": 11.6, "y": 11 },
-    "room_mirror": { "x": 16.1, "y": 11 }
+    "plates": { "x": 7.1, "y": 11 },
+    "stack": { "x": 11.6, "y": 11 },
+    "east": { "x": 20, "y": 11 }
   },
   "start": { "x": 3, "y": 11 },
   "entities": [
@@ -21,21 +20,18 @@
       "props": { "exit": "west" } },
 
     { "id": "doorPlates", "type": "door", "x": 6.5, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "room_plates" } },
-    { "type": "sign", "x": 6.65, "y": 8.4, "w": 0.9, "h": 0.9,
+      "props": { "exit": "plates" } },
+    { "type": "sign", "x": 6.65, "y": 7.5, "w": 0.9, "h": 0.9,
       "props": { "glyph": "d_mechanics" } },
 
     { "id": "doorStack", "type": "door", "x": 11, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "room_stack" } },
-    { "type": "sign", "x": 11.15, "y": 8.4, "w": 0.9, "h": 0.9,
+      "props": { "exit": "stack" } },
+    { "type": "sign", "x": 11.15, "y": 7.5, "w": 0.9, "h": 0.9,
       "props": { "glyph": "d_mechanics" } },
 
-    { "id": "doorMirror", "type": "door", "x": 15.5, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "room_mirror" } },
-    { "type": "sign", "x": 15.65, "y": 8.4, "w": 0.9, "h": 0.9,
-      "props": { "glyph": "d_optics" } },
-
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "east", "locked": true } }
+      "props": { "exit": "east", "opensOnSolve": true } },
+    { "type": "sign", "x": 21.15, "y": 7.5, "w": 0.9, "h": 0.9,
+      "props": { "glyph": "d_optics" } }
   ]
 }

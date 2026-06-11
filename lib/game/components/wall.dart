@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -6,6 +5,7 @@ import 'package:flame/components.dart';
 import '../config.dart';
 import '../core/aabb.dart';
 import '../escape_game.dart';
+import 'brickwork.dart';
 
 /// Solid wall column with the brick-coursing motif (STYLE_GUIDE.md §6):
 /// thin ink bed joints + staggered head joints so masonry reads as masonry.
@@ -25,26 +25,7 @@ class Wall extends PositionComponent with HasGameReference<EscapeGame> {
     final r = RRect.fromRectAndRadius(rect, const Radius.circular(6));
     canvas.drawRRect(r, Paint()..color = p.surface);
 
-    final joint = Paint()
-      ..color = p.ink
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-    canvas.save();
-    canvas.clipRRect(r);
-    const course = Config.tileSize / 2;
-    var row = 0;
-    for (var y = 0.0; y < size.y; y += course, row++) {
-      canvas.drawLine(
-          Offset(0, y + course), Offset(size.x, y + course), joint);
-      if (row.isOdd) {
-        canvas.drawLine(
-          Offset(size.x / 2, y),
-          Offset(size.x / 2, math.min(y + course, size.y)),
-          joint,
-        );
-      }
-    }
-    canvas.restore();
+    paintBrickCourses(canvas, r, p.ink);
 
     canvas.drawRRect(
       r,

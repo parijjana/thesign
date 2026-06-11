@@ -11,8 +11,9 @@
    **fill levels, balance tilt, pip counts, dials, and proportional bars — not digits.**
 2. **Self-teaching.** The first room of a discipline teaches its rule with a trivial, safe example
    before any real challenge. The player learns by doing, not by reading.
-3. **Never hard-blocked.** Every puzzle lives in a cul-de-sac hub with siblings; a player who can't
-   crack it backs out and tries another (GDD §4).
+3. **Never hard-blocked.** Every puzzle room is a passage with an always-open entry door; a player
+   who can't crack it walks back out and takes another route — the maze guarantees one exists
+   (no puzzle room is a cut vertex, GDD §4 kindness law).
 4. **Telegraphed & reversible.** Nothing is lost by experimenting; mistakes reset cheaply (the claw).
 5. **One idea, then combine.** Introduce a mechanic alone; only mix disciplines once each is taught.
 6. **Variety within a hub.** Sibling rooms in a cul-de-sac span **different disciplines** (one

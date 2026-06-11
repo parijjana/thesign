@@ -37,33 +37,46 @@ Minimal, environmental, no dialogue trees.
   wall-etchings (still in the sign language) can hint at lore. No cutscenes for the MVP.
 - **Ending:** Reaching the final exit door. (Stretch: a twist — the "exit" is another teleporter.)
 
-## 4. Core loop & world structure
+## 4. Core loop & world structure — a castle maze of passages
+The castle is a **maze graph**, all in side view: low-ceilinged **corridors** (tunnels) connect
+**junction plazas** and **puzzle rooms**. The defining rule:
+
 ```
-Corridor (cross hazards)  →  CUL-DE-SAC HUB (several room doors)
-                                   │  pick a room
-                                   ▼
-                              Enter room → read it → solve?
-                                   │                  │
-                          yes ─────┘                  └───── stuck / don't like it
-                           │                                        │
-              way onward unlocks                      leave via the door you came in
-                           │                                        │
-                           ▼                                        ▼
-                  next corridor  ◄───────────  back in the hub, try a DIFFERENT room
+explore corridor → junction: pick a door → enter a puzzle room (entry side)
+        ▲                                        │ read it → solve?
+        │                              yes ──────┤
+        │                               │        └── stuck / don't like it
+        │                EXIT SIDE OPENS — a new                │
+        │                corridor of the castle        walk back out the entry,
+        └──────────────────── … ◄───────┘             take another route ────┐
+                                                                             ▼
+                                                              (the maze always offers one)
 ```
-- A **cul-de-sac hub** sits at the end of each corridor and offers **N rooms** to choose from.
-- **Unlock rule (default): solving any ONE room in a hub opens the onward corridor.** So a player
-  who can't crack a given puzzle simply backs out and tries another — never hard-blocked (Pillar 3).
-  Designers may override per hub (e.g. require a specific room, or solve 2 of 3) but the default is
-  the kind one.
-- **Variety rule: a hub's rooms span *different disciplines*** (e.g. one optics, one mechanics, one
-  sports) — never easy/medium/hard versions of the same idea. Backing out of a room should always
-  mean "try a different *kind of thinking*," not "try the same thing but easier." Each hub door
-  carries its room's discipline glyph (SYMBOLS §5) and the room renders in its discipline palette,
-  so the choice is legible before entering.
-- Rooms are puzzle chambers off the hub: you **enter and exit through the same hub door**. Solving a
-  room flags it solved and contributes to the hub's unlock; you then return to the hub to proceed.
-- Some hub rooms can be **optional/reward** rooms (a collectible, a shortcut) rather than required.
+
+- **Every puzzle room is a PASSAGE, not a dead end: one entry side, one exit side.** The entry
+  door is always open (retreat is always free — Pillar 3). The **exit door opens when the room is
+  solved**: solving a puzzle literally unlocks a way through the castle. Solved rooms stay open
+  from both sides forever — they become free passages.
+- **Corridors and junctions connect arbitrarily.** Cycles are encouraged; the same corridor may be
+  entered from different doors. "Wait — I've been here!" is a designed moment of mastery, and the
+  maze is what gives the game depth and replay value (different runs solve different routes).
+- **Corridor ≠ room, visually, always:** corridors are **tunnels** — a low brick ceiling is
+  synthesized on every corridor automatically — while rooms keep their open, full-height halls.
+  Each corridor additionally gets its own identity glyph at its doors (a wordless "street name")
+  plus recognizable motifs, so recognition never becomes confusion (full system spec'd at the
+  M5.7 design pass).
+- **Kindness law (replaces the hub unlock rule):** the maze must never soft-lock a player who
+  can't crack one particular puzzle. **No single puzzle room may be a cut vertex of the reachable
+  world** (a deliberate final gate may be the one exception). The world is data, so a
+  graph-reachability **validator in the test suite enforces this** on every world change.
+- **Hubs survive as junction plazas** — door-rich, puzzle-free breathing spaces. The old "solve
+  any 1 of N" hub unlock is retired as the default; the `unlock` rule remains available as an
+  optional special gate.
+- **Variety rule (unchanged in spirit):** rooms reachable from one junction span *different
+  disciplines* — never difficulty variants of the same idea. Door signs carry the discipline glyph
+  (SYMBOLS §5); the room renders in its discipline palette.
+- Some rooms can be **optional/reward** passages (a collectible, a shortcut) rather than on any
+  main route.
 
 ## 5. Player character & verbs
 The figure is a minimalist pictogram (see STYLE_GUIDE). Deliberately limited verb set:
@@ -256,11 +269,11 @@ in game:  pause overlay · inventory/Field Kit · collection (the achievements s
   plain ink-on-bg typography.
 
 ## 11. Scope guardrails (MVP)
-- **In:** one corridor (spike pit, non-lethal reset) → one **cul-de-sac hub with 2–3 rooms
-  spanning at least two disciplines** (mechanics picks from P1–P3 + the optics mirror room, per the
-  §4 variety rule; solve any one to open the onward door) → a second corridor. Full aesthetic,
-  forgiving movement, no-death reset model, hub room-selection + back-out, feedback popups,
-  save/resume, keyboard + touch.
+- **In:** a **mini maze-loop** proving the §4 passage model: corridor → junction plaza → three
+  passage rooms spanning two disciplines (pressure plates + box stacking [mechanics], mirror
+  routing [optics]) whose exit doors open on solve → a loop corridor reachable from multiple
+  doors, closing one honest cycle. Full aesthetic, forgiving movement, no-death reset model,
+  retreat-anytime, feedback popups, save/resume, keyboard + touch.
 - **Out (later):** sound design, the full game shell (§10b — splash, title, settings, inventory,
   collection, attributions), level select, additional palettes, extra puzzle types, lore etchings,
   the **visual style overhaul** (functional MVP art is fine until ROADMAP M7.5), app-store polish.

@@ -26,6 +26,10 @@ enum SymbolId {
   /// Closed padlock (STD) — locked door/state.
   locked,
 
+  /// ISO prohibition sign (STD) — circle with diagonal slash: "no entry".
+  /// The closed-door status sign (GDD §4 passage doors).
+  noEntry,
+
   /// Press-the-button pictogram (STD* — arrow pressing a button cap, like an
   /// elevator call sign) — the interact verb. Labels the contextual prompt
   /// above in-range interactables AND the touch/controller interact button,
@@ -112,6 +116,17 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
       // The standardized exclamation: stem + dot.
       canvas.drawLine(const Offset(0.5, 0.36), const Offset(0.5, 0.62), stroke);
       canvas.drawCircle(const Offset(0.5, 0.76), 0.045, fill);
+
+    case SymbolId.noEntry:
+      final ring = Paint()
+        ..color = ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.13
+        ..strokeCap = StrokeCap.butt;
+      canvas.drawCircle(const Offset(0.5, 0.5), 0.34, ring);
+      // The 45° slash, top-left → bottom-right (ISO prohibition).
+      canvas.drawLine(
+          const Offset(0.26, 0.26), const Offset(0.74, 0.74), ring);
 
     case SymbolId.locked:
       // Body.

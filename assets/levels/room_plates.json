@@ -5,19 +5,24 @@
   "name": "P1: Pressure plate (dev label)",
   "size": { "w": 24, "h": 14 },
   "puzzle": "p1_pressure_plates",
-  "entryPoints": { "back": { "x": 2.5, "y": 11 } },
+  "entryPoints": {
+    "west": { "x": 2.5, "y": 11 },
+    "east": { "x": 20, "y": 11 }
+  },
   "start": { "x": 2.5, "y": 11 },
   "entities": [
     { "type": "wall", "x": 0.5, "y": 0.5, "w": 0.75, "h": 11.5 },
     { "type": "wall", "x": 22.75, "y": 0.5, "w": 0.75, "h": 11.5 },
     { "type": "floor", "x": 0.5, "y": 12, "w": 23, "h": 1.5 },
 
-    { "id": "doorBack", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "back" } },
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west" } },
+    { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "east", "opensOnSolve": true } },
 
     { "id": "blockA", "type": "pushable_block", "x": 5, "y": 11, "w": 1, "h": 1 },
     { "id": "plateA", "type": "pressure_plate", "x": 9, "y": 11.65, "w": 2, "h": 0.35 },
     { "id": "gateA", "type": "gate", "x": 15, "y": 8, "w": 1, "h": 4 },
-    { "id": "goalSwitch", "type": "lever", "x": 19, "y": 10.75, "w": 1, "h": 1.25 }
+    { "id": "goalSwitch", "type": "lever", "x": 18.5, "y": 10.75, "w": 1, "h": 1.25 }
   ]
 }

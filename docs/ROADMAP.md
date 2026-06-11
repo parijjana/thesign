@@ -92,17 +92,28 @@ something runnable on **web + Windows**. Mobile is validated early but polished 
 - Update GDD §9b (drop the DRAFT flag), SYMBOLS §5b (real glyphs), LEVEL_FORMAT (final schemas).
 - **Exit criteria:** GDD §9b is no longer DRAFT; M6 can place sockets/bonus doors with confidence.
 
+## M5.7 — Maze topology design pass *(docs only — design-gate for the full castle maze)*
+**Goal:** turn the GDD §4 passage/maze model from a proven mini-loop into a full castle spec. **No code.**
+- The complete castle graph: junctions, passage rooms, corridor cycles, optional/reward branches,
+  and the final gate (the one allowed cut vertex).
+- **Corridor identity system:** per-corridor glyph ("street name" at each door) + motif variations.
+- **The no-soft-lock validator:** formalize the GDD §4 kindness law (no puzzle room is a cut
+  vertex) as a graph-reachability test over `world.json`, running in CI with the unit tests.
+- **Castle map screen spec:** top-down *discovered-graph* map (play stays side-view) — the maze's
+  legibility tool and the replayability showcase ("how many doors did I never open?").
+- **Exit criteria:** M6 builds the real maze from this spec.
+
 ## M6 — Content expansion
-**Goal:** turn the slice into a short game.
-- Add more puzzle rooms (P4–P6) + their scripts, distributed across hubs — each hub mixing
-  disciplines per the variety rule.
-- Add a **second hub** and a **falling boulder** corridor; introduce one `forge2d` room *only if* a
-  puzzle needs real physics (otherwise scripted) — validate the hybrid path here.
+**Goal:** turn the slice into a short game — build the castle maze per the M5.7 spec.
+- Add more passage rooms (P4–P6) + their scripts, junctions mixing disciplines per the variety rule.
+- A **falling boulder** corridor; introduce one `forge2d` room *only if* a puzzle needs real
+  physics (otherwise scripted) — validate the hybrid path here.
 - Place the first **lore etchings** (`etching` entities) — a few in corridors, a couple hidden in
-  optional/reward rooms; found ones persist per profile.
+  optional/reward passages; found ones persist per profile.
 - Place the first **anchor sockets and star bonus doors** per the M5.5 spec (bonus path only —
   never required for progress), and implement the first one or two **tools** end-to-end.
-- Build the full `world.json`: corridor → hub → corridor → hub chain ending in the real exit.
+- Build the full maze `world.json` (cycles, multi-door corridors, the final exit gate) and land
+  the **no-soft-lock validator** in the test suite.
 - **Exit criteria:** a complete short playable loop from teleport-in to escape.
 
 ## M7 — Polish, systems & the game shell

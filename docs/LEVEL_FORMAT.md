@@ -143,7 +143,7 @@ each here when implemented. Representative (not yet all built):
 
 | Discipline | `type` examples | Notable props |
 |---|---|---|
-| Optics | `light_source`, `mirror`, `prism`, `lens`, `light_sensor`, `beam_splitter` | `angle`/`rotatable` (bool), `color` (token), `movable` (bool); sensor: `wantsColor` |
+| Optics | `light_source`, `mirror`, `crank`, `prism`, `lens`, `light_sensor`, `beam_splitter` | mirror: `start` (`"/"`/`"\\"`), `rotatable` (bool — false when crank-driven); crank: `target` (mirror id), `hideChain` (bool — hide the chain to make the mapping part of the puzzle); `color` (token); sensor: `wantsColor` |
 | Mechanics | `fulcrum_lever`, `pulley`, `gear`, `seesaw`, `ramp` | `fulcrumMovable` (bool), `ratio` (visual), `teeth`, `pivot` |
 | Gravity/Proj. | `launcher`, `counterweight`, `spring` | `angleDial` (bool), `powerCharge` (bool) |
 | Fluids | `tank`, `pipe`, `valve`, `float`, `water_source` | `level`, `connectsTo`, `density` |
@@ -196,6 +196,10 @@ abstract class PuzzleScript {
 - Every room needs an **entry door back to its parent hub** so the player can always leave (no-death,
   never-blocked). Hubs need a door per listed room plus the onward `exit` door.
 - Telegraph every hazard with a `warning_sign` or a visible `track`/`path` (style + fairness rule).
+- **Reachability rule: every interactable must be operable from the ground or a platform.** An
+  elevated mechanism (a mirror half-way up a wall) gets a ground-level **`crank`** + chain — the
+  gear column stands on a floor/platform at a fixed kid height. The chain is visible by default;
+  `hideChain` (routing it "behind the wall") is a deliberate later-game difficulty knob.
 - Prefer `kinematic` physics; set `physics: "forge2d"` **only** when a puzzle truly needs rolling/
   emergent physics, and keep such rooms rare and well-tested.
 - Use stable, descriptive `id`s — they're the contract between JSON and the puzzle script.

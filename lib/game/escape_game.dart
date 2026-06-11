@@ -81,6 +81,9 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   PuzzleScript? get roomPuzzle => _room?.puzzle;
 
+  /// Entity lookup in the current room (cranks resolve their targets here).
+  T? roomEntity<T>(String id) => _room?.byId<T>(id);
+
   /// Letterbox bars render in ink, framing the room like a sign's border.
   @override
   Color backgroundColor() => palette.ink;
@@ -159,13 +162,21 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     loadNode(transition.targetId, entryKey: transition.entryKey);
   }
 
-  /// Is the current hub's unlock rule satisfied? (Doors with
-  /// `lockedByRule` ask this every frame — GDD §4, default anyOf-1.)
+  /// Is the current node's `unlock` rule satisfied? (Optional special gates.)
   bool isUnlockSatisfied() {
     final node = registry.node(currentNodeId);
     final rule = node.unlock;
-    if (rule == null) return false; // locked door, no rule, no key yet (M4)
+    if (rule == null) return false; // locked door, no rule, no key yet
     return rule.isSatisfied(solvedRooms, node.rooms);
+  }
+
+  /// Is the ROOM side of the door using [exitName] solved? (Passage doors,
+  /// GDD §4: in a room it's this room's state; elsewhere it's the target's.)
+  bool isSolvedSide(String exitName) {
+    final node = registry.node(currentNodeId);
+    if (node.type == NodeType.room) return solvedRooms.contains(currentNodeId);
+    final transition = registry.resolve(currentNodeId, exitName);
+    return transition != null && solvedRooms.contains(transition.targetId);
   }
 
   /// The no-death reset (GDD.md §8): hazard contact or the restart button.

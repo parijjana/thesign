@@ -60,7 +60,11 @@ class LightSource extends PositionComponent with HasGameReference<EscapeGame> {
   }
 }
 
-/// A rotatable 45° mirror: interact cycles `/` ↔ `\`.
+/// A rotatable 45° mirror: toggling cycles `/` ↔ `\`.
+///
+/// Mirrors at player height may be `rotatable` (direct interact); elevated
+/// mirrors are driven remotely by a [Crank] + chain — every control must be
+/// operable from the ground or a platform (the player is not Superman).
 class Mirror extends PositionComponent
     with HasGameReference<EscapeGame>
     implements Interactable {
@@ -82,15 +86,30 @@ class Mirror extends PositionComponent
   bool get canInteract => rotatable && !game.player.isCarrying;
 
   @override
-  void onInteract() {
+  void onInteract() => toggle();
+
+  /// Flips the mirror (direct interact or a crank).
+  void toggle() {
     state = state == '/' ? r'\' : '/';
     game.roomPuzzle?.onInteract(entityId);
   }
 
   @override
+  void onMount() {
+    super.onMount();
+    game.interactables.add(this);
+  }
+
+  @override
+  void onRemove() {
+    game.interactables.remove(this);
+    super.onRemove();
+  }
+
+  @override
   void render(Canvas canvas) {
     final p = game.palette;
-    // Stand frame.
+    // Mirror frame.
     canvas.drawRRect(
       RRect.fromRectAndRadius(size.toRect(), const Radius.circular(5)),
       Paint()
@@ -152,6 +171,132 @@ class LightSensor extends PositionComponent with HasGameReference<EscapeGame> {
           ..strokeWidth = 2.4,
       );
     }
+  }
+}
+
+/// A ground-level steering column that drives an elevated [Mirror] through a
+/// chain: gear on a post at a fixed, kid-reachable height, authored standing
+/// on a floor or platform. Interact = the target mirror rotates. The chain
+/// is drawn by default; `hideChain` (later rooms) makes "which crank drives
+/// which mirror" part of the puzzle.
+class Crank extends PositionComponent
+    with HasGameReference<EscapeGame>
+    implements Interactable {
+  Crank(Vector2 position, Vector2 size,
+      {required this.targetId, this.hideChain = false})
+      : super(position: position, size: size);
+
+  final String targetId;
+  final bool hideChain;
+
+  double _spin = 0;
+  double _spinVel = 0;
+
+  Mirror? get _target => game.roomEntity<Mirror>(targetId);
+
+  @override
+  Aabb get interactZone =>
+      Aabb(position.x - 10, position.y - 10, size.x + 20, size.y + 20);
+
+  @override
+  bool get canInteract => !game.player.isCarrying && _target != null;
+
+  @override
+  void onInteract() {
+    _target?.toggle();
+    _spinVel = 14; // satisfying gear whirl on use
+  }
+
+  @override
+  void onMount() {
+    super.onMount();
+    game.interactables.add(this);
+  }
+
+  @override
+  void onRemove() {
+    game.interactables.remove(this);
+    super.onRemove();
+  }
+
+  @override
+  void update(double dt) {
+    _spin += _spinVel * dt;
+    _spinVel *= math.pow(0.05, dt).toDouble(); // quick decay
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final p = game.palette;
+    final stroke = Paint()
+      ..color = p.ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    final cx = size.x / 2;
+    final gearC = Offset(cx, size.x * 0.45); // gear near the top of the post
+    final gearR = size.x * 0.34;
+
+    // Chain LOOP up to the mirror: two parallel runs (drive + return),
+    // like a real chain-and-sprocket drive — physics shown honestly.
+    final target = _target;
+    if (target != null && !hideChain) {
+      final chain = Paint()
+        ..color = p.ink.withValues(alpha: 0.55)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2;
+      final from = gearC;
+      final to = Offset(
+        target.position.x + target.size.x / 2 - position.x,
+        target.position.y + target.size.y / 2 - position.y,
+      );
+      final delta = to - from;
+      final len = delta.distance;
+      final dir = delta / len;
+      final perp = Offset(-dir.dy, dir.dx) * 3.5;
+      for (final side in const [-1.0, 1.0]) {
+        // Dashed links: 5px dash, 5px gap, offset to either side of the axis.
+        for (var d = gearR + 4; d < len - 8; d += 10) {
+          canvas.drawLine(
+            from + dir * d + perp * side,
+            from + dir * (d + 5) + perp * side,
+            chain,
+          );
+        }
+      }
+      // Sprocket at the mirror end, closing the loop.
+      canvas.drawCircle(
+        to,
+        6,
+        Paint()
+          ..color = p.ink.withValues(alpha: 0.7)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.4,
+      );
+    }
+
+    // Post + base plate.
+    canvas.drawLine(Offset(cx, gearC.dy), Offset(cx, size.y), stroke);
+    canvas.drawRRect(
+      RRect.fromLTRBR(cx - 11, size.y - 5, cx + 11, size.y,
+          const Radius.circular(2.5)),
+      Paint()..color = p.ink,
+    );
+
+    // Gear: rim, spinning teeth, interact-blue hub.
+    canvas.drawCircle(gearC, gearR, stroke);
+    final teeth = Paint()
+      ..color = p.ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 6; i++) {
+      final a = _spin + i * math.pi / 3;
+      final dir = Offset(math.cos(a), math.sin(a));
+      canvas.drawLine(
+          gearC + dir * gearR, gearC + dir * (gearR + 5), teeth);
+    }
+    canvas.drawCircle(gearC, 5, Paint()..color = p.accentInteract);
   }
 }
 

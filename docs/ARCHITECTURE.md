@@ -27,8 +27,10 @@
 - **No death (kid-friendly):** there is no death/lives/game-over. Failure = **reset to the start of the
   current node** (corridor or room). Hazard contact resets to corridor start; failing/leaving a puzzle
   resets to (or exits) the room. The player can always restart a room or walk back out the entry door.
-- **World graph is a hub-and-spoke chain:** corridors end in **cul-de-sac hubs**; a hub exposes several
-  rooms and an onward corridor that unlocks per a hub rule (default: any one room solved).
+- **World graph is a maze of passages (GDD §4):** puzzle rooms have an entry side (always open)
+  and an exit side that **opens on solve**; corridors (auto low-ceiling tunnels) and junction
+  plazas connect arbitrarily with cycles. Kindness law: no puzzle room may be a cut vertex —
+  enforced by a graph validator test (lands with M6).
 
 ## 3. Coordinate system & units
 - **Logical unit = 1 tile = 32 px** (the "design pixel"; rendering scales to device).

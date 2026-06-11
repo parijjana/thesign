@@ -12,33 +12,40 @@
       "id": "hub_01",
       "type": "hub",
       "file": "hub_01.json",
-      "rooms": ["room_plates", "room_stack", "room_mirror"],
-      "unlock": { "rule": "anyOf", "count": 1 },
-      "exits": { "west": "corridor_01", "east": "corridor_02" }
+      "exits": {
+        "west": "corridor_01",
+        "plates": "room_plates",
+        "stack": "room_stack",
+        "east": "room_mirror"
+      }
     },
     {
       "id": "room_plates",
       "type": "room",
       "file": "room_plates.json",
-      "parent": "hub_01"
+      "exits": { "west": "hub_01", "east": "corridor_02" }
     },
     {
       "id": "room_stack",
       "type": "room",
       "file": "room_stack.json",
-      "parent": "hub_01"
+      "exits": { "west": "hub_01", "east": "corridor_02" }
     },
     {
       "id": "room_mirror",
       "type": "room",
       "file": "room_mirror.json",
-      "parent": "hub_01"
+      "exits": { "west": "corridor_02", "east": "hub_01" }
     },
     {
       "id": "corridor_02",
       "type": "corridor",
       "file": "corridor_02.json",
-      "exits": { "west": "hub_01" }
+      "exits": {
+        "west": "room_plates",
+        "east": "room_stack",
+        "mirror": "room_mirror"
+      }
     }
   ]
 }

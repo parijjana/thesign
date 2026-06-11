@@ -29,12 +29,14 @@ class PushableBlock extends PositionComponent
     super.onMount();
     game.collisionWorld.solids.add(_solid);
     game.blocks.add(this);
+    game.interactables.add(this);
   }
 
   @override
   void onRemove() {
     game.collisionWorld.solids.remove(_solid);
     game.blocks.remove(this);
+    game.interactables.remove(this);
     super.onRemove();
   }
 

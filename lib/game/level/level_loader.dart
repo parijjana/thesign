@@ -55,7 +55,8 @@ class RoomComponent extends PositionComponent
       final pos = Vector2(e.x * t, e.y * t);
       final size = Vector2(e.w * t, e.h * t);
       final component = switch (e.type) {
-        'floor' => Floor(pos, size),
+        // Corridor floors carry the brick motif (corridor identity, GDD §4).
+        'floor' => Floor(pos, size, brick: data.type == NodeType.corridor),
         'wall' => Wall(pos, size),
         'spike_pit' => SpikeStrip(pos, size.x),
         'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
@@ -65,6 +66,7 @@ class RoomComponent extends PositionComponent
             size,
             exitName: e.props['exit'] as String? ?? 'back',
             lockedByRule: e.props['locked'] as bool? ?? false,
+            opensOnSolve: e.props['opensOnSolve'] as bool? ?? false,
           ),
         'lever' => Lever(
             pos,
@@ -83,6 +85,13 @@ class RoomComponent extends PositionComponent
             entityId: e.id ?? 'mirror',
             state: e.props['start'] as String? ?? '/',
             rotatable: e.props['rotatable'] as bool? ?? true,
+          ),
+        'crank' => Crank(
+            pos,
+            size,
+            targetId: e.props['target'] as String? ??
+                (throw FormatException('${data.id}: crank needs a target')),
+            hideChain: e.props['hideChain'] as bool? ?? false,
           ),
         'light_sensor' => LightSensor(pos, size, entityId: e.id ?? 'sensor'),
         _ => throw FormatException(
@@ -107,6 +116,18 @@ class RoomComponent extends PositionComponent
         mirrors: mirrors,
         sensors: sensors,
         roomSize: size,
+      ));
+    }
+
+    // Corridors are TUNNELS at HALF room height: a massive brick ceiling
+    // fills the upper half of every corridor (solid + visual), so corridors
+    // and rooms can never be confused (GDD §4 corridor identity). Rooms keep
+    // their open, full-height halls. (Whether adjacent corridors above/below
+    // become visible through this mass: decision deferred — see GDD §13.)
+    if (data.type == NodeType.corridor) {
+      add(Wall(
+        Vector2(t * 0.5, t * 0.5),
+        Vector2(size.x - t, t * 5.5),
       ));
     }
 
