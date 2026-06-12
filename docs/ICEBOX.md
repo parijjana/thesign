@@ -18,6 +18,14 @@
   have bespoke Dart scripts → needs a library of parameterizable stock behaviors), sharing
   mechanism, and kid-safe UGC moderation if sharing is ever online.
 
+## Player floats & treads water (swimming pose)
+- When the player lands in a water pool they should **float at the surface with a paddling/
+  treading-water pose** (head up, arms sculling) until the claw fishes them out — never sink.
+  Sinking below the surface implies drowning/death, which this game must never even hint at
+  (GDD §0). The waterlogged-block "neutral buoyancy" suspension already exists; the player
+  version needs the swim posture in the posture-interpolation set (player.dart) plus a float-at-
+  surface behavior while awaiting rescue. Pairs naturally with the M7.5 animation pass.
+
 ## Other parked ideas (from the replayability review)
 - **Castle map / completion view** — post-game map showing solved vs unexplored rooms.
 - **Second solutions** — hidden bonus objective in select rooms (bullseye-with-star glyph).
