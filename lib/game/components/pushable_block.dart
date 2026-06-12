@@ -119,6 +119,9 @@ class PushableBlock extends PositionComponent
       _vy = 0;
       _settled = true;
     }
+    // Failsafe (mirrors the player's): nothing falls out of the world.
+    // Whatever slips past the pools' own rescue comes home anyway.
+    if (_solid.y > Config.viewportHeight + 20) rescueHome();
   }
 
   /// Real physics, kid-legible: a block with most of its base over a void

@@ -34,13 +34,15 @@ class WaterPool extends PositionComponent with HasGameReference<EscapeGame> {
     if (!player.carried && trigger.overlaps(player.aabb)) {
       game.requestReset(); // the claw fishes the player out
     }
-    // Blocks sink slowly (buoyant drag); once fully under, they're fished
+    // Blocks sink slowly (buoyant drag); once well under, they're fished
     // home — a block lost in a pool must never soft-lock its puzzle.
-    final zone = trigger;
+    // (Generous box: the whole pool, not the inset player zone.)
+    final pool = Aabb(position.x, position.y, size.x, size.y);
     for (final b in List.of(game.blocks)) {
-      if (b.held || !b.aabb.overlaps(zone)) continue;
+      if (b.held || !b.aabb.overlaps(pool)) continue;
       b.applyWaterDrag();
-      if (b.aabb.y > position.y + 8) b.rescueHome(); // fully submerged
+      final centerY = b.aabb.y + b.aabb.h / 2;
+      if (centerY > position.y + 12) b.rescueHome(); // submerged past center
     }
   }
 
