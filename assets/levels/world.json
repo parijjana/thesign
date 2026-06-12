@@ -1,51 +1,74 @@
 {
-  "version": 1,
+  "version": 2,
   "start": "corridor_01",
   "nodes": [
-    {
-      "id": "corridor_01",
-      "type": "corridor",
-      "file": "corridor_01.json",
-      "exits": { "east": "hub_01" }
-    },
-    {
-      "id": "hub_01",
-      "type": "hub",
-      "file": "hub_01.json",
-      "exits": {
-        "west": "corridor_01",
-        "plates": "room_plates",
-        "stack": "room_stack",
-        "east": "room_mirror"
-      }
-    },
-    {
-      "id": "room_plates",
-      "type": "room",
-      "file": "room_plates.json",
-      "exits": { "west": "hub_01", "east": "corridor_02" }
-    },
-    {
-      "id": "room_stack",
-      "type": "room",
-      "file": "room_stack.json",
-      "exits": { "west": "hub_01", "east": "corridor_02" }
-    },
-    {
-      "id": "room_mirror",
-      "type": "room",
-      "file": "room_mirror.json",
-      "exits": { "west": "corridor_02", "east": "hub_01" }
-    },
-    {
-      "id": "corridor_02",
-      "type": "corridor",
-      "file": "corridor_02.json",
-      "exits": {
-        "west": "room_plates",
-        "east": "room_stack",
-        "mirror": "room_mirror"
-      }
-    }
+    { "id": "corridor_01", "type": "corridor", "file": "corridor_01.json",
+      "exits": { "east": "hub_01", "stairs": "corridor_03" } },
+
+    { "id": "hub_01", "type": "hub", "file": "hub_01.json",
+      "exits": { "west": "corridor_01", "plates": "room_plates",
+                 "stack": "room_stack", "east": "room_mirror" } },
+
+    { "id": "room_plates", "type": "room", "file": "room_plates.json",
+      "exits": { "west": "hub_01", "east": "corridor_02" } },
+    { "id": "room_stack", "type": "room", "file": "room_stack.json",
+      "exits": { "west": "hub_01", "east": "corridor_02",
+                 "secret": "secret_stack" } },
+    { "id": "room_mirror", "type": "room", "file": "room_mirror.json",
+      "exits": { "west": "corridor_02", "east": "hub_01" } },
+
+    { "id": "corridor_02", "type": "corridor", "file": "corridor_02.json",
+      "exits": { "west": "room_plates", "east": "room_stack",
+                 "mirror": "room_mirror", "deep": "room_fulcrum",
+                 "plaza": "hub_02", "secret": "secret_arch" } },
+
+    { "id": "secret_arch", "type": "room", "file": "secret_arch.json",
+      "exits": { "out": "corridor_02" } },
+    { "id": "secret_stack", "type": "room", "file": "secret_stack.json",
+      "exits": { "out": "room_stack" } },
+
+    { "id": "room_fulcrum", "type": "room", "file": "room_fulcrum.json",
+      "exits": { "west": "corridor_02", "east": "hub_02" } },
+
+    { "id": "hub_02", "type": "hub", "file": "hub_02.json",
+      "exits": { "west": "corridor_02", "fulcrum": "room_fulcrum",
+                 "counter": "room_counter", "soko": "room_sokoban",
+                 "vault": "room_vault", "north": "corridor_04" } },
+
+    { "id": "room_counter", "type": "room", "file": "room_counter.json",
+      "exits": { "west": "hub_02", "east": "corridor_03" } },
+    { "id": "room_sokoban", "type": "room", "file": "room_sokoban.json",
+      "exits": { "west": "hub_02", "east": "corridor_03" } },
+    { "id": "room_vault", "type": "room", "file": "room_vault.json",
+      "exits": { "out": "hub_02" } },
+
+    { "id": "corridor_03", "type": "corridor", "file": "corridor_03.json",
+      "exits": { "west": "room_counter", "east": "room_sokoban",
+                 "stairs": "corridor_01", "far": "hub_03" } },
+
+    { "id": "corridor_04", "type": "corridor", "file": "corridor_04.json",
+      "exits": { "south": "hub_02", "north": "hub_03" } },
+
+    { "id": "hub_03", "type": "hub", "file": "hub_03.json",
+      "exits": { "south": "corridor_04", "west": "corridor_03",
+                 "split": "room_splitter", "seq": "room_sequence",
+                 "secret": "secret_attic" } },
+
+    { "id": "room_splitter", "type": "room", "file": "room_splitter.json",
+      "exits": { "west": "hub_03", "east": "corridor_05" } },
+    { "id": "room_sequence", "type": "room", "file": "room_sequence.json",
+      "exits": { "west": "hub_03", "east": "corridor_05" } },
+    { "id": "secret_attic", "type": "room", "file": "secret_attic.json",
+      "exits": { "out": "hub_03" } },
+
+    { "id": "corridor_05", "type": "corridor", "file": "corridor_05.json",
+      "exits": { "west": "room_splitter", "east": "room_sequence",
+                 "mid": "room_capstone" } },
+
+    { "id": "room_capstone", "type": "room", "file": "room_capstone.json",
+      "exits": { "west": "corridor_05", "east": "exit_hall" } },
+
+    { "id": "exit_hall", "type": "room", "file": "exit_hall.json",
+      "exits": { "west": "room_capstone" } }
   ]
 }

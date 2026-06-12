@@ -4,7 +4,7 @@ import 'aabb.dart';
 /// Pure Dart, headless-testable. Beams are axis-aligned: sources emit along
 /// an axis and 45° mirrors turn them 90°, so a "raycast" is just a nearest-
 /// edge search.
-enum BeamObstacleKind { solid, mirror, sensor }
+enum BeamObstacleKind { solid, mirror, sensor, splitter }
 
 class BeamObstacle {
   BeamObstacle.solid(this.box)
@@ -21,6 +21,12 @@ class BeamObstacle {
   BeamObstacle.sensor(this.box, this.sensorId)
       : kind = BeamObstacleKind.sensor,
         mirrorState = '';
+
+  /// Half-mirror: the beam continues straight AND reflects like [state].
+  BeamObstacle.splitter(this.box, String state)
+      : kind = BeamObstacleKind.splitter,
+        mirrorState = state,
+        sensorId = '';
 
   final Aabb box;
   final BeamObstacleKind kind;
@@ -59,44 +65,56 @@ BeamResult traceBeam({
   assert((dx.abs() == 1) ^ (dy.abs() == 1), 'beam must be axis-aligned');
   final segments = <BeamSegment>[];
   final lit = <String>{};
-  var x = ox, y = oy;
-  var dirX = dx, dirY = dy;
+  // Shared hop budget across ALL branches (splitters fork the beam).
+  var budget = maxHops;
 
-  for (var hop = 0; hop < maxHops; hop++) {
-    // Nearest obstacle ahead, else the room bounds.
-    var bestT = _boundsExit(x, y, dirX, dirY, boundsW, boundsH);
-    BeamObstacle? best;
-    for (final o in obstacles) {
-      final t = _entryT(x, y, dirX, dirY, o.box);
-      if (t != null && t < bestT) {
-        bestT = t;
-        best = o;
+  void trace(double x, double y, int dirX, int dirY) {
+    while (budget-- > 0) {
+      var bestT = _boundsExit(x, y, dirX, dirY, boundsW, boundsH);
+      BeamObstacle? best;
+      for (final o in obstacles) {
+        final t = _entryT(x, y, dirX, dirY, o.box);
+        if (t != null && t < bestT) {
+          bestT = t;
+          best = o;
+        }
       }
-    }
 
-    // Mirrors/sensors bend or terminate the beam at their CENTER (visual
-    // niceness); solids stop it at the entry edge.
-    var endT = bestT;
-    if (best != null && best.kind != BeamObstacleKind.solid) {
-      endT = dirX != 0 ? (best.box.x + best.box.w / 2 - x) * dirX
-                       : (best.box.y + best.box.h / 2 - y) * dirY;
-    }
-    final ex = x + dirX * endT;
-    final ey = y + dirY * endT;
-    segments.add(BeamSegment(x, y, ex, ey));
+      // Mirrors/sensors/splitters act at their CENTER (visual niceness);
+      // solids stop the beam at the entry edge.
+      var endT = bestT;
+      if (best != null && best.kind != BeamObstacleKind.solid) {
+        endT = dirX != 0
+            ? (best.box.x + best.box.w / 2 - x) * dirX
+            : (best.box.y + best.box.h / 2 - y) * dirY;
+      }
+      final ex = x + dirX * endT;
+      final ey = y + dirY * endT;
+      segments.add(BeamSegment(x, y, ex, ey));
 
-    if (best == null || best.kind == BeamObstacleKind.solid) break;
-    if (best.kind == BeamObstacleKind.sensor) {
-      lit.add(best.sensorId);
-      break;
+      if (best == null || best.kind == BeamObstacleKind.solid) return;
+      if (best.kind == BeamObstacleKind.sensor) {
+        lit.add(best.sensorId);
+        return;
+      }
+      final (ndx, ndy) = reflect(best.mirrorState, dirX, dirY);
+      if (best.kind == BeamObstacleKind.splitter) {
+        // Reflected branch...
+        trace(ex + ndx * 0.5, ey + ndy * 0.5, ndx, ndy);
+        // ...and the pass-through continues in this loop.
+        x = ex + dirX * 0.5;
+        y = ey + dirY * 0.5;
+        continue;
+      }
+      // Plain mirror: turn and continue.
+      dirX = ndx;
+      dirY = ndy;
+      x = ex + dirX * 0.5;
+      y = ey + dirY * 0.5;
     }
-    // Mirror: turn and continue from just past the center.
-    final (ndx, ndy) = reflect(best.mirrorState, dirX, dirY);
-    dirX = ndx;
-    dirY = ndy;
-    x = ex + dirX * 0.5;
-    y = ey + dirY * 0.5;
   }
+
+  trace(ox, oy, dx, dy);
   return BeamResult(segments, lit);
 }
 

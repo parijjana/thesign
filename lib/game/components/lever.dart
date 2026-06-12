@@ -28,6 +28,9 @@ class Lever extends PositionComponent
       Aabb(position.x - 8, position.y - 8, size.x + 16, size.y + 16);
 
   @override
+  bool get promptHidden => false;
+
+  @override
   bool get canInteract => true;
 
   @override

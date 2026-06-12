@@ -85,6 +85,9 @@ class PushableBlock extends PositionComponent
   /// Grabbable only when free-standing: not while something rests on it, and
   /// not while the player already has their hands full.
   @override
+  bool get promptHidden => false;
+
+  @override
   bool get canInteract =>
       !held && _settled && !game.player.isCarrying && !_hasBlockOnTop;
 
@@ -121,6 +124,15 @@ class PushableBlock extends PositionComponent
   /// authored start (otherwise a block lost in a pool would soft-lock the
   /// puzzle — unacceptable under the kindness law).
   void rescueHome() => placeAt(Aabb(_home.x, _home.y, size.x, size.y));
+
+  /// Shifted by a moving carrier (platform, seesaw pan, lift).
+  void carryBy(Vector2 delta) {
+    if (held || clawHeld) return;
+    _solid
+      ..x += delta.x
+      ..y += delta.y;
+    position.setValues(_solid.x, _solid.y);
+  }
 
   /// Buoyant drag while sinking through water (applied each frame by an
   /// overlapping WaterPool): the block settles under, slowly — glub, glub.

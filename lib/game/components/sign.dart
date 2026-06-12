@@ -8,10 +8,15 @@ import '../ui/symbols.dart';
 /// A neutral wall sign with an ink glyph — e.g. the discipline markers above
 /// a hub's room doors (SYMBOLS §5: variety made legible before entering).
 class Sign extends PositionComponent with HasGameReference<EscapeGame> {
-  Sign(Vector2 position, Vector2 size, {required this.glyph})
-      : super(position: position, size: size);
+  Sign(Vector2 position, Vector2 size, {this.glyph, this.pips = 0})
+      : assert(glyph != null || pips > 0),
+        super(position: position, size: size);
 
-  final SymbolId glyph;
+  final SymbolId? glyph;
+
+  /// Wordless count (q_pips quantity grammar): a row of filled dots —
+  /// e.g. order numbers in the sequence room.
+  final int pips;
 
   @override
   void render(Canvas canvas) {
@@ -29,6 +34,16 @@ class Sign extends PositionComponent with HasGameReference<EscapeGame> {
         ..strokeWidth = 2.4
         ..strokeJoin = StrokeJoin.round,
     );
-    drawSymbol(canvas, glyph, size.x, p.ink);
+    final g = glyph;
+    if (g != null) drawSymbol(canvas, g, size.x, p.ink);
+    if (pips > 0) {
+      final dot = Paint()..color = p.ink;
+      final totalW = (pips - 1) * 10.0;
+      final y = g == null ? size.y / 2 : size.y + 1;
+      for (var i = 0; i < pips; i++) {
+        canvas.drawCircle(
+            Offset(size.x / 2 - totalW / 2 + i * 10, y), 3.2, dot);
+      }
+    }
   }
 }

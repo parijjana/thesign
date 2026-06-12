@@ -16,6 +16,15 @@ class FakeRoom implements PuzzleRoom {
     if (e is T) return e;
     return null;
   }
+
+  @override
+  List<T> allOf<T>() => entities.values.whereType<T>().toList();
+
+  @override
+  void emitError(String entityId) {}
+
+  @override
+  void emitSuccess(String entityId) {}
 }
 
 void main() {

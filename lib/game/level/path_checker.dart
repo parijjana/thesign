@@ -33,6 +33,12 @@ PathCheckResult checkDoorReachability(LevelData level) {
   final h = (level.heightTiles * _res).round();
   final solid = List.generate(h, (_) => List.filled(w, false));
 
+  // Blocks extend the player's reach: each carryable block in the room can
+  // add ~1 tile of standing height to a stack (that's the stacking puzzle).
+  final blockBonus =
+      2 * level.entities.where((e) => e.type == 'pushable_block').length;
+  final jumpBudget = _jumpBudget + blockBonus;
+
   void fillRect(double x, double y, double rw, double rh) {
     final x0 = (x * _res).floor().clamp(0, w);
     final x1 = ((x + rw) * _res).ceil().clamp(0, w);
@@ -71,7 +77,7 @@ PathCheckResult checkDoorReachability(LevelData level) {
   // BFS over (x, feetY, jumpBudget): budget spends on upward steps and
   // refills when standing; falling and lateral movement are free.
   final visited = List.generate(
-      h, (_) => List.generate(w, (_) => List.filled(_jumpBudget + 1, false)));
+      h, (_) => List.generate(w, (_) => List.filled(jumpBudget + 1, false)));
   final standingReached = List.generate(w, (_) => List.filled(h, false));
 
   final startX = (level.start.x * _res).round();
@@ -81,7 +87,7 @@ PathCheckResult checkDoorReachability(LevelData level) {
   void push(int x, int feetY, int budget) {
     if (!fits(x, feetY)) return;
     if (supported(x, feetY)) {
-      budget = _jumpBudget; // landing refills the jump
+      budget = jumpBudget; // landing refills the jump
       standingReached[x][feetY] = true;
     }
     if (visited[feetY][x][budget]) return;
@@ -89,13 +95,13 @@ PathCheckResult checkDoorReachability(LevelData level) {
     queue.add((x, feetY, budget));
   }
 
-  push(startX, startY, _jumpBudget);
+  push(startX, startY, jumpBudget);
   while (queue.isNotEmpty) {
     final (x, y, b) = queue.removeLast();
     final grounded = supported(x, y);
     push(x - 1, y, b); // lateral
     push(x + 1, y, b);
-    if (b > 0 || grounded) push(x, y - 1, grounded ? _jumpBudget - 1 : b - 1);
+    if (b > 0 || grounded) push(x, y - 1, grounded ? jumpBudget - 1 : b - 1);
     push(x, y + 1, b); // fall (budget held until landing)
   }
 

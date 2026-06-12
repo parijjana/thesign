@@ -83,6 +83,9 @@ class Mirror extends PositionComponent
       Aabb(position.x - 10, position.y - 10, size.x + 20, size.y + 20);
 
   @override
+  bool get promptHidden => false;
+
+  @override
   bool get canInteract => rotatable && !game.player.isCarrying;
 
   @override
@@ -129,6 +132,43 @@ class Mirror extends PositionComponent
     } else {
       canvas.drawLine(
           Offset(inset, inset), Offset(size.x - inset, size.y - inset), face);
+    }
+  }
+}
+
+/// A fixed half-mirror: the beam passes through AND reflects — one source,
+/// two outputs (the "two birds" room).
+class Splitter extends PositionComponent with HasGameReference<EscapeGame> {
+  Splitter(Vector2 position, Vector2 size, {this.state = '/'})
+      : super(position: position, size: size);
+
+  final String state;
+
+  Aabb get aabb => Aabb(position.x, position.y, size.x, size.y);
+
+  @override
+  void render(Canvas canvas) {
+    final p = game.palette;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(size.toRect(), const Radius.circular(5)),
+      Paint()..color = p.accentNeutral.withValues(alpha: 0.35),
+    );
+    // Half-silvered: a dashed diagonal instead of the mirror's solid one.
+    final face = Paint()
+      ..color = p.ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    final inset = size.x * 0.18;
+    final a = state == '/'
+        ? Offset(inset, size.y - inset)
+        : Offset(inset, inset);
+    final b = state == '/'
+        ? Offset(size.x - inset, inset)
+        : Offset(size.x - inset, size.y - inset);
+    final dir = (b - a) / (b - a).distance;
+    for (var d = 0.0; d < (b - a).distance; d += 9) {
+      canvas.drawLine(a + dir * d, a + dir * (d + 4.5), face);
     }
   }
 }
@@ -197,6 +237,9 @@ class Crank extends PositionComponent
   @override
   Aabb get interactZone =>
       Aabb(position.x - 10, position.y - 10, size.x + 20, size.y + 20);
+
+  @override
+  bool get promptHidden => false;
 
   @override
   bool get canInteract => !game.player.isCarrying && _target != null;
@@ -307,12 +350,14 @@ class OpticsSystem extends PositionComponent with HasGameReference<EscapeGame> {
     required this.sources,
     required this.mirrors,
     required this.sensors,
+    this.splitters = const [],
     required this.roomSize,
   }) : super(priority: 5); // beams draw over geometry, under the player
 
   final List<LightSource> sources;
   final List<Mirror> mirrors;
   final List<LightSensor> sensors;
+  final List<Splitter> splitters;
   final Vector2 roomSize;
 
   final List<BeamSegment> _segments = [];
@@ -326,6 +371,7 @@ class OpticsSystem extends PositionComponent with HasGameReference<EscapeGame> {
     final obstacles = <BeamObstacle>[
       for (final s in game.collisionWorld.solids) BeamObstacle.solid(s),
       for (final m in mirrors) BeamObstacle.mirror(m.aabb, m.state),
+      for (final sp in splitters) BeamObstacle.splitter(sp.aabb, sp.state),
       for (final s in sensors) BeamObstacle.sensor(s.aabb, s.entityId),
     ];
     for (final source in sources) {

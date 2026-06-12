@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "exit_hall",
+  "type": "room",
+  "name": "The exit... or is it? (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "entryPoints": { "west": { "x": 3, "y": 11 } },
+  "start": { "x": 3, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "wall", "x": 23.25, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "floor", "x": 0, "y": 12, "w": 24, "h": 2 },
+
+    { "type": "floor", "x": 10, "y": 10.75, "w": 4, "h": 1.25 },
+    { "type": "sign", "x": 11, "y": 7.4, "w": 2, "h": 2,
+      "props": { "glyph": "spawn" } },
+
+    { "id": "etch_exit", "type": "etching", "x": 19, "y": 8.4, "w": 1.4, "h": 1.4,
+      "props": { "glyph": "unlocked" } },
+    { "type": "floor", "x": 18.6, "y": 10.3, "w": 2.2, "h": 0.4 },
+
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west" } }
+  ]
+}

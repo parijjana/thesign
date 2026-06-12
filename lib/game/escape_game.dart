@@ -69,6 +69,15 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};
 
+  /// Collected lore etchings (gallery arrives with the M7 legend screen).
+  final Set<String> foundEtchings = {};
+
+  /// Discovered secret passages ('node/exit' keys).
+  final Set<String> discoveredSecrets = {};
+
+  /// Every node ever entered — feeds the M7 castle map.
+  final Set<String> visitedNodes = {};
+
   /// The node `start` in px — the NO-DEATH reset point the claw returns to.
   final Vector2 startPoint = Vector2.zero();
 
@@ -110,7 +119,12 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
     // Resume where the player left off (GDD §9); fresh start otherwise.
     final progress = await _saves.load();
-    if (progress != null) solvedRooms.addAll(progress.solvedRooms);
+    if (progress != null) {
+      solvedRooms.addAll(progress.solvedRooms);
+      foundEtchings.addAll(progress.foundEtchings);
+      discoveredSecrets.addAll(progress.discoveredSecrets);
+      visitedNodes.addAll(progress.visitedNodes);
+    }
     final startNode =
         (progress != null && registry.world.nodes.containsKey(progress.currentNode))
             ? progress.currentNode
@@ -129,6 +143,9 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   void _devFullReset() {
     _saves.wipe();
     solvedRooms.clear();
+    foundEtchings.clear();
+    discoveredSecrets.clear();
+    visitedNodes.clear();
     loadNode(registry.world.start);
   }
 
@@ -136,7 +153,30 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     _saves.save(Progress(
       currentNode: currentNodeId,
       solvedRooms: solvedRooms,
+      foundEtchings: foundEtchings,
+      discoveredSecrets: discoveredSecrets,
+      visitedNodes: visitedNodes,
     )); // fire-and-forget; nothing blocks on the disk
+  }
+
+  /// Etching collected: persist + a quiet green celebration.
+  void collectEtching(String etchingId, Vector2 at) {
+    if (!foundEtchings.add(etchingId)) return;
+    feedback.emit(FeedbackKind.success, at);
+    _autosave();
+  }
+
+  bool isSecretDiscovered(String exitName) =>
+      discoveredSecrets.contains('$currentNodeId/$exitName');
+
+  /// A secret passage used for the first time.
+  void discoverSecret(String exitName, PositionComponent door) {
+    if (!discoveredSecrets.add('$currentNodeId/$exitName')) return;
+    feedback.emit(
+      FeedbackKind.success,
+      Vector2(door.position.x + door.size.x / 2, door.position.y - 14),
+    );
+    _autosave();
   }
 
   /// Tears down the current node and builds [nodeId] from its JSON, placing
@@ -162,6 +202,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     final entry =
         (entryKey != null ? data.entryPoints[entryKey] : null) ?? data.start;
     player.teleport(_feetToTopLeft(entry));
+    visitedNodes.add(nodeId); // the M7 map remembers where you've been
     _autosave();
   }
 

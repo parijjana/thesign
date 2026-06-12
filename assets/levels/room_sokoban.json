@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "room_sokoban",
+  "type": "room",
+  "name": "P6: All plates at once (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "puzzle": "p_sokoban",
+  "entryPoints": {
+    "west": { "x": 2.5, "y": 11 },
+    "east": { "x": 20.5, "y": 11 }
+  },
+  "start": { "x": 2.5, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "wall", "x": 23.25, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "floor", "x": 0, "y": 12, "w": 18.5, "h": 2 },
+    { "type": "floor", "x": 20.5, "y": 12, "w": 3.5, "h": 2 },
+    { "type": "water", "x": 18.25, "y": 12.25, "w": 2.5, "h": 1.75 },
+    { "type": "warning_sign", "x": 17.2, "y": 10.4, "w": 1.1, "h": 1.1,
+      "props": { "glyph": "no_swimming" } },
+
+    { "type": "floor", "x": 9, "y": 9, "w": 2.5, "h": 0.75 },
+
+    { "id": "pA", "type": "pressure_plate", "x": 5, "y": 11.65, "w": 2, "h": 0.35 },
+    { "id": "pB", "type": "pressure_plate", "x": 9.25, "y": 8.65, "w": 2, "h": 0.35 },
+    { "id": "pC", "type": "pressure_plate", "x": 14, "y": 11.65, "w": 2, "h": 0.35 },
+
+    { "id": "blockA", "type": "pushable_block", "x": 3.5, "y": 11, "w": 1, "h": 1 },
+    { "id": "blockB", "type": "pushable_block", "x": 12, "y": 11, "w": 1, "h": 1 },
+
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west" } },
+    { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "east", "opensOnSolve": true, "glyph": "street_square" } }
+  ]
+}

@@ -8,6 +8,15 @@ library;
 abstract interface class PuzzleRoom {
   /// Look up an entity by its JSON `id` (null if absent/of the wrong type).
   T? byId<T>(String id);
+
+  /// Every entity of a type (e.g. all pressure plates for a sokoban check).
+  List<T> allOf<T>();
+
+  /// Feedback popups over an entity (SYMBOLS §6b) — red "nope".
+  void emitError(String entityId);
+
+  /// Feedback popups over an entity — green "yes!".
+  void emitSuccess(String entityId);
 }
 
 abstract class PuzzleScript {

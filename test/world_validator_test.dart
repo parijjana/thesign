@@ -13,7 +13,13 @@ void main() {
       jsonDecode(File('assets/levels/world.json').readAsStringSync())
           as Map<String, dynamic>,
     );
-    expect(findKindnessViolations(world), isEmpty);
+    expect(
+      findKindnessViolations(world,
+          allowedGates: {'exit_hall', 'secret_stack'}),
+      isEmpty,
+      reason: 'exit_hall sits behind the capstone (the one sanctioned gate); '
+          'secret_stack is leaf bonus content inside its host room.',
+    );
   });
 
   test('a bottleneck room is caught and named', () {

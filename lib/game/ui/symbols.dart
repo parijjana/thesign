@@ -52,11 +52,30 @@ enum SymbolId {
   /// HUD hint button.
   hint,
 
+  /// Corridor street-name badges (INV, MAZE.md §2): a geometric family —
+  /// one per corridor, painted on doors leading into it and on its walls.
+  streetCircle,
+  streetTriangle,
+  streetSquare,
+  streetDiamond,
+  streetStar,
+  streetHex,
+
+  /// Teleporter / spawn point (INV): swirl-in-circle. The way in — and the
+  /// "exit" (the twist).
+  spawn,
+
   /// Discipline marker: Mechanics — lever on a fulcrum triangle (SYMBOLS §5).
   dMechanics,
 
   /// Discipline marker: Optics — sun with a single long ray (SYMBOLS §5).
   dOptics,
+
+  /// Discipline marker: Gravity — falling ball with down arrows (SYMBOLS §5).
+  dGravity,
+
+  /// Discipline marker: Logic/Pattern — three linked nodes (INV).
+  dLogic,
 }
 
 void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
@@ -216,6 +235,62 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
       canvas.drawLine(const Offset(0.5, 0.12), const Offset(0.5, 0.58), bold);
       canvas.drawCircle(const Offset(0.5, 0.82), 0.08, fill);
 
+    case SymbolId.streetCircle:
+      canvas.drawCircle(const Offset(0.5, 0.5), 0.3, stroke);
+
+    case SymbolId.streetTriangle:
+      final t = Path()
+        ..moveTo(0.5, 0.18)
+        ..lineTo(0.82, 0.78)
+        ..lineTo(0.18, 0.78)
+        ..close();
+      canvas.drawPath(t, stroke);
+
+    case SymbolId.streetSquare:
+      canvas.drawRect(const Rect.fromLTRB(0.22, 0.22, 0.78, 0.78), stroke);
+
+    case SymbolId.streetDiamond:
+      final d = Path()
+        ..moveTo(0.5, 0.14)
+        ..lineTo(0.86, 0.5)
+        ..lineTo(0.5, 0.86)
+        ..lineTo(0.14, 0.5)
+        ..close();
+      canvas.drawPath(d, stroke);
+
+    case SymbolId.streetStar:
+      final star = Path();
+      for (var i = 0; i < 10; i++) {
+        final r = i.isEven ? 0.34 : 0.15;
+        final a = -math.pi / 2 + i * math.pi / 5;
+        final pt = Offset(0.5 + math.cos(a) * r, 0.5 + math.sin(a) * r);
+        i == 0 ? star.moveTo(pt.dx, pt.dy) : star.lineTo(pt.dx, pt.dy);
+      }
+      canvas.drawPath(star..close(), stroke);
+
+    case SymbolId.streetHex:
+      final hex = Path();
+      for (var i = 0; i < 6; i++) {
+        final a = -math.pi / 2 + i * math.pi / 3;
+        final pt = Offset(0.5 + math.cos(a) * 0.32, 0.5 + math.sin(a) * 0.32);
+        i == 0 ? hex.moveTo(pt.dx, pt.dy) : hex.lineTo(pt.dx, pt.dy);
+      }
+      canvas.drawPath(hex..close(), stroke);
+
+    case SymbolId.spawn:
+      canvas.drawCircle(const Offset(0.5, 0.5), 0.38, stroke);
+      // Inward spiral: three shrinking arcs.
+      for (var i = 0; i < 3; i++) {
+        canvas.drawArc(
+          Rect.fromCircle(
+              center: const Offset(0.5, 0.5), radius: 0.28 - i * 0.08),
+          i * 2.1,
+          math.pi * 1.2,
+          false,
+          stroke,
+        );
+      }
+
     case SymbolId.hint:
       // Bulb + base + two light ticks.
       canvas.drawCircle(const Offset(0.5, 0.42), 0.22, stroke);
@@ -249,6 +324,28 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
         );
       }
       canvas.drawLine(const Offset(0.52, 0.52), const Offset(0.86, 0.86), stroke);
+
+    case SymbolId.dGravity:
+      canvas.drawCircle(const Offset(0.5, 0.30), 0.14, fill);
+      for (final x in const [0.32, 0.5, 0.68]) {
+        canvas.drawLine(Offset(x, 0.52), Offset(x, 0.74), stroke);
+        final head = Path()
+          ..moveTo(x - 0.07, 0.68)
+          ..lineTo(x, 0.80)
+          ..lineTo(x + 0.07, 0.68);
+        canvas.drawPath(head, stroke);
+      }
+
+    case SymbolId.dLogic:
+      const a = Offset(0.28, 0.70);
+      const b = Offset(0.5, 0.26);
+      const c = Offset(0.72, 0.70);
+      canvas.drawLine(a, b, stroke);
+      canvas.drawLine(b, c, stroke);
+      canvas.drawLine(a, c, stroke);
+      for (final pt in const [a, b, c]) {
+        canvas.drawCircle(pt, 0.09, fill);
+      }
 
     case SymbolId.settings:
       const center = Offset(0.5, 0.5);

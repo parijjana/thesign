@@ -103,6 +103,10 @@ something runnable on **web + Windows**. Mobile is validated early but polished 
 - **Exit criteria met:** M6 builds the real maze from MAZE.md.
 
 ## M6 — Content expansion
+**Status: BUILT ✅** *(per [M6_PLAN.md](M6_PLAN.md) — 22 nodes, 6 new puzzle types, 3 secret
+rooms, etchings, boulders, moving platforms, the capstone, the grand loop; 73 tests green.
+Remaining: user playthrough + kid test.)*
+
 **Goal:** turn the slice into a short game — build the castle maze per the M5.7 spec.
 - Add more passage rooms (P4–P6) + their scripts, junctions mixing disciplines per the variety rule.
 - A **falling boulder** corridor; introduce one `forge2d` room *only if* a puzzle needs real

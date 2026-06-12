@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "id": "room_splitter",
+  "type": "room",
+  "name": "Optics II: one beam, two birds (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "palette": "optics",
+  "puzzle": "p_splitter",
+  "entryPoints": {
+    "west": { "x": 2.5, "y": 11 },
+    "east": { "x": 20.5, "y": 11 }
+  },
+  "start": { "x": 2.5, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "wall", "x": 23.25, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "floor", "x": 0, "y": 12, "w": 18.5, "h": 2 },
+    { "type": "floor", "x": 20.5, "y": 12, "w": 3.5, "h": 2 },
+    { "type": "water", "x": 18.25, "y": 12.25, "w": 2.5, "h": 1.75 },
+    { "type": "warning_sign", "x": 17.2, "y": 10.4, "w": 1.1, "h": 1.1,
+      "props": { "glyph": "no_swimming" } },
+
+    { "id": "src", "type": "light_source", "x": 1.5, "y": 5.5, "w": 1, "h": 1,
+      "props": { "dir": "east" } },
+    { "id": "split", "type": "beam_splitter", "x": 8, "y": 5.5, "w": 1, "h": 1,
+      "props": { "state": "/" } },
+    { "id": "m1", "type": "mirror", "x": 8, "y": 1.5, "w": 1, "h": 1,
+      "props": { "rotatable": false, "start": "\\" } },
+    { "id": "sensorA", "type": "light_sensor", "x": 21, "y": 1.5, "w": 1, "h": 1 },
+    { "id": "sensorB", "type": "light_sensor", "x": 16, "y": 5.5, "w": 1, "h": 1 },
+
+    { "id": "crank1", "type": "crank", "x": 11, "y": 10.5, "w": 1, "h": 1.5,
+      "props": { "target": "m1" } },
+
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west" } },
+    { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "east", "opensOnSolve": true, "glyph": "street_star" } }
+  ]
+}

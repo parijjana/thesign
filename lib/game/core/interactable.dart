@@ -10,5 +10,9 @@ abstract interface class Interactable {
   /// (e.g. a rule-locked door until its hub unlock is satisfied).
   bool get canInteract;
 
+  /// True suppresses the prompt while keeping the press working —
+  /// undiscovered SECRET doors must not advertise themselves.
+  bool get promptHidden;
+
   void onInteract();
 }

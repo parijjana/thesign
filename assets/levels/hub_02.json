@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "hub_02",
+  "type": "hub",
+  "name": "Plaza B (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "entryPoints": {
+    "west": { "x": 2.5, "y": 11 },
+    "fulcrum": { "x": 5.6, "y": 11 },
+    "counter": { "x": 9.1, "y": 11 },
+    "soko": { "x": 12.6, "y": 11 },
+    "vault": { "x": 16.1, "y": 11 },
+    "north": { "x": 20.5, "y": 11 }
+  },
+  "start": { "x": 2.5, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "wall", "x": 23.25, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "floor", "x": 0, "y": 12, "w": 24, "h": 2 },
+
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west", "glyph": "street_triangle" } },
+    { "id": "doorFulcrum", "type": "door", "x": 4.7, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "fulcrum", "glyph": "d_mechanics" } },
+    { "id": "doorCounter", "type": "door", "x": 8.2, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "counter", "glyph": "d_gravity" } },
+    { "id": "doorSoko", "type": "door", "x": 11.7, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "soko", "glyph": "d_logic" } },
+    { "id": "doorVault", "type": "door", "x": 15.2, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "vault" } },
+    { "id": "doorNorth", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "north", "glyph": "street_diamond" } }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "room_capstone",
+  "type": "room",
+  "name": "Capstone: weight opens the way for light (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "palette": "optics",
+  "puzzle": "p_capstone",
+  "entryPoints": {
+    "west": { "x": 2.5, "y": 11 },
+    "east": { "x": 20.5, "y": 11 }
+  },
+  "start": { "x": 2.5, "y": 11 },
+  "entities": [
+    { "type": "wall", "x": 0, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "wall", "x": 23.25, "y": 0, "w": 0.75, "h": 12 },
+    { "type": "floor", "x": 0, "y": 12, "w": 16, "h": 2 },
+    { "type": "floor", "x": 17.75, "y": 12, "w": 6.25, "h": 2 },
+    { "type": "water", "x": 15.75, "y": 12.25, "w": 2.25, "h": 1.75 },
+    { "type": "warning_sign", "x": 14.7, "y": 10.4, "w": 1.1, "h": 1.1,
+      "props": { "glyph": "no_swimming" } },
+
+    { "id": "src", "type": "light_source", "x": 1.5, "y": 3.5, "w": 1, "h": 1,
+      "props": { "dir": "east" } },
+    { "id": "gateA", "type": "gate", "x": 12, "y": 2, "w": 1, "h": 5 },
+    { "id": "sensorA", "type": "light_sensor", "x": 21, "y": 3.5, "w": 1, "h": 1 },
+
+    { "id": "plateA", "type": "pressure_plate", "x": 5, "y": 11.65, "w": 2, "h": 0.35 },
+    { "id": "blockA", "type": "pushable_block", "x": 9, "y": 11, "w": 1, "h": 1 },
+
+    { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "west", "glyph": "street_star" } },
+    { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "east", "opensOnSolve": true, "glyph": "spawn" } }
+  ]
+}

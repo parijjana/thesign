@@ -22,7 +22,9 @@ class InteractPrompt extends PositionComponent
   @override
   void update(double dt) {
     _bob += dt;
-    final target = game.resetting ? null : game.focusedInteractable;
+    var target = game.resetting ? null : game.focusedInteractable;
+    // Undiscovered secrets never advertise themselves.
+    if (target != null && target.promptHidden) target = null;
     if (target != null) {
       _zone = target.interactZone;
       _alpha = math.min(1, _alpha + dt * 7);

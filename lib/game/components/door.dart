@@ -7,6 +7,7 @@ import '../core/aabb.dart';
 import '../core/interactable.dart';
 import '../escape_game.dart';
 import '../ui/symbols.dart';
+import 'brickwork.dart';
 
 /// A door: stand in front of it and press interact to walk through
 /// (STYLE_GUIDE.md §6: rounded portal arch; goal-green when open, padlock
@@ -18,8 +19,16 @@ class Door extends PositionComponent
       {required this.exitName,
       this.lockedByRule = false,
       this.opensOnSolve = false,
+      this.secret = false,
       this.glyph})
       : super(position: position, size: size);
+
+  /// A hidden passage: renders as cracked brickwork, never prompts until
+  /// discovered (the crack is the only tell). First use marks it discovered
+  /// — it then shows a dark gap and appears on the map (M7).
+  final bool secret;
+
+  bool get discovered => !secret || game.isSecretDiscovered(exitName);
 
   /// Name resolved through the world graph (LEVEL_FORMAT.md §2).
   final String exitName;
@@ -50,9 +59,16 @@ class Door extends PositionComponent
   @override
   bool get canInteract => open;
 
+  /// Undiscovered secrets never advertise (STYLE_GUIDE: the crack is the
+  /// only tell); the press still works — that's the discovery.
+  @override
+  bool get promptHidden => secret && !discovered;
+
   @override
   void onInteract() {
-    if (open) game.goThrough(exitName);
+    if (!open) return;
+    if (secret && !discovered) game.discoverSecret(exitName, this);
+    game.goThrough(exitName);
   }
 
   @override
@@ -74,6 +90,10 @@ class Door extends PositionComponent
   @override
   void render(Canvas canvas) {
     final p = game.palette;
+    if (secret) {
+      _renderSecret(canvas, p);
+      return;
+    }
     final isOpen = open;
     // Portal arch: rounded top, flat bottom.
     final arch = RRect.fromRectAndCorners(
@@ -116,6 +136,38 @@ class Door extends PositionComponent
         isOpen ? p.ink : p.accentDanger,
       );
       canvas.restore();
+    }
+  }
+
+  /// Secret passage rendering: undiscovered = a wall panel whose only tell
+  /// is cracked mortar; discovered = a dark gap in the brickwork.
+  void _renderSecret(Canvas canvas, dynamic p) {
+    final rect = size.toRect();
+    final r = RRect.fromRectAndRadius(rect, const Radius.circular(4));
+    canvas.drawRRect(r, Paint()..color = p.surface);
+    paintBrickCourses(canvas, r, p.ink);
+    final crack = Paint()
+      ..color = p.ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    // The tell: a jagged crack down the panel + crumbs at the base.
+    final path = Path()
+      ..moveTo(size.x * 0.55, 2)
+      ..lineTo(size.x * 0.40, size.y * 0.3)
+      ..lineTo(size.x * 0.62, size.y * 0.55)
+      ..lineTo(size.x * 0.45, size.y * 0.8)
+      ..lineTo(size.x * 0.52, size.y - 2);
+    canvas.drawPath(path, crack);
+    canvas.drawCircle(Offset(size.x * 0.3, size.y - 3), 2, Paint()..color = p.ink);
+    canvas.drawCircle(Offset(size.x * 0.7, size.y - 4), 2.5, Paint()..color = p.ink);
+    if (discovered) {
+      // Ajar: a dark slit where the panel has swung inward.
+      canvas.drawRRect(
+        RRect.fromLTRBR(size.x * 0.15, size.y * 0.12, size.x * 0.85, size.y,
+            const Radius.circular(4)),
+        Paint()..color = p.ink.withValues(alpha: 0.75),
+      );
     }
   }
 }

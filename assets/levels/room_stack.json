@@ -7,7 +7,8 @@
   "puzzle": "p2_box_stack",
   "entryPoints": {
     "west": { "x": 2.5, "y": 11 },
-    "east": { "x": 20, "y": 11 }
+    "east": { "x": 20, "y": 11 },
+    "secret": { "x": 21, "y": 6 }
   },
   "start": { "x": 2.5, "y": 11 },
   "entities": [
@@ -24,11 +25,14 @@
     { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "west" } },
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "east", "opensOnSolve": true } },
+      "props": { "exit": "east", "opensOnSolve": true, "glyph": "street_triangle" } },
+
+    { "id": "doorSecret", "type": "door", "x": 22.05, "y": 5, "w": 1.2, "h": 2,
+      "props": { "exit": "secret", "secret": true } },
 
     { "id": "blockA", "type": "pushable_block", "x": 6, "y": 11, "w": 1, "h": 1 },
     { "id": "blockB", "type": "pushable_block", "x": 9.5, "y": 11, "w": 1, "h": 1 },
 
-    { "id": "switch", "type": "lever", "x": 20.5, "y": 5.75, "w": 1, "h": 1.25 }
+    { "id": "switch", "type": "lever", "x": 19.8, "y": 5.75, "w": 1, "h": 1.25 }
   ]
 }

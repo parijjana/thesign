@@ -2,21 +2,28 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import '../components/boulder.dart';
+import '../components/counter_lift.dart';
 import '../components/door.dart';
+import '../components/etching.dart';
 import '../components/floor.dart';
 import '../components/gate.dart';
 import '../components/lever.dart';
+import '../components/moving_platform.dart';
 import '../components/optics.dart';
 import '../components/pressure_plate.dart';
 import '../components/pushable_block.dart';
+import '../components/seesaw.dart';
 import '../components/sign.dart';
 import '../components/wall.dart';
 import '../components/water_pool.dart';
 import '../components/warning_sign.dart';
 import '../config.dart';
+import '../core/aabb.dart';
 import '../escape_game.dart';
 import '../puzzles/puzzle_registry.dart';
 import '../puzzles/puzzle_script.dart';
+import '../ui/feedback_popups.dart';
 import '../ui/symbols.dart';
 import 'level_model.dart';
 
@@ -45,11 +52,28 @@ class RoomComponent extends PositionComponent
   }
 
   @override
+  List<T> allOf<T>() => children.whereType<T>().toList();
+
+  void _emitAt(String entityId, FeedbackKind kind) {
+    final c = _byId[entityId];
+    if (c is! PositionComponent) return;
+    game.feedback.emit(
+        kind, Vector2(c.position.x + c.size.x / 2, c.position.y - 14));
+  }
+
+  @override
+  void emitError(String entityId) => _emitAt(entityId, FeedbackKind.error);
+
+  @override
+  void emitSuccess(String entityId) => _emitAt(entityId, FeedbackKind.success);
+
+  @override
   void onLoad() {
     const t = Config.tileSize;
     final sources = <LightSource>[];
     final mirrors = <Mirror>[];
     final sensors = <LightSensor>[];
+    final splitters = <Splitter>[];
 
     for (final e in data.entities) {
       final pos = Vector2(e.x * t, e.y * t);
@@ -59,15 +83,62 @@ class RoomComponent extends PositionComponent
         'wall' => Wall(pos, size),
         'water' => WaterPool(pos, size),
         'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
-        'sign' => Sign(pos, size, glyph: _glyph(e.props['glyph'])),
+        'sign' => Sign(
+            pos,
+            size,
+            glyph:
+                e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
+            pips: (e.props['pips'] as num?)?.toInt() ?? 0,
+          ),
         'door' => Door(
             pos,
             size,
             exitName: e.props['exit'] as String? ?? 'back',
             lockedByRule: e.props['locked'] as bool? ?? false,
             opensOnSolve: e.props['opensOnSolve'] as bool? ?? false,
+            secret: e.props['secret'] as bool? ?? false,
             glyph:
                 e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
+          ),
+        'moving_platform' => MovingPlatform(
+            pos,
+            size,
+            path: [
+              for (final p in e.props['path'] as List)
+                Vector2(((p as Map)['x'] as num).toDouble() * t,
+                    (p['y'] as num).toDouble() * t),
+            ],
+            speed: ((e.props['speed'] as num?) ?? 60).toDouble(),
+          ),
+        'boulder' => Boulder(
+            Vector2(pos.x + size.x / 2, pos.y + size.y / 2),
+            radius: size.x / 2,
+          ),
+        'seesaw' => Seesaw(
+            Vector2(pos.x + size.x / 2, pos.y),
+            armHalf: ((e.props['armHalf'] as num?) ?? 2.5).toDouble() * t,
+            panWidth: ((e.props['panW'] as num?) ?? 1.5).toDouble() * t,
+          ),
+        'counter_lift' => CounterLift(
+            pos,
+            size,
+            basket: Aabb(
+              ((e.props['basketX'] as num).toDouble()) * t,
+              ((e.props['basketY'] as num).toDouble()) * t,
+              ((e.props['basketW'] as num?) ?? 2).toDouble() * t,
+              ((e.props['basketH'] as num?) ?? 1).toDouble() * t,
+            ),
+          ),
+        'beam_splitter' => Splitter(
+            pos,
+            size,
+            state: e.props['state'] as String? ?? '/',
+          ),
+        'etching' => Etching(
+            pos,
+            size,
+            etchingId: e.id ?? 'etching',
+            glyph: _glyph(e.props['glyph']),
           ),
         'lever' => Lever(
             pos,
@@ -106,6 +177,8 @@ class RoomComponent extends PositionComponent
           mirrors.add(component);
         case LightSensor():
           sensors.add(component);
+        case Splitter():
+          splitters.add(component);
         default:
       }
       add(component);
@@ -116,6 +189,7 @@ class RoomComponent extends PositionComponent
         sources: sources,
         mirrors: mirrors,
         sensors: sensors,
+        splitters: splitters,
         roomSize: size,
       ));
     }
@@ -153,6 +227,18 @@ class RoomComponent extends PositionComponent
         'no_swimming' => SymbolId.noSwimming,
         'd_mechanics' => SymbolId.dMechanics,
         'd_optics' => SymbolId.dOptics,
+        'd_gravity' => SymbolId.dGravity,
+        'd_logic' => SymbolId.dLogic,
+        'street_circle' => SymbolId.streetCircle,
+        'street_triangle' => SymbolId.streetTriangle,
+        'street_square' => SymbolId.streetSquare,
+        'street_diamond' => SymbolId.streetDiamond,
+        'street_star' => SymbolId.streetStar,
+        'street_hex' => SymbolId.streetHex,
+        'spawn' => SymbolId.spawn,
+        'claw' => SymbolId.restartClaw,
+        'hint' => SymbolId.hint,
+        'unlocked' => SymbolId.unlocked,
         final other => throw FormatException('unknown sign glyph "$other"'),
       };
 

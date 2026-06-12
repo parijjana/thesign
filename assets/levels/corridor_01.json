@@ -2,9 +2,12 @@
   "version": 1,
   "id": "corridor_01",
   "type": "corridor",
-  "name": "First steps (dev label)",
+  "name": "Circle street - start (dev label)",
   "size": { "w": 24, "h": 14 },
-  "entryPoints": { "east": { "x": 20, "y": 11 } },
+  "entryPoints": {
+    "east": { "x": 20, "y": 11 },
+    "stairs": { "x": 5, "y": 11 }
+  },
   "start": { "x": 2, "y": 11 },
   "entities": [
     { "type": "wall", "x": 0, "y": 0, "w": 0.75, "h": 12 },
@@ -18,6 +21,14 @@
     { "type": "water", "x": 9.75, "y": 12.25, "w": 3.5, "h": 1.75 },
     { "type": "warning_sign", "x": 8.5, "y": 10.4, "w": 1.1, "h": 1.1,
       "props": { "glyph": "no_swimming" } },
+
+    { "type": "sign", "x": 2.5, "y": 7.5, "w": 0.9, "h": 0.9,
+      "props": { "glyph": "street_circle" } },
+    { "type": "sign", "x": 19, "y": 7.5, "w": 0.9, "h": 0.9,
+      "props": { "glyph": "street_circle" } },
+
+    { "id": "doorStairs", "type": "door", "x": 4, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "stairs", "glyph": "street_square" } },
 
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "east" } }
