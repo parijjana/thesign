@@ -48,8 +48,7 @@ PathCheckResult checkDoorReachability(LevelData level) {
   for (final e in level.entities) {
     if (e.type == 'floor' || e.type == 'wall') fillRect(e.x, e.y, e.w, e.h);
   }
-  fillRect(0.5, 0.5, level.widthTiles - 1,
-      synthesizedCeilingTiles(level.type));
+  fillRect(0, 0, level.widthTiles, synthesizedCeilingTiles(level.type));
 
   bool cellClear(int x, int y) =>
       x >= 0 && y >= 0 && x < w && y < h && !solid[y][x];

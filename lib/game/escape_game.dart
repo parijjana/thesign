@@ -85,7 +85,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// in corridors) — the claw's trolley rail hangs from here, never from
   /// the window edge.
   double get ceilingY =>
-      (0.5 + synthesizedCeilingTiles(registry.node(currentNodeId).type)) *
+      synthesizedCeilingTiles(registry.node(currentNodeId).type) *
       Config.tileSize;
 
   /// Entity lookup in the current room (cranks resolve their targets here).
