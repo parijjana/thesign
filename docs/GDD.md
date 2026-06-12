@@ -62,9 +62,10 @@ explore corridor → junction: pick a door → enter a puzzle room (entry side)
   maze is what gives the game depth and replay value (different runs solve different routes).
 - **Corridor ≠ room, visually, always:** corridors are **tunnels** — a low brick ceiling is
   synthesized on every corridor automatically — while rooms keep their open, full-height halls.
-  Each corridor additionally gets its own identity glyph at its doors (a wordless "street name")
-  plus recognizable motifs, so recognition never becomes confusion (full system spec'd at the
-  M5.7 design pass).
+  Each corridor additionally gets its own identity badge (a wordless "street name" from a
+  geometric glyph family) plus recognizable motifs, so recognition never becomes confusion.
+  **The full maze spec — castle graph, street badges, validator, map screen — lives in
+  [MAZE.md](MAZE.md).**
 - **Kindness law (replaces the hub unlock rule):** the maze must never soft-lock a player who
   can't crack one particular puzzle. **No single puzzle room may be a cut vertex of the reachable
   world** (a deliberate final gate may be the one exception). The world is data, so a

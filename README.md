@@ -38,6 +38,8 @@ Read in this order:
    no-text iconography rule, and the excavator-claw reset.
 5. **[docs/SYMBOLS.md](docs/SYMBOLS.md)** — the Symbol Legend: every glyph, its meaning & source.
 6. **[docs/LEVEL_FORMAT.md](docs/LEVEL_FORMAT.md)** — JSON level data + puzzle-script hooks spec.
+6b. **[docs/MAZE.md](docs/MAZE.md)** — the castle maze: graph rules, M6 layout, street badges,
+   the kindness validator, map screen.
 7. **[docs/ROADMAP.md](docs/ROADMAP.md)** — milestones; build top-to-bottom.
 8. **[docs/examples/room-optics-mirror.md](docs/examples/room-optics-mirror.md)** — a full worked
    room (level JSON + puzzle script + beam system).

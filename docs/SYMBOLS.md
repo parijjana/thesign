@@ -53,6 +53,7 @@
 | `goal` | Goal / objective point | bullseye target | STD | first puzzle's target glows |
 | `spawn` | Teleport-in / start point | swirl-in-circle | INV | the opening teleport-in moment |
 | `solved_tick` | Room solved marker (hub) | open padlock / filled ring | INV | when first room is solved |
+| `street_*` | Corridor "street name" badges (MAZE.md §2) | geometric family: ○ △ □ ◇ ☆ ⬡ — one per corridor, on doors leading into it + on its walls | INV | passive, by repetition |
 
 ## 3. Player verbs (controls)
 | id | Meaning | Glyph | Source | Teach |

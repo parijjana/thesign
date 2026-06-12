@@ -92,16 +92,15 @@ something runnable on **web + Windows**. Mobile is validated early but polished 
 - Update GDD §9b (drop the DRAFT flag), SYMBOLS §5b (real glyphs), LEVEL_FORMAT (final schemas).
 - **Exit criteria:** GDD §9b is no longer DRAFT; M6 can place sockets/bonus doors with confidence.
 
-## M5.7 — Maze topology design pass *(docs only — design-gate for the full castle maze)*
-**Goal:** turn the GDD §4 passage/maze model from a proven mini-loop into a full castle spec. **No code.**
-- The complete castle graph: junctions, passage rooms, corridor cycles, optional/reward branches,
-  and the final gate (the one allowed cut vertex).
-- **Corridor identity system:** per-corridor glyph ("street name" at each door) + motif variations.
-- **The no-soft-lock validator:** formalize the GDD §4 kindness law (no puzzle room is a cut
-  vertex) as a graph-reachability test over `world.json`, running in CI with the unit tests.
-- **Castle map screen spec:** top-down *discovered-graph* map (play stays side-view) — the maze's
-  legibility tool and the replayability showcase ("how many doors did I never open?").
-- **Exit criteria:** M6 builds the real maze from this spec.
+## M5.7 — Maze topology design pass ✅ *(closed — spec in [MAZE.md](MAZE.md))*
+**Goal:** turn the GDD §4 passage/maze model from a proven mini-loop into a full castle spec.
+- ✅ The complete M6 castle graph (3 streets, 2 plazas, 6 puzzle rooms + reward vault, exit hall,
+  grand loop) — MAZE.md §4, cut-vertex audited.
+- ✅ Corridor identity: geometric street-badge family (○ △ □ ◇ ☆ ⬡) on doors + corridor walls.
+- ✅ The no-soft-lock validator — landed EARLY as code: `world_validator.dart` +
+  `world_validator_test.dart` run over the real world.json in `flutter test`.
+- ✅ Castle map screen spec (discovered-graph, builds in M7) — MAZE.md §5.
+- **Exit criteria met:** M6 builds the real maze from MAZE.md.
 
 ## M6 — Content expansion
 **Goal:** turn the slice into a short game — build the castle maze per the M5.7 spec.
