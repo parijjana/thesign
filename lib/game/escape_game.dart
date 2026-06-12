@@ -76,6 +76,10 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   double _clock = 0;
   double _lastResetDone = -10;
 
+  /// Waterlogged blocks waiting for the claw (it serves one job at a time;
+  /// the player always preempts).
+  final List<PushableBlock> _blockRescueQueue = [];
+
   /// True while the claw sequence runs — player control is locked.
   bool get resetting => _resetting;
 
@@ -139,6 +143,8 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// the player at [entryKey] (or the node's `start`).
   Future<void> loadNode(String nodeId, {String? entryKey}) async {
     player.carrying = null; // carried objects stay in their room
+    claw.abortBlockJob(); // cargo jobs don't survive a room change
+    _blockRescueQueue.clear();
     _room?.removeFromParent();
     collisionWorld.solids.clear();
     interactables.clear();
@@ -194,10 +200,16 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     return transition != null && solvedRooms.contains(transition.targetId);
   }
 
+  /// A waterlogged block needs fishing out — queue a claw cargo run.
+  void requestBlockRescue(PushableBlock block) {
+    if (!_blockRescueQueue.contains(block)) _blockRescueQueue.add(block);
+  }
+
   /// The no-death reset (GDD.md §8): hazard contact or the restart button.
   /// The claw performs it; state snaps back on the whirlwind beat.
   void requestReset() {
     if (_resetting) return;
+    claw.abortBlockJob(); // the player always outranks cargo
     _resetting = true;
     claw.play(
       player: player,
@@ -265,6 +277,14 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
     if (input.restartPressed) requestReset(); // R = voluntary claw
     if (input.devResetPressed && !_resetting) _devFullReset(); // F2 = new game
+
+    // The claw works through its cargo backlog when free.
+    if (!claw.busy && _blockRescueQueue.isNotEmpty) {
+      final block = _blockRescueQueue.removeAt(0);
+      if (block.isMounted && block.waterlogged) {
+        claw.playBlockRescue(block: block, onDone: () {});
+      }
+    }
     // Failsafe: should the player ever escape the room bounds, the claw
     // retrieves them — nobody falls out of the world.
     if (!_resetting && player.position.y > Config.viewportHeight + 60) {

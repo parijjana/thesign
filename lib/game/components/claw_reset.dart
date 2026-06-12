@@ -7,20 +7,24 @@ import '../config.dart';
 import '../core/aabb.dart';
 import '../escape_game.dart';
 import 'player.dart';
+import 'pushable_block.dart';
 
-/// The excavator-claw reset — the no-death promise made literal
-/// (GDD.md §8, STYLE_GUIDE.md §8c). Presentation ONLY: the actual state
-/// mutation happens when this calls `onWhirlwind` (the whirlwind beat);
-/// headless tests skip the claw and call the ResetController directly.
+/// The excavator claw — the no-death promise made literal (GDD §8,
+/// STYLE_GUIDE §8c), and the castle's general-purpose rescuer: it resets the
+/// player AND fishes sunken blocks home. Nothing in this game teleports;
+/// the claw carries it.
 ///
-/// Crane-like beats: descend (chasing the live player, grab detected by AABB
-/// overlap) → scoop → lift straight up → carry along the ceiling → lower →
-/// place → whirlwind → retract. Brief, sped up on rapid repeats. Cute,
-/// mechanical, never violent.
+/// Player reset: descend (chasing, grab by AABB overlap) → scoop → lift →
+/// carry → lower → place → WHIRLWIND (the actual state-reset beat) → retract.
+/// Input locked, ~1.5s, abbreviated on rapid repeats.
+///
+/// Block rescue: same crane choreography, no whirlwind, and the player
+/// KEEPS CONTROL — the claw is just doing its job in the background.
+/// A player rescue always preempts a block job.
 class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
   ClawReset() : super(priority: 100); // draws over room geometry
 
-  static const _descendSpeed = 560.0; // px/s while chasing the player
+  static const _descendSpeed = 560.0; // px/s while chasing the target
   static const _grabTimeout = 1.4; // s — failsafe snap if the chase drags
 
   /// The claw hangs from the CURRENT node's ceiling (thin room roof or deep
@@ -28,6 +32,7 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
   double get _ceilingY => game.ceilingY;
 
   _Phase _phase = _Phase.idle;
+  _Mode _mode = _Mode.player;
   double _t = 0; // 0..1 within tweened phases
   double _phaseTime = 0;
   double _speed = 1;
@@ -35,6 +40,7 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
   double _jaws = 0; // 0 open .. 1 closed
 
   Player? _player;
+  PushableBlock? _block;
   Vector2 _start = Vector2.zero();
   final Vector2 _from = Vector2.zero();
   final Vector2 _to = Vector2.zero();
@@ -43,11 +49,22 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
 
   bool get busy => _phase != _Phase.idle;
 
-  /// The grab region hanging below the hinge — the claw has caught the player
-  /// when this overlaps the player's collision box.
+  /// The grab region hanging below the hinge — the target is caught when
+  /// this overlaps its collision box.
   Aabb get _jawZone => Aabb(position.x - 11, position.y + 2, 22, 36);
 
-  /// Starts the sequence: scoop [player] and carry it to [start].
+  Aabb get _targetBox =>
+      _mode == _Mode.player ? _player!.aabb : _block!.aabb;
+
+  /// Where the cargo gets delivered (top-left).
+  Vector2 get _dropPoint => _mode == _Mode.player
+      ? _start
+      : Vector2(_block!.homeTarget.x, _block!.homeTarget.y);
+
+  double get _cargoWidth =>
+      _mode == _Mode.player ? _player!.size.x : _block!.size.x;
+
+  /// Starts a PLAYER reset: scoop [player] and carry it to [start].
   /// [abbreviated] speeds everything up on rapid repeats.
   void play({
     required Player player,
@@ -57,14 +74,53 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
     bool abbreviated = false,
   }) {
     if (busy) return;
+    _mode = _Mode.player;
     _player = player;
+    _block = null;
     _start = start.clone();
     _onWhirlwind = onWhirlwind;
     _onDone = onDone;
     _speed = abbreviated ? 1.7 : 1.0;
+    _begin(player.position.x + player.size.x / 2);
+  }
+
+  /// Starts a BLOCK rescue: fish [block] out (it waits waterlogged) and
+  /// carry it home. No whirlwind, no input lock.
+  void playBlockRescue({
+    required PushableBlock block,
+    required void Function() onDone,
+  }) {
+    if (busy) return;
+    _mode = _Mode.block;
+    _block = block;
+    _player = null;
+    _onWhirlwind = null;
+    _onDone = onDone;
+    _speed = 1.0;
+    _begin(block.position.x + block.size.x / 2);
+  }
+
+  /// A player rescue preempts a block job: finish the block's trip
+  /// instantly (fallback snap) and free the machine.
+  void abortBlockJob() {
+    if (!busy || _mode != _Mode.block) return;
+    final b = _block;
+    if (b != null) {
+      if (b.clawHeld) {
+        b.clawRelease(b.homeTarget);
+      } else {
+        b.waterlogged = false;
+        b.rescueHome();
+      }
+    }
+    _block = null;
+    _phase = _Phase.idle;
+    _onDone?.call();
+  }
+
+  void _begin(double targetCenterX) {
     _jaws = 0;
-    // Emerges from the ceiling directly above the player.
-    position.setValues(player.position.x + player.size.x / 2, _ceilingY);
+    position.setValues(targetCenterX, _ceilingY);
     _enter(_Phase.descend);
   }
 
@@ -73,17 +129,20 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
     _t = 0;
     _phaseTime = 0;
     _from.setFrom(position);
-    final p = _player;
     switch (next) {
       case _Phase.scoop:
-        // Jaws are around the player: freeze & take ownership of the figure.
-        p!.carried = true;
+        // Jaws are around the cargo: take ownership.
+        if (_mode == _Mode.player) {
+          _player!.carried = true; // kitten by the scruff
+        } else {
+          _block!.clawGrab();
+        }
       case _Phase.lift:
         _to.setValues(position.x, _ceilingY + 20);
       case _Phase.carry:
-        _to.setValues(_start.x + p!.size.x / 2, _ceilingY + 20);
+        _to.setValues(_dropPoint.x + _cargoWidth / 2, _ceilingY + 20);
       case _Phase.lower:
-        _to.setValues(_start.x + p!.size.x / 2, _start.y - 6);
+        _to.setValues(_dropPoint.x + _cargoWidth / 2, _dropPoint.y - 6);
       case _Phase.whirlwind:
         _to.setValues(Config.viewportWidth / 2, Config.viewportHeight / 2);
       case _Phase.retract:
@@ -109,17 +168,13 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
   @override
   void update(double dt) {
     if (_phase == _Phase.idle) return;
-    final p = _player!;
     _phaseTime += dt * _speed;
     _spin += dt * (_phase == _Phase.whirlwind ? 26 : 0);
 
     if (_phase == _Phase.descend) {
-      // CHASE the live player (it may still be falling); the grab is decided
-      // by collision, not by a timer.
-      final target = Vector2(
-        p.position.x + p.size.x / 2,
-        p.position.y - 6,
-      );
+      // CHASE the live target; the grab is decided by collision, not timer.
+      final box = _targetBox;
+      final target = Vector2(box.x + box.w / 2, box.y - 6);
       final delta = target - position;
       final step = _descendSpeed * _speed * dt;
       if (delta.length <= step) {
@@ -127,7 +182,7 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
       } else {
         position.add(delta.normalized()..scale(step));
       }
-      if (_jawZone.overlaps(p.aabb) || _phaseTime > _grabTimeout) {
+      if (_jawZone.overlaps(box) || _phaseTime > _grabTimeout) {
         if (_phaseTime > _grabTimeout) position.setFrom(target); // failsafe
         _enter(_Phase.scoop);
       }
@@ -150,15 +205,19 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
       _ => _jaws,
     };
 
-    // The scooped player dangles from the jaws, gripped at the shoulders —
-    // the jaw tips reach the neck line, kitten-by-the-scruff.
-    if (p.carried) {
+    // Cargo dangles from the jaws.
+    final p = _player;
+    if (p != null && p.carried) {
+      // Gripped at the shoulders — kitten-by-the-scruff.
       p.position.setValues(position.x - p.size.x / 2, position.y + 12);
+    }
+    final b = _block;
+    if (b != null && b.clawHeld) {
+      b.position.setValues(position.x - b.size.x / 2, position.y + 10);
     }
   }
 
   void _advance() {
-    final p = _player!;
     switch (_phase) {
       case _Phase.scoop:
         _enter(_Phase.lift);
@@ -169,14 +228,21 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
       case _Phase.lower:
         _enter(_Phase.place);
       case _Phase.place:
-        p.carried = false;
-        p.teleport(_start); // grounded exactly at the node start
-        _enter(_Phase.whirlwind);
-        _onWhirlwind?.call(); // THE reset beat: bodies snap to start state
+        if (_mode == _Mode.player) {
+          final p = _player!;
+          p.carried = false;
+          p.teleport(_start); // grounded exactly at the node start
+          _enter(_Phase.whirlwind);
+          _onWhirlwind?.call(); // THE reset beat: bodies snap to start state
+        } else {
+          _block!.clawRelease(_block!.homeTarget);
+          _enter(_Phase.retract); // no whirlwind for cargo runs
+        }
       case _Phase.whirlwind:
         _enter(_Phase.retract);
       case _Phase.retract:
         _phase = _Phase.idle;
+        _block = null;
         _onDone?.call();
       case _Phase.idle || _Phase.descend:
         break;
@@ -244,3 +310,5 @@ class ClawReset extends PositionComponent with HasGameReference<EscapeGame> {
 }
 
 enum _Phase { idle, descend, scoop, lift, carry, lower, place, whirlwind, retract }
+
+enum _Mode { player, block }

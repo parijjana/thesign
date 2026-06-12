@@ -27,12 +27,37 @@ class PushableBlock extends PositionComponent
   late final Vector2 _home;
 
   bool held = false;
+
+  /// Suspended underwater (neutral buoyancy), waiting for the claw to come
+  /// fish it out. Set by WaterPool; cleared on grab/placement.
+  bool waterlogged = false;
+
+  /// In the claw's jaws (the claw drives our position).
+  bool clawHeld = false;
+
   bool _settled = true;
   double _vy = 0;
 
   @override
   void onLoad() {
     _home = position.clone();
+  }
+
+  /// The authored start spot — where the claw delivers a rescued block.
+  Aabb get homeTarget => Aabb(_home.x, _home.y, size.x, size.y);
+
+  /// The claw closed its jaws on us.
+  void clawGrab() {
+    clawHeld = true;
+    waterlogged = false;
+    held = false;
+    game.collisionWorld.solids.remove(_solid);
+  }
+
+  /// The claw set us down at [target]; settle from there.
+  void clawRelease(Aabb target) {
+    clawHeld = false;
+    placeAt(target);
   }
 
   Aabb get aabb => _solid;
@@ -106,6 +131,13 @@ class PushableBlock extends PositionComponent
 
   @override
   void update(double dt) {
+    if (clawHeld) {
+      // The claw drives our position; keep the box in sync for the grab.
+      _solid
+        ..x = position.x
+        ..y = position.y;
+      return;
+    }
     if (held) {
       // Ride along above the carrier's head.
       final p = game.player;
@@ -115,6 +147,7 @@ class PushableBlock extends PositionComponent
       );
       return;
     }
+    if (waterlogged) return; // suspended mid-water, awaiting the claw
     if (_settled) {
       _edgeTumble(dt);
       return;
