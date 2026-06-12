@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -103,7 +104,10 @@ class PushableBlock extends PositionComponent
       );
       return;
     }
-    if (_settled) return;
+    if (_settled) {
+      _edgeTumble(dt);
+      return;
+    }
     // Settle under gravity, colliding with everything but ourselves.
     _vy = (_vy + Config.gravity * dt).clamp(-900, 900);
     final others =
@@ -115,6 +119,38 @@ class PushableBlock extends PositionComponent
       _vy = 0;
       _settled = true;
     }
+  }
+
+  /// Real physics, kid-legible: a block with most of its base over a void
+  /// can't balance — it slides off the lip and falls (into the pool, off
+  /// the ledge...). Without this, a block placed at a pool's edge perches
+  /// half-on-stone forever and looks like it floats.
+  void _edgeTumble(double dt) {
+    final others =
+        game.collisionWorld.solids.where((s) => !identical(s, _solid));
+    // Free air below? Then we were undermined (gate opened, block moved).
+    if (clipDy(_solid, 1, others) >= 1) {
+      _settled = false;
+      return;
+    }
+    // Measure how much of our base actually rests on something.
+    var supportWidth = 0.0;
+    var supportCenterSum = 0.0;
+    for (final s in others) {
+      if ((s.y - _solid.bottom).abs() > 2) continue;
+      final left = math.max(_solid.x, s.x);
+      final right = math.min(_solid.right, s.right);
+      final overlap = right - left;
+      if (overlap <= 0) continue;
+      supportWidth += overlap;
+      supportCenterSum += (left + right) / 2 * overlap;
+    }
+    if (supportWidth <= 0 || supportWidth >= _solid.w * 0.45) return; // stable
+    // Unbalanced: slide away from the support until gravity takes over.
+    final supportCenter = supportCenterSum / supportWidth;
+    final dir = supportCenter > _solid.x + _solid.w / 2 ? -1.0 : 1.0;
+    _solid.x += clipDx(_solid, dir * 60 * dt, others);
+    position.setValues(_solid.x, _solid.y);
   }
 
   @override
