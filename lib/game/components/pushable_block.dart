@@ -19,10 +19,21 @@ class PushableBlock extends PositionComponent
       : super(position: position, size: size);
 
   late final Aabb _solid = Aabb(position.x, position.y, size.x, size.y);
-  late final Vector2 _home = position.clone(); // authored start
+
+  /// Authored start position. Captured EAGERLY in [onLoad] — a lazy
+  /// `late final _home = position.clone()` reads `position` at first use,
+  /// which for a rescue is AFTER the block sank: it would "rescue" the
+  /// block to its own sunken spot, forever. (Found the hard way.)
+  late final Vector2 _home;
+
   bool held = false;
   bool _settled = true;
   double _vy = 0;
+
+  @override
+  void onLoad() {
+    _home = position.clone();
+  }
 
   Aabb get aabb => _solid;
 
