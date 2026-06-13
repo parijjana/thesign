@@ -45,5 +45,17 @@ void main() {
       final puzzle = StubSwitchPuzzle()..onLoad(FakeRoom({'switch': lever}));
       expect(puzzle.isSolved, isTrue);
     });
+
+    // Regression: RFU/RCO name their lever "goalSwitch", not "switch" — the
+    // door must still open (the old code only looked for id "switch").
+    test('resolves a goal lever by any id (goalSwitch / first lever)', () {
+      final lever = Lever(Vector2.zero(), Vector2.all(32),
+          entityId: 'goalSwitch', startsOn: false);
+      final puzzle =
+          StubSwitchPuzzle()..onLoad(FakeRoom({'goalSwitch': lever}));
+      expect(puzzle.isSolved, isFalse);
+      lever.on = true;
+      expect(puzzle.isSolved, isTrue);
+    });
   });
 }
