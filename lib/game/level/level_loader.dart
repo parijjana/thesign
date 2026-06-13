@@ -7,11 +7,8 @@ import '../components/counter_lift.dart';
 import '../components/door.dart';
 import '../components/etching.dart';
 import '../components/floor.dart';
-import '../components/gate.dart';
-import '../components/lever.dart';
 import '../components/moving_platform.dart';
 import '../components/optics.dart';
-import '../components/pressure_plate.dart';
 import '../components/powerup_pickup.dart';
 import '../components/pushable_block.dart';
 import '../components/seesaw.dart';
@@ -29,6 +26,7 @@ import '../puzzles/puzzle_script.dart';
 import '../ui/feedback_popups.dart';
 import '../ui/symbols.dart';
 import 'level_model.dart';
+import 'puzzle_entity_builder.dart';
 
 /// Builds a node (room/corridor/hub) from its [LevelData]: background +
 /// border + one component per entity, and attaches the named PuzzleScript
@@ -81,97 +79,10 @@ class RoomComponent extends PositionComponent
     for (final e in data.entities) {
       final pos = Vector2(e.x * t, e.y * t);
       final size = Vector2(e.w * t, e.h * t);
-      final component = switch (e.type) {
-        'floor' => Floor(pos, size),
-        'wall' => Wall(pos, size),
-        'water' => WaterPool(pos, size),
-        'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
-        'sign' => Sign(
-            pos,
-            size,
-            glyph:
-                e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
-            pips: (e.props['pips'] as num?)?.toInt() ?? 0,
-          ),
-        'street_badge' =>
-          StreetBadge(pos, size, glyph: _glyph(e.props['glyph'])),
-        'door' => _door(e),
-        'moving_platform' => MovingPlatform(
-            pos,
-            size,
-            path: [
-              for (final p in e.props['path'] as List)
-                Vector2(((p as Map)['x'] as num).toDouble() * t,
-                    (p['y'] as num).toDouble() * t),
-            ],
-            speed: ((e.props['speed'] as num?) ?? 60).toDouble(),
-          ),
-        'boulder' => Boulder(
-            Vector2(pos.x + size.x / 2, pos.y + size.y / 2),
-            radius: size.x / 2,
-          ),
-        'seesaw' => Seesaw(
-            Vector2(pos.x + size.x / 2, pos.y),
-            armHalf: ((e.props['armHalf'] as num?) ?? 2.5).toDouble() * t,
-            panWidth: ((e.props['panW'] as num?) ?? 1.5).toDouble() * t,
-          ),
-        'counter_lift' => CounterLift(
-            pos,
-            size,
-            plate: Aabb(
-              ((e.props['basketX'] as num).toDouble()) * t,
-              ((e.props['basketY'] as num).toDouble()) * t,
-              ((e.props['basketW'] as num?) ?? 2).toDouble() * t,
-              ((e.props['basketH'] as num?) ?? 1).toDouble() * t,
-            ),
-          ),
-        'beam_splitter' => Splitter(
-            pos,
-            size,
-            state: e.props['state'] as String? ?? '/',
-          ),
-        'etching' => Etching(
-            pos,
-            size,
-            etchingId: e.id ?? 'etching',
-            glyph: _glyph(e.props['glyph']),
-          ),
-        'powerup_pickup' => PowerupPickup(
-            pos,
-            size,
-            powerup: Powerup.byId(e.props['powerup'] as String? ?? '') ??
-                (throw FormatException(
-                    '${data.id}: bad powerup "${e.props['powerup']}"')),
-          ),
-        'lever' => Lever(
-            pos,
-            size,
-            entityId: e.id ?? 'lever',
-            startsOn: e.props['startsOn'] as bool? ?? false,
-          ),
-        'pushable_block' => PushableBlock(pos, size),
-        'pressure_plate' => PressurePlate(pos, size),
-        'gate' => Gate(pos, size),
-        'light_source' => LightSource(pos, size,
-            dir: e.props['dir'] as String? ?? 'east'),
-        'mirror' => Mirror(
-            pos,
-            size,
-            entityId: e.id ?? 'mirror',
-            state: e.props['start'] as String? ?? '/',
-            rotatable: e.props['rotatable'] as bool? ?? true,
-          ),
-        'crank' => Crank(
-            pos,
-            size,
-            targetId: e.props['target'] as String? ??
-                (throw FormatException('${data.id}: crank needs a target')),
-            hideChain: e.props['hideChain'] as bool? ?? false,
-          ),
-        'light_sensor' => LightSensor(pos, size, entityId: e.id ?? 'sensor'),
-        _ => throw FormatException(
-            '${data.id}: unknown entity type "${e.type}"'),
-      };
+      // Puzzle-queryable entities (lever, plate, gate, optics) come from the
+      // shared builder so the game and the wiring test agree; everything else
+      // (geometry, doors, hazards, platforms) is built by _otherEntity.
+      final component = buildPuzzleEntity(e, t) ?? _otherEntity(e, pos, size);
       if (e.id != null) _byId[e.id!] = component;
       switch (component) {
         case LightSource():
@@ -224,6 +135,80 @@ class RoomComponent extends PositionComponent
 
   @override
   void update(double dt) => puzzle?.onUpdate(dt);
+
+  /// Builds every non-puzzle-queryable entity (geometry, doors, hazards,
+  /// platforms, decorations). Puzzle-queryable types live in the shared
+  /// [buildPuzzleEntity] instead.
+  Component _otherEntity(EntityData e, Vector2 pos, Vector2 size) {
+    const t = Config.tileSize;
+    return switch (e.type) {
+      'floor' => Floor(pos, size),
+      'wall' => Wall(pos, size),
+      'water' => WaterPool(pos, size),
+      'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
+      'sign' => Sign(
+          pos,
+          size,
+          glyph: e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
+          pips: (e.props['pips'] as num?)?.toInt() ?? 0,
+        ),
+      'street_badge' =>
+        StreetBadge(pos, size, glyph: _glyph(e.props['glyph'])),
+      'door' => _door(e),
+      'moving_platform' => MovingPlatform(
+          pos,
+          size,
+          path: [
+            for (final p in e.props['path'] as List)
+              Vector2(((p as Map)['x'] as num).toDouble() * t,
+                  (p['y'] as num).toDouble() * t),
+          ],
+          speed: ((e.props['speed'] as num?) ?? 60).toDouble(),
+        ),
+      'boulder' => Boulder(
+          Vector2(pos.x + size.x / 2, pos.y + size.y / 2),
+          radius: size.x / 2,
+        ),
+      'seesaw' => Seesaw(
+          Vector2(pos.x + size.x / 2, pos.y),
+          armHalf: ((e.props['armHalf'] as num?) ?? 2.5).toDouble() * t,
+          panWidth: ((e.props['panW'] as num?) ?? 1.5).toDouble() * t,
+        ),
+      'counter_lift' => CounterLift(
+          pos,
+          size,
+          plate: Aabb(
+            ((e.props['basketX'] as num).toDouble()) * t,
+            ((e.props['basketY'] as num).toDouble()) * t,
+            ((e.props['basketW'] as num?) ?? 2).toDouble() * t,
+            ((e.props['basketH'] as num?) ?? 1).toDouble() * t,
+          ),
+        ),
+      'etching' => Etching(
+          pos,
+          size,
+          etchingId: e.id ?? 'etching',
+          glyph: _glyph(e.props['glyph']),
+        ),
+      'powerup_pickup' => PowerupPickup(
+          pos,
+          size,
+          powerup: Powerup.byId(e.props['powerup'] as String? ?? '') ??
+              (throw FormatException(
+                  '${data.id}: bad powerup "${e.props['powerup']}"')),
+        ),
+      'pushable_block' => PushableBlock(pos, size),
+      'crank' => Crank(
+          pos,
+          size,
+          targetId: e.props['target'] as String? ??
+              (throw FormatException('${data.id}: crank needs a target')),
+          hideChain: e.props['hideChain'] as bool? ?? false,
+        ),
+      _ => throw FormatException(
+          '${data.id}: unknown entity type "${e.type}"'),
+    };
+  }
 
   /// Builds a door, DERIVING its open/locked state from the world graph's
   /// `entry` declaration (not the JSON) — so a room's two sides can never

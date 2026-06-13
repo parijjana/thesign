@@ -193,11 +193,8 @@ String _buildHtml(
   for (final n in world.nodes.values) {
     final p = pos[n.id]!;
     final pz = puzzle[n.id];
-    final sub = pz != null
-        ? pz
-        : n.entries.isNotEmpty
-            ? 'entry:${n.entries.join("/")}'
-            : n.type.name;
+    final sub = pz ??
+        (n.entries.isNotEmpty ? 'entry:${n.entries.join("/")}' : n.type.name);
     final isStart = n.id == world.start;
     boxes.writeln('''
 <g>

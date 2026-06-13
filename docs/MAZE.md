@@ -128,8 +128,20 @@ Top-down **discovered-graph** map — play stays side-view; the map is how the m
 ## 6. Authoring workflow (every new level/world change)
 1. Sketch on the graph first; check junction variety + at least one parallel route per room.
 2. Author level JSON per LEVEL_FORMAT conventions (water pools, crank reachability, badges).
-3. `flutter test` must pass: **path checker** (every door physically reachable) + **world
-   validator** (no cut-vertex rooms, world connected).
+3. `flutter test` must pass:
+   - **path checker** (every door physically reachable) + **world validator** (no cut-vertex
+     rooms, world connected);
+   - **level-wiring test** (`test/level_wiring_test.dart`) — loads every shipped level that
+     declares a puzzle, builds its puzzle entities through the one shared builder the game uses
+     (`lib/game/level/puzzle_entity_builder.dart`), and asserts the script (a) resolves the
+     entities it needs in `onLoad` and (b) can be driven from unsolved → solved. This is the guard
+     that catches the *id/type wiring* a logic unit-test can't: a lever named `goalSwitch` while
+     the script looks up `switch`, a renamed/mis-typed entity, or a script that can never report
+     solved. **Extending it:** a new puzzle solved by "satisfy every entity" needs no change; a
+     puzzle needing a specific interaction order gets a `case` in `_driveToSolved`; a puzzle that
+     queries a brand-new entity *type* needs that type added to the shared `buildPuzzleEntity`
+     (see its doc comment). Authoring a puzzle entity outside that builder will silently skip this
+     guard — always go through it.
 4. **Regenerate the castle map:** `dart run tool/castle_map.dart` — prints an ASCII map +
    validation summary to the console and writes `build/castle_map.html` (a standalone SVG graph
    you open in a browser: nodes coloured by type, edges coloured open / opens-on-solve / secret).
