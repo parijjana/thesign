@@ -130,4 +130,10 @@ Top-down **discovered-graph** map — play stays side-view; the map is how the m
 2. Author level JSON per LEVEL_FORMAT conventions (water pools, crank reachability, badges).
 3. `flutter test` must pass: **path checker** (every door physically reachable) + **world
    validator** (no cut-vertex rooms, world connected).
-4. Walk it in-game; the path checker is optimistic about wide gaps — jump tests stay human.
+4. **Regenerate the castle map:** `dart run tool/castle_map.dart` — prints an ASCII map +
+   validation summary to the console and writes `build/castle_map.html` (a standalone SVG graph
+   you open in a browser: nodes coloured by type, edges coloured open / opens-on-solve / secret).
+   It reuses the real `WorldData` + validators, so it can't drift from the game. Use it to eyeball
+   the maze and to navigate during playtests. (Generated output is local/gitignored; the tool is
+   committed.)
+5. Walk it in-game; the path checker is optimistic about wide gaps — jump tests stay human.
