@@ -148,6 +148,12 @@ set-piece**, the title **wordmark**, possibly intricate glyphs. Rules (authoring
   kinematic body bridged into that world. Keep these rooms few and well-tested.
 - **Triggers** (plates, door zones, hazard zones) are non-solid AABBs that fire enter/exit events to
   the active puzzle script.
+- **Weight system** (`components/weight.dart`): one shared `weightOn(surface)` that sums the weight
+  resting on a surface **including whole stacks** (it recurses up each support chain — a block on a
+  block on a plate weighs 2). Every weight sensor uses it — pressure plates, seesaw pans, the
+  counterweight lift — so stacking and side-by-side loading behave identically everywhere (no
+  per-room hacks). Blocks weigh 1; the player weighs 1 (excluded where a rider shouldn't load the
+  sensor, e.g. a seesaw you ride up).
 
 ### 5.4 Input abstraction
 `GameInput` exposes a normalized intent each frame: `{moveAxis: -1..1, jumpPressed, jumpHeld,
