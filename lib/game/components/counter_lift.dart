@@ -8,8 +8,11 @@ import '../core/reset_controller.dart';
 import '../escape_game.dart';
 
 /// Counterweight lift (Gravity): a platform rises as blocks are loaded into
-/// its basket — 1.5 tiles per block (max 2). Real pulley logic: the heavier
-/// the counterweight, the higher you ride.
+/// its basket — 1 tile per block (max 2, so it rises to a boardable height
+/// and STAYS up). Load 2 blocks in the basket, then jump onto the raised
+/// platform and ride/step to the goal — the same reliable pattern as the
+/// seesaw. The basket is drawn as a visible bin so it reads as "put blocks
+/// here".
 class CounterLift extends PositionComponent
     with HasGameReference<EscapeGame>
     implements Resettable {
@@ -52,7 +55,7 @@ class CounterLift extends PositionComponent
 
   @override
   void update(double dt) {
-    final targetY = _baseY - _load * Config.tileSize * 1.5;
+    final targetY = _baseY - _load * Config.tileSize; // 1 tile per block
     final old = position.y;
     final step = dt * Config.tileSize * 1.5;
     position.y += (targetY - position.y).clamp(-step, step);
@@ -79,13 +82,32 @@ class CounterLift extends PositionComponent
       ..color = p.ink
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.2;
-    // Rope: platform → pulley at the ceiling → down to the basket.
+    // Rope: platform → pulley at the ceiling → down to the basket bin.
     final pulley = Offset(size.x / 2, game.ceilingY - position.y + 6);
-    final basketTop = Offset(
-        basket.x + basket.w / 2 - position.x, basket.y - position.y);
+    final bx = basket.x + basket.w / 2 - position.x;
+    final byTop = basket.y - position.y;
     canvas.drawLine(Offset(size.x / 2, 0), pulley, stroke);
-    canvas.drawLine(pulley, basketTop, stroke);
+    canvas.drawLine(pulley, Offset(bx, byTop), stroke);
     canvas.drawCircle(pulley, 6, stroke);
+
+    // The basket: a visible U-shaped bin (open top) so it's obvious where
+    // the blocks go. Drawn in masonry/interact colours.
+    final binL = basket.x - position.x;
+    final binR = basket.right - position.x;
+    final binB = basket.bottom - position.y;
+    final bin = Paint()
+      ..color = p.ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = Config.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final binPath = Path()
+      ..moveTo(binL, byTop)
+      ..lineTo(binL, binB)
+      ..lineTo(binR, binB)
+      ..lineTo(binR, byTop);
+    canvas.drawPath(binPath, bin);
+
     // Platform.
     final r = RRect.fromRectAndRadius(size.toRect(), const Radius.circular(6));
     canvas.drawRRect(r, Paint()..color = p.accentInteract);
