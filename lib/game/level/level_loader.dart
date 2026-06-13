@@ -118,7 +118,7 @@ class RoomComponent extends PositionComponent
         'counter_lift' => CounterLift(
             pos,
             size,
-            basket: Aabb(
+            plate: Aabb(
               ((e.props['basketX'] as num).toDouble()) * t,
               ((e.props['basketY'] as num).toDouble()) * t,
               ((e.props['basketW'] as num?) ?? 2).toDouble() * t,

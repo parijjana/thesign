@@ -6,6 +6,7 @@ import '../config.dart';
 import '../core/aabb.dart';
 import '../core/reset_controller.dart';
 import '../escape_game.dart';
+import 'weight.dart';
 
 /// The fulcrum seesaw (Mechanics): two thick pans on a pivot. Load **two
 /// blocks** onto one pan and that side tips down while the other rises into
@@ -56,20 +57,12 @@ class Seesaw extends PositionComponent
     _right.y = _panBox(1, 0).y;
   }
 
-  /// Blocks (not the player) resting on a pan — the trigger weight.
-  int _blocksOn(Aabb pan) {
-    final zone = Aabb(pan.x, pan.y - 18, pan.w, 22);
-    var n = 0;
-    for (final b in game.blocks) {
-      if (!b.held && !b.clawHeld && b.aabb.overlaps(zone)) n++;
-    }
-    return n;
-  }
-
   @override
   void update(double dt) {
-    final leftBlocks = _blocksOn(_left);
-    final rightBlocks = _blocksOn(_right);
+    // Stack-aware block weight on each pan (the rider's own weight is
+    // ignored — you can ride the pan up without fighting the tilt).
+    final leftBlocks = weightOn(game, _left, countPlayer: false);
+    final rightBlocks = weightOn(game, _right, countPlayer: false);
     final target = leftBlocks >= 2
         ? -1.0
         : rightBlocks >= 2

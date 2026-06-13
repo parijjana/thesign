@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -6,24 +7,29 @@ import '../config.dart';
 import '../core/aabb.dart';
 import '../core/reset_controller.dart';
 import '../escape_game.dart';
+import 'weight.dart';
 
-/// Counterweight lift (Gravity): a platform rises as blocks are loaded into
-/// its basket — 1 tile per block (max 2, so it rises to a boardable height
-/// and STAYS up). Load 2 blocks in the basket, then jump onto the raised
-/// platform and ride/step to the goal — the same reliable pattern as the
-/// seesaw. The basket is drawn as a visible bin so it reads as "put blocks
-/// here".
+/// Counterweight lift (Gravity): a **sunk pressure plate**, held up from
+/// below by a spring, is linked over a pulley to a blue platform. Pile weight
+/// on the plate — it sinks (compressing the spring) and the platform rises,
+/// 1 tile per unit of weight (max 2). Uses the shared weight system, so a
+/// STACK of blocks counts by its full weight (real gravity), not just the
+/// block touching the plate. Load 2, then ride the raised platform to the goal.
 class CounterLift extends PositionComponent
     with HasGameReference<EscapeGame>
     implements Resettable {
-  CounterLift(Vector2 position, Vector2 size, {required this.basket})
+  CounterLift(Vector2 position, Vector2 size, {required this.plate})
       : super(position: position, size: size);
 
-  /// Basket floor zone (px): blocks resting here are the counterweight.
-  final Aabb basket;
+  /// The sunk plate zone (px) — blocks/the player here are the counterweight.
+  final Aabb plate;
 
   late final double _baseY = position.y;
   late final Aabb _solid = Aabb(position.x, position.y, size.x, size.y);
+  double _weight = 0;
+
+  /// Objects rest on the plate at its top edge (the floor line).
+  Aabb get _plateSurface => Aabb(plate.x, plate.y, plate.w, 1);
 
   @override
   void onMount() {
@@ -43,26 +49,22 @@ class CounterLift extends PositionComponent
   void resetToStart() {
     position.y = _baseY;
     _solid.y = _baseY;
+    _weight = 0;
   }
 
-  int get _load {
-    var n = 0;
-    for (final b in game.blocks) {
-      if (!b.held && !b.clawHeld && b.aabb.overlaps(basket)) n++;
-    }
-    return n > 2 ? 2 : n;
-  }
+  double get _load => math.min(_weight, 2);
 
   @override
   void update(double dt) {
-    final targetY = _baseY - _load * Config.tileSize; // 1 tile per block
+    _weight = weightOn(game, _plateSurface); // stack-aware, counts everything
+    final targetY = _baseY - _load * Config.tileSize;
     final old = position.y;
     final step = dt * Config.tileSize * 1.5;
     position.y += (targetY - position.y).clamp(-step, step);
     final dy = position.y - old;
     if (dy == 0) return;
     _solid.y = position.y;
-    // Carry riders.
+    // Carry whatever rides the platform.
     final riders = Aabb(_solid.x, _solid.y - dy - 8, _solid.w, 10);
     final player = game.player;
     if (!player.carried && riders.overlaps(player.aabb)) {
@@ -78,37 +80,51 @@ class CounterLift extends PositionComponent
   @override
   void render(Canvas canvas) {
     final p = game.palette;
-    final stroke = Paint()
+    final ink = Paint()
       ..color = p.ink
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2;
-    // Rope: platform → pulley at the ceiling → down to the basket bin.
-    final pulley = Offset(size.x / 2, game.ceilingY - position.y + 6);
-    final bx = basket.x + basket.w / 2 - position.x;
-    final byTop = basket.y - position.y;
-    canvas.drawLine(Offset(size.x / 2, 0), pulley, stroke);
-    canvas.drawLine(pulley, Offset(bx, byTop), stroke);
-    canvas.drawCircle(pulley, 6, stroke);
-
-    // The basket: a visible U-shaped bin (open top) so it's obvious where
-    // the blocks go. Drawn in masonry/interact colours.
-    final binL = basket.x - position.x;
-    final binR = basket.right - position.x;
-    final binB = basket.bottom - position.y;
-    final bin = Paint()
-      ..color = p.ink
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = Config.stroke
+      ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    final binPath = Path()
-      ..moveTo(binL, byTop)
-      ..lineTo(binL, binB)
-      ..lineTo(binR, binB)
-      ..lineTo(binR, byTop);
-    canvas.drawPath(binPath, bin);
 
-    // Platform.
+    // --- The sunk spring-plate (drawn relative to this component) ----------
+    final plL = plate.x - position.x;
+    final plR = plate.right - position.x;
+    final plTop = plate.y - position.y;
+    final recessBottom = plTop + Config.tileSize * 1.1;
+    final sink = _load / 2 * Config.tileSize * 0.5; // plate dips as it loads
+
+    // Recess housing walls + floor.
+    canvas.drawLine(Offset(plL, plTop), Offset(plL, recessBottom), ink);
+    canvas.drawLine(Offset(plR, plTop), Offset(plR, recessBottom), ink);
+    canvas.drawLine(Offset(plL, recessBottom), Offset(plR, recessBottom), ink);
+    // Spring under the plate (a compressing zig-zag).
+    final plateY = plTop + sink;
+    final springTop = plateY + 5;
+    final coilH = recessBottom - springTop;
+    final spring = Path()..moveTo(plL + 4, recessBottom);
+    const coils = 4;
+    for (var i = 0; i <= coils; i++) {
+      final y = recessBottom - coilH * i / coils;
+      spring.lineTo(i.isEven ? plL + 4 : plR - 4, y);
+    }
+    canvas.drawPath(spring, ink);
+    // The plate tab itself.
+    final tab = RRect.fromRectAndRadius(
+      Rect.fromLTRB(plL - 2, plateY, plR + 2, plateY + 6),
+      const Radius.circular(3),
+    );
+    canvas.drawRRect(tab, Paint()..color = p.accentInteract);
+    canvas.drawRRect(tab, ink);
+
+    // --- Pulley + rope linking the plate to the rising platform ------------
+    final pulley = Offset(size.x / 2, game.ceilingY - position.y + 6);
+    canvas.drawCircle(pulley, 6, ink);
+    canvas.drawLine(Offset(size.x / 2, 0), pulley, ink); // platform → pulley
+    canvas.drawLine(
+        pulley, Offset((plL + plR) / 2, plateY), ink); // pulley → plate
+
+    // --- The rising platform ----------------------------------------------
     final r = RRect.fromRectAndRadius(size.toRect(), const Radius.circular(6));
     canvas.drawRRect(r, Paint()..color = p.accentInteract);
     canvas.drawRRect(

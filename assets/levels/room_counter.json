@@ -20,7 +20,7 @@
     { "id": "blockB", "type": "pushable_block", "x": 5.5, "y": 11, "w": 1, "h": 1 },
 
     { "id": "lift", "type": "counter_lift", "x": 16, "y": 11.5, "w": 2.5, "h": 0.5,
-      "props": { "basketX": 11, "basketY": 11, "basketW": 2.2, "basketH": 1 } },
+      "props": { "basketX": 11, "basketY": 12, "basketW": 2.2, "basketH": 1 } },
 
     { "type": "floor", "x": 18.7, "y": 8, "w": 3, "h": 0.6 },
     { "id": "goalSwitch", "type": "lever", "x": 19.7, "y": 6.75, "w": 1, "h": 1.25 },
