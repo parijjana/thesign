@@ -27,7 +27,7 @@
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "east", "opensOnSolve": true, "glyph": "street_triangle" } },
 
-    { "id": "doorSecret", "type": "door", "x": 22.05, "y": 5, "w": 1.2, "h": 2,
+    { "id": "doorSecret", "type": "door", "x": 21.85, "y": 1.5, "w": 1.4, "h": 5.5,
       "props": { "exit": "secret", "secret": true } },
 
     { "id": "blockA", "type": "pushable_block", "x": 6, "y": 11, "w": 1, "h": 1 },

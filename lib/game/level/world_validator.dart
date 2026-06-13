@@ -48,6 +48,83 @@ List<String> findKindnessViolations(
   return violations;
 }
 
+/// DIRECTION-OF-TRAVEL VALIDATOR (the fix for "entered via the closed door
+/// and got stuck"): every room must declare a valid entry side, the graph
+/// must be symmetric (every exit has a reverse), and a room's entry neighbor
+/// must itself be reachable without solving that room (else you could never
+/// legitimately enter).
+List<String> findDirectionViolations(WorldData world) {
+  final v = <String>[];
+  final adjacency = _buildAdjacency(world);
+
+  for (final n in world.nodes.values) {
+    // Graph symmetry: a door must exist on both ends of every connection.
+    for (final e in n.exits.entries) {
+      final target = world.nodes[e.value];
+      if (target == null) {
+        v.add('${n.id}: exit "${e.key}" points at unknown node "${e.value}"');
+        continue;
+      }
+      if (!target.exits.values.contains(n.id)) {
+        v.add('${n.id} → ${e.value} ("${e.key}") has no return door — '
+            'one-way connections trap the player');
+      }
+    }
+
+    if (n.type != NodeType.room) continue;
+
+    if (n.entries.isEmpty) {
+      v.add('${n.id}: room declares no entry side (add "entry" to world.json)');
+      continue;
+    }
+    for (final entry in n.entries) {
+      if (!n.exits.containsKey(entry)) {
+        v.add('${n.id}: entry "$entry" is not one of its exits');
+        continue;
+      }
+      // You must be able to reach the entry neighbour without solving THIS
+      // room (the whole point of an entry side).
+      final neighbour = n.exits[entry]!;
+      final reachable = _reach(adjacency, world.start, without: n.id);
+      if (!reachable.contains(neighbour)) {
+        v.add('${n.id}: its entry neighbour "$neighbour" is unreachable '
+            'without solving ${n.id} — the entry is a trap');
+      }
+    }
+  }
+  return v;
+}
+
+/// CORRIDOR-LIVENESS VALIDATOR: every corridor and plaza must offer at least
+/// one ALWAYS-OPEN door (to another corridor/hub, or into a room via that
+/// room's entry side) besides being a dead end — so however the player
+/// arrives, there is always an open way onward (their entry door + this one
+/// = ≥2 open). Secret doors don't count (they're hidden bonus).
+List<String> findCorridorLivenessViolations(WorldData world) {
+  final v = <String>[];
+  for (final n in world.nodes.values) {
+    if (n.type == NodeType.room) continue;
+    var total = 0;
+    var alwaysOpen = 0;
+    for (final e in n.exits.entries) {
+      if (_isSecretExit(world, e.key, e.value)) continue;
+      total++;
+      if (!world.isSolveGated(n.id, e.key)) alwaysOpen++;
+    }
+    if (total < 2) {
+      v.add('${n.id}: only $total non-secret door(s) — a dead-end corridor');
+    }
+    if (alwaysOpen < 1) {
+      v.add('${n.id}: every door is puzzle-locked — the player could arrive '
+          'and have no open way onward');
+    }
+  }
+  return v;
+}
+
+bool _isSecretExit(WorldData world, String exitName, String target) =>
+    exitName == 'secret' || target.startsWith('secret_');
+
 Map<String, Set<String>> _buildAdjacency(WorldData world) {
   final adjacency = <String, Set<String>>{};
   void link(String a, String b) {

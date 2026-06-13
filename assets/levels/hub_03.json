@@ -26,7 +26,7 @@
     { "id": "doorSeq", "type": "door", "x": 13.2, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "seq", "glyph": "d_logic" } },
 
-    { "id": "doorSecret", "type": "door", "x": 19.4, "y": 10, "w": 1.2, "h": 2,
+    { "id": "doorSecret", "type": "door", "x": 19.3, "y": 1.5, "w": 1.4, "h": 10.5,
       "props": { "exit": "secret", "secret": true } }
   ]
 }

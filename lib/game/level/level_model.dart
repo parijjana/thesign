@@ -42,6 +42,36 @@ class WorldData {
   NodeData node(String id) =>
       nodes[id] ?? (throw ArgumentError('unknown node "$id"'));
 
+  /// The room's own exit-name that points back at [neighborId] (its "side"
+  /// of that connection), or null if they don't connect.
+  String? roomSideTo(NodeData room, String neighborId) {
+    for (final e in room.exits.entries) {
+      if (e.value == neighborId) return e.key;
+    }
+    return null;
+  }
+
+  /// THE direction-of-travel rule, single source of truth: is the door from
+  /// [fromNode] via [exitName] one that stays shut until the adjoining ROOM
+  /// is solved? True only for a door on a room's NON-entry (locked) side —
+  /// computed identically from either endpoint, so the two sides can never
+  /// disagree (the bug this kills). Corridor↔corridor/hub doors: never
+  /// gated. Secrets are handled separately.
+  bool isSolveGated(String fromNode, String exitName) {
+    final transition = resolve(fromNode, exitName);
+    if (transition == null) return false;
+    final from = node(fromNode);
+    if (from.type == NodeType.room) {
+      return !from.entries.contains(exitName);
+    }
+    final to = node(transition.targetId);
+    if (to.type == NodeType.room) {
+      final side = roomSideTo(to, fromNode);
+      return side != null && !to.entries.contains(side);
+    }
+    return false;
+  }
+
   /// Resolves using [exitName] from [sourceId] → where you end up, and which
   /// of the target's entry points to appear at.
   ///
@@ -90,6 +120,7 @@ class NodeData {
     required this.type,
     required this.file,
     this.exits = const {},
+    this.entries = const [],
     this.rooms = const [],
     this.parent,
     this.unlock,
@@ -99,6 +130,13 @@ class NodeData {
   final NodeType type;
   final String file;
   final Map<String, String> exits;
+
+  /// ROOM nodes: which of [exits] are the ENTRY side(s) — always-open ways
+  /// in. Every other exit is the puzzle-locked side (opensOnSolve, both
+  /// directions). THE source of truth for direction of travel, enforced by
+  /// the direction validator.
+  final List<String> entries;
+
   final List<String> rooms;
   final String? parent;
   final UnlockRule? unlock;
@@ -109,6 +147,11 @@ class NodeData {
         file: json['file'] as String,
         exits: (json['exits'] as Map<String, dynamic>? ?? {})
             .map((k, v) => MapEntry(k, v as String)),
+        entries: switch (json['entry']) {
+          final String s => [s],
+          final List l => l.cast<String>(),
+          _ => const [],
+        },
         rooms: (json['rooms'] as List? ?? []).cast<String>(),
         parent: json['parent'] as String?,
         unlock: json['unlock'] == null

@@ -139,35 +139,48 @@ class Door extends PositionComponent
     }
   }
 
-  /// Secret passage rendering: undiscovered = a wall panel whose only tell
-  /// is cracked mortar; discovered = a dark gap in the brickwork.
+  /// Secret passage: a slab of ordinary castle brickwork — drawn EXACTLY
+  /// like a [Wall] (same surface fill, same shared brick painter, same ink
+  /// edge) so it's indistinguishable from the masonry around it. The only
+  /// tell is a faint hairline crack + a little rubble at its foot. Authored
+  /// as a floor-to-ceiling column so it reads as a brick buttress, not a
+  /// floating panel. Discovered: the crack has opened into a dark gap.
   void _renderSecret(Canvas canvas, dynamic p) {
-    final rect = size.toRect();
-    final r = RRect.fromRectAndRadius(rect, const Radius.circular(4));
+    final r = RRect.fromRectAndRadius(size.toRect(), const Radius.circular(4));
     canvas.drawRRect(r, Paint()..color = p.surface);
     paintBrickCourses(canvas, r, p.ink);
-    final crack = Paint()
-      ..color = p.ink
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.round;
-    // The tell: a jagged crack down the panel + crumbs at the base.
-    final path = Path()
-      ..moveTo(size.x * 0.55, 2)
-      ..lineTo(size.x * 0.40, size.y * 0.3)
-      ..lineTo(size.x * 0.62, size.y * 0.55)
-      ..lineTo(size.x * 0.45, size.y * 0.8)
-      ..lineTo(size.x * 0.52, size.y - 2);
-    canvas.drawPath(path, crack);
-    canvas.drawCircle(Offset(size.x * 0.3, size.y - 3), 2, Paint()..color = p.ink);
-    canvas.drawCircle(Offset(size.x * 0.7, size.y - 4), 2.5, Paint()..color = p.ink);
+    canvas.drawRRect(
+      r,
+      Paint()
+        ..color = p.ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = Config.stroke
+        ..strokeJoin = StrokeJoin.round,
+    );
     if (discovered) {
-      // Ajar: a dark slit where the panel has swung inward.
+      // Ajar: a dark doorway has opened in the lower brickwork.
       canvas.drawRRect(
-        RRect.fromLTRBR(size.x * 0.15, size.y * 0.12, size.x * 0.85, size.y,
-            const Radius.circular(4)),
-        Paint()..color = p.ink.withValues(alpha: 0.75),
+        RRect.fromLTRBR(size.x * 0.18, size.y - Config.tileSize * 2,
+            size.x * 0.82, size.y, const Radius.circular(5)),
+        Paint()..color = p.ink.withValues(alpha: 0.78),
       );
     }
+    // The tell: a faint jagged crack near the base + a couple of crumbs.
+    final tell = Paint()
+      ..color = p.ink.withValues(alpha: discovered ? 0.9 : 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+    final baseTop = size.y - Config.tileSize * 2.2;
+    final path = Path()
+      ..moveTo(size.x * 0.55, baseTop)
+      ..lineTo(size.x * 0.40, baseTop + Config.tileSize * 0.6)
+      ..lineTo(size.x * 0.62, baseTop + Config.tileSize * 1.1)
+      ..lineTo(size.x * 0.46, baseTop + Config.tileSize * 1.7)
+      ..lineTo(size.x * 0.52, size.y - 2);
+    canvas.drawPath(path, tell);
+    final rubble = Paint()..color = p.ink.withValues(alpha: 0.45);
+    canvas.drawCircle(Offset(size.x * 0.32, size.y - 3), 2, rubble);
+    canvas.drawCircle(Offset(size.x * 0.7, size.y - 4), 2.5, rubble);
   }
 }

@@ -90,16 +90,7 @@ class RoomComponent extends PositionComponent
                 e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
             pips: (e.props['pips'] as num?)?.toInt() ?? 0,
           ),
-        'door' => Door(
-            pos,
-            size,
-            exitName: e.props['exit'] as String? ?? 'back',
-            lockedByRule: e.props['locked'] as bool? ?? false,
-            opensOnSolve: e.props['opensOnSolve'] as bool? ?? false,
-            secret: e.props['secret'] as bool? ?? false,
-            glyph:
-                e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
-          ),
+        'door' => _door(e),
         'moving_platform' => MovingPlatform(
             pos,
             size,
@@ -221,6 +212,26 @@ class RoomComponent extends PositionComponent
 
   @override
   void update(double dt) => puzzle?.onUpdate(dt);
+
+  /// Builds a door, DERIVING its open/locked state from the world graph's
+  /// `entry` declaration (not the JSON) — so a room's two sides can never
+  /// disagree about which way you may enter.
+  Door _door(EntityData e) {
+    const t = Config.tileSize;
+    final exitName = e.props['exit'] as String? ?? 'back';
+    final secret = e.props['secret'] as bool? ?? false;
+    final opensOnSolve =
+        !secret && game.registry.isSolveGated(data.id, exitName);
+    return Door(
+      Vector2(e.x * t, e.y * t),
+      Vector2(e.w * t, e.h * t),
+      exitName: exitName,
+      lockedByRule: e.props['locked'] as bool? ?? false,
+      opensOnSolve: opensOnSolve,
+      secret: secret,
+      glyph: e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
+    );
+  }
 
   static SymbolId _glyph(Object? id) => switch (id) {
         'hazard' || null => SymbolId.hazard,

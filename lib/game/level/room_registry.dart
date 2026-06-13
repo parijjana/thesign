@@ -24,6 +24,11 @@ class RoomRegistry {
   Transition? resolve(String sourceId, String exitName) =>
       world.resolve(sourceId, exitName);
 
+  /// Does the door from [sourceId] via [exitName] open only on the adjoining
+  /// room's solve? (Direction of travel — see WorldData.isSolveGated.)
+  bool isSolveGated(String sourceId, String exitName) =>
+      world.isSolveGated(sourceId, exitName);
+
   Future<LevelData> level(String nodeId, AssetsCache assets) async {
     final cached = _levelCache[nodeId];
     if (cached != null) return cached;

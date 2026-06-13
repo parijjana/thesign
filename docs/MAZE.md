@@ -4,6 +4,29 @@
 > kindness validator, and the map screen. Design intent lives in [GDD.md §4](GDD.md); data format
 > in [LEVEL_FORMAT.md](LEVEL_FORMAT.md). M6 builds what this document describes.
 
+## 0. Direction of travel — the data structure *(authoritative)*
+Each **room** node in `world.json` declares **`entry`** — the exit name(s) that are its always-open
+way(s) in. This is the single source of truth for "which way into a room"; **the engine derives
+every door's lock from it** (`WorldData.isSolveGated`), so a room's two sides can never disagree
+(the bug where you entered via the *closed* side and got stuck behind the puzzle).
+
+```json
+{ "id": "room_plates", "type": "room", "entry": "west",
+  "exits": { "west": "hub_01", "east": "corridor_02" } }
+```
+- `entry` side(s): **always open** — you may enter (and later re-leave) freely.
+- every other side: **opens on solve**, enforced identically from *both* endpoints (the room's own
+  door AND the neighbour's door into that side) because both compute from the same `entry`.
+- A corridor may therefore have doors you can't use yet (the room beyond is entered from elsewhere);
+  that's fine — another corridor holds that room's entry. Authors **never** hand-set `opensOnSolve`.
+
+**Two guards run over `world.json` in `flutter test`** (`world_validator.dart`):
+- `findDirectionViolations`: every room declares a valid `entry`; the graph is symmetric (no
+  one-way doors); each entry neighbour is reachable without solving that room.
+- `findCorridorLivenessViolations`: every corridor/plaza has **≥2 non-secret doors and ≥1
+  always-open door** — so however you arrive, there's always an open way onward (your entry door +
+  that one ≥ 2). Secret doors don't count.
+
 ## 1. Principles (recap + formalization)
 - **Rooms are passages**: entry side always open, exit side `opensOnSolve`. Solved rooms stay open
   both ways forever.

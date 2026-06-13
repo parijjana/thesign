@@ -153,6 +153,15 @@ Validator: `allowedGates: {'exit_hall'}`. Cut-vertex audit: every other room has
 - **exit_hall**: teleporter: big swirl glyph (spawn) on pedestal center; walking into it = (M7+:
   ending) for now fb_success fireworks-ish popup + nothing (door back stays open).
 
+## Post-build fixes (playtest round 1)
+- **Direction of travel**: rooms now declare `entry` in world.json; the loader DERIVES every
+  door's `opensOnSolve` from it (`isSolveGated`) instead of hand-set JSON props — kills the
+  "entered via the closed side, stuck behind the puzzle" trap at its source. New validators:
+  `findDirectionViolations` + `findCorridorLivenessViolations` (≥1 always-open door per corridor).
+- **Secret doors** now render as full brick columns (shared brick painter, floor→ceiling) so they
+  blend into the masonry; only a faint crack + rubble gives them away (they stood out before
+  because the flat-bg back wall had no brick).
+
 ## Risks / notes
 - Boulder & platforms are the first whirlwind-reset CONSUMERS (register w/ resetController).
 - Splitter recursion: cap total segments 64.
