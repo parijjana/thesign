@@ -16,6 +16,7 @@ import '../components/powerup_pickup.dart';
 import '../components/pushable_block.dart';
 import '../components/seesaw.dart';
 import '../components/sign.dart';
+import '../components/street_badge.dart';
 import '../components/wall.dart';
 import '../components/water_pool.dart';
 import '../components/warning_sign.dart';
@@ -92,6 +93,8 @@ class RoomComponent extends PositionComponent
                 e.props['glyph'] != null ? _glyph(e.props['glyph']) : null,
             pips: (e.props['pips'] as num?)?.toInt() ?? 0,
           ),
+        'street_badge' =>
+          StreetBadge(pos, size, glyph: _glyph(e.props['glyph'])),
         'door' => _door(e),
         'moving_platform' => MovingPlatform(
             pos,

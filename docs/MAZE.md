@@ -45,7 +45,9 @@ Every corridor gets a **badge**: a simple geometric glyph from a reserved family
 **circle ○, triangle △, square □, diamond ◇, star ☆, hexagon ⬡** (extend only when exhausted).
 - The badge is posted **on every door that leads INTO that corridor** (drawn on the door body,
   below the discipline/status glyphs — architecture, not ephemera, STYLE_GUIDE §2 rule 9), and
-  **inside the corridor** on the wall beside each of its doors.
+  **once inside the corridor** as a **bas-relief carving** in the stone (centred, high in the
+  tunnel ceiling) — rendered in the masonry colours (surface + ink + bg two-tone), NOT a posted
+  sign-board. One carving per corridor.
 - So a door tells you: *what kind of puzzle* (discipline glyph) or *which street* (corridor badge)
   lies behind it — and standing in a corridor, the wall badge answers "which street am I on?"
 - Badges are taught passively, by repetition; registered in [SYMBOLS.md §2](SYMBOLS.md) as the

@@ -108,6 +108,12 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | Boulder | solid circle, heavy outline | `accentDanger` | "dodge it — it'll bump you back" |
 | Moving platform | rounded bar, maybe motion arrows | `surface` + `ink` arrows | "rides a path" |
 | Warning sign | triangle/!, on the wall before a hazard | `accentDanger` | telegraph (Pillar 2) |
+| Street badge | corridor name-glyph carved as **bas-relief** into the stone (masonry `surface`/`ink`/`bg` two-tone — ink recess-shadow under a bright face); one per corridor | `surface`+`ink`+`bg` | "which street am I on" |
+
+> **Bas-relief is a sanctioned two-tone**, not a banned bevel (§10): permanent *carved architecture*
+> (street badges, future wall etchings) may use a single ink-shadow + bright-face offset to read as
+> chiselled stone. It stays flat (no gradients), uses only masonry tokens, and is reserved for
+> things that ARE the wall — never for UI/ephemera.
 
 ## 7. Backgrounds & space
 - Background is a **flat field** of `bg` — no parallax, no scenery clutter for MVP.

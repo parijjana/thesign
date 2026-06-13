@@ -23,9 +23,7 @@
     { "type": "warning_sign", "x": 3.3, "y": 10.4, "w": 1.1, "h": 1.1,
       "props": { "glyph": "no_swimming" } },
 
-    { "type": "sign", "x": 1.2, "y": 7.5, "w": 0.9, "h": 0.9,
-      "props": { "glyph": "street_star" } },
-    { "type": "sign", "x": 21.8, "y": 7.5, "w": 0.9, "h": 0.9,
+    { "type": "street_badge", "x": 10.75, "y": 4, "w": 2.5, "h": 2,
       "props": { "glyph": "street_star" } },
 
     { "id": "ride1", "type": "moving_platform", "x": 5, "y": 11, "w": 1.8, "h": 0.5,
