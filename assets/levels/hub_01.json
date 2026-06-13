@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "hub_01",
+  "code": "H01",
   "type": "hub",
   "name": "Junction plaza (dev label)",
   "size": { "w": 24, "h": 14 },

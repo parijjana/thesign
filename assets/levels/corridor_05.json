@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "corridor_05",
+  "code": "C05",
   "type": "corridor",
   "name": "Star street - the gauntlet (dev label)",
   "size": { "w": 24, "h": 14 },

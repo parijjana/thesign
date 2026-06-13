@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "corridor_01",
+  "code": "C01",
   "type": "corridor",
   "name": "Circle street - start (dev label)",
   "size": { "w": 24, "h": 14 },

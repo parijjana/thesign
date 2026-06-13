@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_sokoban",
+  "code": "RSO",
   "type": "room",
   "name": "P6: All plates at once (dev label)",
   "size": { "w": 24, "h": 14 },

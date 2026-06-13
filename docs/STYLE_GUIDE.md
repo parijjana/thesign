@@ -110,10 +110,12 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | Warning sign | a **posted safety sign**: standard-shape plate (round = prohibition like no-swimming, triangle = warning) on a planted **post**, high-contrast — a placed object that's MEANT to stand out, not carved, not floating UI | `accentNeutral` plate + `accentDanger` mark | telegraph (Pillar 2) |
 | Street badge | corridor name-glyph carved as **bas-relief** into the stone (masonry `surface`/`ink`/`bg` two-tone — ink recess-shadow under a bright face); one per corridor | `surface`+`ink`+`bg` | "which street am I on" |
 
-> **Bas-relief is a sanctioned two-tone**, not a banned bevel (§10): permanent *carved architecture*
-> (street badges, future wall etchings) may use a single ink-shadow + bright-face offset to read as
-> chiselled stone. It stays flat (no gradients), uses only masonry tokens, and is reserved for
-> things that ARE the wall — never for UI/ephemera.
+> **World labels are FLAT marks, no frames, no shadows** (people don't hang labelled boards over
+> their light switches): street badges, pip-order dots, etchings, hint glyphs are drawn directly on
+> the stone in the `surface` tone (engraved) — no panel, no border, no drop-shadow/relief. Only
+> three things get a board/frame: **posted safety signs** (their own standard shape on a post,
+> above), the **HUD**, and **ephemeral popups**. *(The earlier bas-relief two-tone was reverted —
+> shadows are banned, §10.)*
 
 ## 7. Backgrounds & space
 - Background is a **flat field** of `bg` — no parallax, no scenery clutter for MVP.

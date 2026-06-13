@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "exit_hall",
+  "code": "EXIT",
   "type": "room",
   "name": "The exit... or is it? (dev label)",
   "size": { "w": 24, "h": 14 },

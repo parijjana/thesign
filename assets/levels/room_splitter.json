@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_splitter",
+  "code": "RSP",
   "type": "room",
   "name": "Optics II: one beam, two birds (dev label)",
   "size": { "w": 24, "h": 14 },

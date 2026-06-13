@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_sequence",
+  "code": "RSQ",
   "type": "room",
   "name": "Logic: pull in pip order (dev label)",
   "size": { "w": 24, "h": 14 },

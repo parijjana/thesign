@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "corridor_03",
+  "code": "C03",
   "type": "corridor",
   "name": "Square street - boulders (dev label)",
   "size": { "w": 24, "h": 14 },

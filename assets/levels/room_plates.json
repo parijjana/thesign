@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_plates",
+  "code": "RPL",
   "type": "room",
   "name": "P1: Pressure plate (dev label)",
   "size": { "w": 24, "h": 14 },

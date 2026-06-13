@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "hub_03",
+  "code": "H03",
   "type": "hub",
   "name": "Plaza C - the high quarter (dev label)",
   "size": { "w": 24, "h": 14 },

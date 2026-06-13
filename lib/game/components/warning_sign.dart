@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -20,6 +21,19 @@ class WarningSign extends PositionComponent with HasGameReference<EscapeGame> {
   bool get _isProhibition =>
       glyph == SymbolId.noSwimming || glyph == SymbolId.noEntry;
 
+  /// Floor top beneath the sign centre, in local coords — so the post foot
+  /// lands exactly on the ground.
+  double _floorBelowLocal() {
+    final cx = position.x + size.x / 2;
+    var best = position.y + size.y + Config.tileSize * 1.5; // fallback
+    for (final s in game.collisionWorld.solids) {
+      if (cx >= s.x && cx <= s.right && s.y >= position.y + size.y * 0.5) {
+        best = math.min(best, s.y);
+      }
+    }
+    return best - position.y;
+  }
+
   @override
   void render(Canvas canvas) {
     final p = game.palette;
@@ -34,9 +48,10 @@ class WarningSign extends PositionComponent with HasGameReference<EscapeGame> {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    // Post planted in the ground, with a little base foot.
+    // Post planted in the ground: drawn down to the actual floor top (found
+    // in the collision world) so the base sits ON the floor, never through it.
     final postTop = faceCy + faceR - 2;
-    final postBottom = size.y + Config.tileSize * 0.55;
+    final postBottom = _floorBelowLocal();
     canvas.drawLine(Offset(cx, postTop), Offset(cx, postBottom), ink);
     canvas.drawLine(Offset(cx - 7, postBottom), Offset(cx + 7, postBottom), ink);
 

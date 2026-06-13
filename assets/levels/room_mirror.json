@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_mirror",
+  "code": "RMI",
   "type": "room",
   "name": "First Light (dev label, per worked example)",
   "size": { "w": 24, "h": 14 },

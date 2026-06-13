@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_ascent",
+  "code": "RAS",
   "type": "room",
   "name": "The ascent - double-jump shaft (dev label)",
   "size": { "w": 24, "h": 14 },

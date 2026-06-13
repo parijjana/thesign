@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_stack",
+  "code": "RST",
   "type": "room",
   "name": "P2: Box stacking (dev label)",
   "size": { "w": 24, "h": 14 },

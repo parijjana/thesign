@@ -209,6 +209,7 @@ class LevelData {
   LevelData({
     required this.version,
     required this.id,
+    required this.code,
     required this.type,
     required this.name,
     required this.widthTiles,
@@ -223,6 +224,11 @@ class LevelData {
 
   final int version;
   final String id;
+
+  /// Short unique code (stored in JSON) shown by the debug overlay so the
+  /// user can quote a room precisely. Falls back to [id] if absent.
+  final String code;
+
   final NodeType type;
   final String name; // dev-facing only — never rendered (no-text rule)
   final double widthTiles;
@@ -243,6 +249,7 @@ class LevelData {
     return LevelData(
       version: json['version'] as int,
       id: json['id'] as String,
+      code: json['code'] as String? ?? json['id'] as String,
       type: NodeType.values.byName(json['type'] as String),
       name: json['name'] as String? ?? '',
       widthTiles: (size['w'] as num).toDouble(),

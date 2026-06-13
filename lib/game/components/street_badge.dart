@@ -19,31 +19,9 @@ class StreetBadge extends PositionComponent with HasGameReference<EscapeGame> {
   @override
   void render(Canvas canvas) {
     final p = game.palette;
-    // A small carved stone plaque, same stone as the walls — a wall marker
-    // at head height, not a posted sign. Round-ish like a worn cartouche.
-    final panel = RRect.fromRectAndRadius(size.toRect(), Radius.circular(size.x * 0.28));
-    canvas.drawRRect(panel, Paint()..color = p.surface);
-    canvas.drawRRect(
-      panel,
-      Paint()
-        ..color = p.ink
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
-        ..strokeJoin = StrokeJoin.round,
-    );
-
-    // The glyph as raised relief: an ink shadow offset down-right, then the
-    // bright stone face on top — chiselled, flat two-tone (no gradients).
-    final g = size.x * 0.62;
-    final ox = (size.x - g) / 2;
-    final oy = (size.y - g) / 2;
-    canvas.save();
-    canvas.translate(ox + 1.1, oy + 1.1);
-    drawSymbol(canvas, glyph, g, p.ink);
-    canvas.restore();
-    canvas.save();
-    canvas.translate(ox, oy);
-    drawSymbol(canvas, glyph, g, p.bg);
-    canvas.restore();
+    // A flat engraved wall marker — no frame, no shadow. The glyph is drawn
+    // in the stone's own `surface` tone so it reads as carved into the wall
+    // rather than posted on it.
+    drawSymbol(canvas, glyph, size.x, p.surface);
   }
 }

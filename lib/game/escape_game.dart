@@ -22,6 +22,7 @@ import 'powerups.dart';
 import 'puzzles/puzzle_script.dart';
 import 'save/progress.dart';
 import 'save/save_service.dart';
+import 'ui/debug_hud.dart';
 import 'ui/feedback_popups.dart';
 import 'ui/hud.dart';
 import 'ui/interact_prompt.dart';
@@ -72,6 +73,12 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   RoomComponent? _room;
   String currentNodeId = '';
+
+  /// Short code of the current node (debug overlay).
+  String get currentNodeCode => _room?.data.code ?? '?';
+
+  /// DEV: F3 toggles the room-id overlay.
+  bool showDebug = false;
 
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};
@@ -151,6 +158,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     world.add(feedback);
     camera.viewport.add(Hud());
     camera.viewport.add(PowerupHud());
+    camera.viewport.add(DebugHud());
   }
 
   /// DEV: wipe the save and restart from the very beginning (F2).
@@ -342,6 +350,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
     if (input.restartPressed) requestReset(); // R = voluntary claw
     if (input.devResetPressed && !_resetting) _devFullReset(); // F2 = new game
+    if (input.debugTogglePressed) showDebug = !showDebug; // F3 = room id
 
     // The claw works through its cargo backlog when free.
     if (!claw.busy && _blockRescueQueue.isNotEmpty) {

@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_counter",
+  "code": "RCO",
   "type": "room",
   "name": "P5: Counterweight lift (dev label)",
   "size": { "w": 24, "h": 14 },

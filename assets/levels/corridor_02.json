@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "corridor_02",
+  "code": "C02",
   "type": "corridor",
   "name": "Triangle street - the spine (dev label)",
   "size": { "w": 24, "h": 14 },

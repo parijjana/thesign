@@ -30,6 +30,9 @@ class GameInput {
   /// the real "new game" lives in the profile UI (M7).
   bool devResetPressed = false;
 
+  /// Edge: DEV ONLY — toggle the debug overlay (F3).
+  bool debugTogglePressed = false;
+
   /// Called by the game after each update tick, so edges last exactly one tick.
   void clearEdges() {
     jumpPressed = false;
@@ -37,5 +40,6 @@ class GameInput {
     restartPressed = false;
     pausePressed = false;
     devResetPressed = false;
+    debugTogglePressed = false;
   }
 }

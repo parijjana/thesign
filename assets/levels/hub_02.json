@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "hub_02",
+  "code": "H02",
   "type": "hub",
   "name": "Plaza B (dev label)",
   "size": { "w": 24, "h": 14 },

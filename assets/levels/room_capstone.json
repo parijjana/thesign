@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_capstone",
+  "code": "RCA",
   "type": "room",
   "name": "Capstone: weight opens the way for light (dev label)",
   "size": { "w": 24, "h": 14 },

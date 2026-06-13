@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_fulcrum",
+  "code": "RFU",
   "type": "room",
   "name": "P3: Seesaw balance (dev label)",
   "size": { "w": 24, "h": 14 },

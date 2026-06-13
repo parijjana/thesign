@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "corridor_04",
+  "code": "C04",
   "type": "corridor",
   "name": "Diamond street - rides & the deep (dev label)",
   "size": { "w": 24, "h": 14 },

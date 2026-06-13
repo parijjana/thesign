@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_dive",
+  "code": "RDI",
   "type": "room",
   "name": "The drowned vault - flipper reward (dev label)",
   "size": { "w": 24, "h": 14 },

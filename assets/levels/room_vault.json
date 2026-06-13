@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "room_vault",
+  "code": "RVA",
   "type": "room",
   "name": "The vault - reward leaf (dev label)",
   "size": { "w": 24, "h": 14 },

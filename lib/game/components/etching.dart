@@ -35,21 +35,8 @@ class Etching extends PositionComponent with HasGameReference<EscapeGame> {
   @override
   void render(Canvas canvas) {
     final p = game.palette;
-    final frameColor = found ? p.accentGoal : p.ink;
-    // Double frame — reads as "an exhibit", not a sign.
-    for (final inset in [0.0, 4.0]) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-            size.toRect().deflate(inset), const Radius.circular(4)),
-        Paint()
-          ..color = frameColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
-      );
-    }
-    canvas.save();
-    canvas.translate(size.x * 0.15, size.y * 0.15);
-    drawSymbol(canvas, glyph, size.x * 0.7, p.ink);
-    canvas.restore();
+    // A flat engraving in the wall — no frame. Drawn in the stone's `surface`
+    // tone (subtly carved), glowing `accentGoal` once you've found it.
+    drawSymbol(canvas, glyph, size.x, found ? p.accentGoal : p.surface);
   }
 }
