@@ -91,7 +91,7 @@ class CounterLift extends PositionComponent
     final plL = plate.x - position.x;
     final plR = plate.right - position.x;
     final plTop = plate.y - position.y;
-    final recessBottom = plTop + Config.tileSize * 1.1;
+    final recessBottom = plTop + Config.tileSize * 0.7;
     final sink = _load / 2 * Config.tileSize * 0.5; // plate dips as it loads
 
     // Recess housing walls + floor.
@@ -117,12 +117,16 @@ class CounterLift extends PositionComponent
     canvas.drawRRect(tab, Paint()..color = p.accentInteract);
     canvas.drawRRect(tab, ink);
 
-    // --- Pulley + rope linking the plate to the rising platform ------------
-    final pulley = Offset(size.x / 2, game.ceilingY - position.y + 6);
+    // --- Pulley + rope: the pulley sits BETWEEN the platform and the plate
+    // so both ropes hang almost straight down (a real counterweight rig).
+    final platformCx = size.x / 2;
+    final plateCx = (plL + plR) / 2;
+    // A fixed, sensible height above both (world y≈4 tiles).
+    final pulley =
+        Offset((platformCx + plateCx) / 2, 4 * Config.tileSize - position.y);
     canvas.drawCircle(pulley, 6, ink);
-    canvas.drawLine(Offset(size.x / 2, 0), pulley, ink); // platform → pulley
-    canvas.drawLine(
-        pulley, Offset((plL + plR) / 2, plateY), ink); // pulley → plate
+    canvas.drawLine(Offset(platformCx, 0), pulley, ink); // platform → pulley
+    canvas.drawLine(pulley, Offset(plateCx, plateY), ink); // pulley → plate
 
     // --- The rising platform ----------------------------------------------
     final r = RRect.fromRectAndRadius(size.toRect(), const Radius.circular(6));
