@@ -12,6 +12,7 @@ import '../components/lever.dart';
 import '../components/moving_platform.dart';
 import '../components/optics.dart';
 import '../components/pressure_plate.dart';
+import '../components/powerup_pickup.dart';
 import '../components/pushable_block.dart';
 import '../components/seesaw.dart';
 import '../components/sign.dart';
@@ -21,6 +22,7 @@ import '../components/warning_sign.dart';
 import '../config.dart';
 import '../core/aabb.dart';
 import '../escape_game.dart';
+import '../powerups.dart';
 import '../puzzles/puzzle_registry.dart';
 import '../puzzles/puzzle_script.dart';
 import '../ui/feedback_popups.dart';
@@ -130,6 +132,13 @@ class RoomComponent extends PositionComponent
             size,
             etchingId: e.id ?? 'etching',
             glyph: _glyph(e.props['glyph']),
+          ),
+        'powerup_pickup' => PowerupPickup(
+            pos,
+            size,
+            powerup: Powerup.byId(e.props['powerup'] as String? ?? '') ??
+                (throw FormatException(
+                    '${data.id}: bad powerup "${e.props['powerup']}"')),
           ),
         'lever' => Lever(
             pos,
@@ -247,6 +256,10 @@ class RoomComponent extends PositionComponent
         'street_star' => SymbolId.streetStar,
         'street_hex' => SymbolId.streetHex,
         'spawn' => SymbolId.spawn,
+        'powerFlippers' => SymbolId.powerFlippers,
+        'powerSpring' => SymbolId.powerSpring,
+        'powerGrapple' => SymbolId.powerGrapple,
+        'powerLantern' => SymbolId.powerLantern,
         'claw' => SymbolId.restartClaw,
         'hint' => SymbolId.hint,
         'unlocked' => SymbolId.unlocked,

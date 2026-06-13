@@ -6,6 +6,7 @@ import 'package:flame/components.dart';
 import '../config.dart';
 import '../core/aabb.dart';
 import '../escape_game.dart';
+import '../powerups.dart';
 import '../ui/feedback_popups.dart';
 import 'pushable_block.dart';
 
@@ -36,11 +37,18 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
   /// Which way the figure faces (placement direction); +1 right, -1 left.
   int facing = 1;
 
+  /// Set TRUE each frame by a WaterPool the player overlaps (and only when
+  /// the player owns Flippers — otherwise water resets, it doesn't submerge).
+  /// Drives swim physics + the paddling pose. Self-clears each step.
+  bool inWater = false;
+
   double _accumulator = 0;
   double _coyoteLeft = 0;
   double _bufferLeft = 0;
+  int _jumpsUsed = 0; // for double jump (spring boots)
   double _squash = 0; // 1 → 0 land-squash envelope
   double _runPhase = 0;
+  double _swimPhase = 0;
 
   // Carried-pose pendulum: the claw grips the scruff; the body swings
   // beneath, driven by the claw's own acceleration.
@@ -129,6 +137,10 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
       _bufferLeft = Config.jumpBufferTime;
     }
 
+    // Submerged? (Only with Flippers — otherwise water resets, see WaterPool.)
+    inWater = game.hasPowerup(Powerup.flippers) &&
+        game.waterPools.any((w) => w.surface.overlaps(aabb));
+
     _accumulator += math.min(dt, 1 / 15); // clamp hitches, avoid the spiral
     while (_accumulator >= _step) {
       _physicsStep(_step);
@@ -142,6 +154,7 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     } else {
       _runPhase = 0;
     }
+    if (inWater) _swimPhase += dt * 5;
   }
 
   /// Damped pendulum about the grip point, driven by the pivot's horizontal
@@ -166,6 +179,11 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     if (axis > 0) facing = 1;
     if (axis < 0) facing = -1;
 
+    if (inWater) {
+      _swimStep(h, axis);
+      return;
+    }
+
     // Horizontal: approach target speed (forgiving, no momentum mastery).
     final target = axis * Config.runSpeed;
     final dvx = target - velocity.x;
@@ -180,10 +198,18 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     // Grace timers.
     _coyoteLeft = grounded ? Config.coyoteTime : _coyoteLeft - h;
     _bufferLeft -= h;
-    if (_bufferLeft > 0 && _coyoteLeft > 0) {
+    final canGround = _bufferLeft > 0 && _coyoteLeft > 0;
+    final canDouble = _bufferLeft > 0 &&
+        !grounded &&
+        _jumpsUsed >= 1 &&
+        _jumpsUsed < 2 &&
+        game.hasPowerup(Powerup.springBoots);
+    if (canGround || canDouble) {
       // Carrying a block limits jump height (GDD §5 — a puzzle lever).
       velocity.y =
           Config.jumpVelocity * (isCarrying ? Config.carryJumpFactor : 1);
+      _jumpsUsed = canGround ? 1 : _jumpsUsed + 1;
+      if (canDouble) _squash = 0.6; // a little spring flourish
       _bufferLeft = 0;
       _coyoteLeft = 0;
     }
@@ -200,6 +226,33 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
       velocity.y = 0;
     }
     grounded = game.collisionWorld.isGrounded(box);
+    if (grounded) _jumpsUsed = 0;
+  }
+
+  /// Swimming (Flippers powerup): 4-directional, slow, gently buoyant — the
+  /// figure floats rather than sinks (no drowning, ever). Jump = stroke up.
+  void _swimStep(double h, double axis) {
+    final input = game.input;
+    grounded = false;
+    _jumpsUsed = 0;
+
+    // Horizontal: slower than running, with drag.
+    final target = axis * Config.swimSpeed;
+    velocity.x += (target - velocity.x).clamp(-_accel * h, _accel * h);
+
+    // Vertical: buoyancy pulls gently up; holding jump strokes up harder;
+    // otherwise a slow sink. Always damped so it feels like water.
+    final up = (input.jumpHeld && !game.resetting) ? -Config.swimStroke : 0.0;
+    velocity.y += (Config.swimBuoyancy + up - velocity.y * 3.0) * h;
+    velocity.y = velocity.y.clamp(-Config.swimSpeed, Config.swimSpeed * 0.8);
+
+    final box = aabb;
+    final result = game.collisionWorld.move(box, velocity.x * h, velocity.y * h);
+    position.setValues(box.x, box.y);
+    if (result.hitX) velocity.x = 0;
+    if (result.hitY) velocity.y = 0;
+    grounded = game.collisionWorld.isGrounded(box);
+    if (grounded) _jumpsUsed = 0;
   }
 
   // --- Rendering: posture-driven pictogram (no sprites) ---------------------
@@ -263,6 +316,13 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
         legL = Offset(cx - 5, h * 0.97);
         legR = Offset(cx + 5, h * 0.97);
       }
+    } else if (inWater) {
+      // Treading water: arms scull, legs flutter — floating, never sinking.
+      final paddle = math.sin(_swimPhase);
+      armL = Offset(cx - 9 - 3 * paddle, h * 0.46);
+      armR = Offset(cx + 9 + 3 * paddle, h * 0.46);
+      legL = Offset(cx - 6 + 4 * paddle, h * 0.9);
+      legR = Offset(cx + 6 - 4 * paddle, h * 0.9);
     } else if (!grounded) {
       // Airborne tuck.
       armL = Offset(cx - 9, h * 0.36);

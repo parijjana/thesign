@@ -37,7 +37,11 @@ PathCheckResult checkDoorReachability(LevelData level) {
   // add ~1 tile of standing height to a stack (that's the stacking puzzle).
   final blockBonus =
       2 * level.entities.where((e) => e.type == 'pushable_block').length;
-  final jumpBudget = _jumpBudget + blockBonus;
+  // Assumed powerups (docs/POWERUPS.md §3): spring boots double the jump;
+  // flippers make water a standable surface (swim routes connect).
+  final hasSpring = level.assumePowerups.contains('springBoots');
+  final hasFlippers = level.assumePowerups.contains('flippers');
+  final jumpBudget = (hasSpring ? 2 * _jumpBudget : _jumpBudget) + blockBonus;
 
   void fillRect(double x, double y, double rw, double rh) {
     final x0 = (x * _res).floor().clamp(0, w);
@@ -56,6 +60,24 @@ PathCheckResult checkDoorReachability(LevelData level) {
   }
   fillRect(0, 0, level.widthTiles, synthesizedCeilingTiles(level.type));
 
+  // With flippers the player swims, so water cells act as standable surface
+  // — the checker can route through them.
+  final swimmable = List.generate(h, (_) => List.filled(w, false));
+  if (hasFlippers) {
+    for (final e in level.entities) {
+      if (e.type != 'water') continue;
+      final x0 = (e.x * _res).floor().clamp(0, w);
+      final x1 = ((e.x + e.w) * _res).ceil().clamp(0, w);
+      final y0 = (e.y * _res).floor().clamp(0, h);
+      final y1 = ((e.y + e.h) * _res).ceil().clamp(0, h);
+      for (var yy = y0; yy < y1; yy++) {
+        for (var xx = x0; xx < x1; xx++) {
+          if (!solid[yy][xx]) swimmable[yy][xx] = true;
+        }
+      }
+    }
+  }
+
   bool cellClear(int x, int y) =>
       x >= 0 && y >= 0 && x < w && y < h && !solid[y][x];
 
@@ -71,7 +93,9 @@ PathCheckResult checkDoorReachability(LevelData level) {
 
   bool supported(int x, int feetY) {
     if (feetY + 1 >= h) return true; // resting on the level's bottom edge
-    return solid[feetY + 1][x] || solid[feetY + 1][x + 1];
+    // Standing on solid, OR treading water (with flippers) at this cell.
+    if (solid[feetY + 1][x] || solid[feetY + 1][x + 1]) return true;
+    return swimmable[feetY][x] || swimmable[feetY][x + 1];
   }
 
   // BFS over (x, feetY, jumpBudget): budget spends on upward steps and

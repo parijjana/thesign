@@ -29,6 +29,10 @@ class RoomRegistry {
   bool isSolveGated(String sourceId, String exitName) =>
       world.isSolveGated(sourceId, exitName);
 
+  /// Which room's solve opens that door (null = always open).
+  String? gatingRoomId(String sourceId, String exitName) =>
+      world.gatingRoomId(sourceId, exitName);
+
   Future<LevelData> level(String nodeId, AssetsCache assets) async {
     final cached = _levelCache[nodeId];
     if (cached != null) return cached;

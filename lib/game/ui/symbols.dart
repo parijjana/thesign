@@ -65,6 +65,13 @@ enum SymbolId {
   /// "exit" (the twist).
   spawn,
 
+  /// Powerup glyphs (INV, docs/POWERUPS.md): swim fin, coiled spring, hook,
+  /// lantern — on pickups, the HUD, and (M7) the legend shelf.
+  powerFlippers,
+  powerSpring,
+  powerGrapple,
+  powerLantern,
+
   /// Discipline marker: Mechanics — lever on a fulcrum triangle (SYMBOLS §5).
   dMechanics,
 
@@ -290,6 +297,46 @@ void drawSymbol(Canvas canvas, SymbolId id, double size, Color ink) {
           stroke,
         );
       }
+
+    case SymbolId.powerFlippers:
+      // A swim fin: a teardrop blade.
+      final fin = Path()
+        ..moveTo(0.42, 0.18)
+        ..quadraticBezierTo(0.34, 0.55, 0.30, 0.82)
+        ..quadraticBezierTo(0.5, 0.9, 0.68, 0.82)
+        ..quadraticBezierTo(0.6, 0.5, 0.56, 0.18)
+        ..quadraticBezierTo(0.5, 0.12, 0.42, 0.18)
+        ..close();
+      canvas.drawPath(fin, fill);
+      canvas.drawLine(const Offset(0.5, 0.30), const Offset(0.5, 0.78), stroke);
+
+    case SymbolId.powerSpring:
+      // A coiled spring: a zig-zag in a column.
+      final coil = Path()..moveTo(0.34, 0.2);
+      for (var i = 0; i < 4; i++) {
+        final y = 0.2 + i * 0.16;
+        coil.lineTo(0.66, y + 0.08);
+        coil.lineTo(0.34, y + 0.16);
+      }
+      canvas.drawPath(coil, stroke);
+      canvas.drawLine(const Offset(0.3, 0.86), const Offset(0.7, 0.86), stroke);
+
+    case SymbolId.powerGrapple:
+      // A hook.
+      canvas.drawLine(const Offset(0.5, 0.14), const Offset(0.5, 0.5), stroke);
+      canvas.drawArc(
+        Rect.fromCircle(center: const Offset(0.42, 0.58), radius: 0.18),
+        -0.4, math.pi * 1.25, false, stroke,
+      );
+
+    case SymbolId.powerLantern:
+      canvas.drawRRect(
+        RRect.fromLTRBR(0.34, 0.30, 0.66, 0.78, const Radius.circular(0.06)),
+        stroke,
+      );
+      canvas.drawLine(const Offset(0.42, 0.2), const Offset(0.58, 0.2), stroke);
+      canvas.drawLine(const Offset(0.5, 0.14), const Offset(0.5, 0.3), stroke);
+      canvas.drawCircle(const Offset(0.5, 0.54), 0.09, fill);
 
     case SymbolId.hint:
       // Bulb + base + two light ticks.

@@ -2,11 +2,13 @@
   "version": 1,
   "id": "corridor_04",
   "type": "corridor",
-  "name": "Diamond street - rides (dev label)",
+  "name": "Diamond street - rides & the deep (dev label)",
   "size": { "w": 24, "h": 14 },
   "entryPoints": {
     "south": { "x": 2.5, "y": 11 },
-    "north": { "x": 20.5, "y": 11 }
+    "north": { "x": 20.5, "y": 11 },
+    "dive": { "x": 11.5, "y": 11 },
+    "grotto": { "x": 4, "y": 11 }
   },
   "start": { "x": 2.5, "y": 11 },
   "entities": [
@@ -14,7 +16,7 @@
     { "type": "wall", "x": 23.25, "y": 0, "w": 0.75, "h": 12 },
     { "type": "floor", "x": 0, "y": 12, "w": 5.5, "h": 2 },
     { "type": "floor", "x": 18.5, "y": 12, "w": 5.5, "h": 2 },
-    { "type": "water", "x": 5.25, "y": 12.25, "w": 13.75, "h": 1.75 },
+    { "type": "water", "x": 5.25, "y": 8.25, "w": 13.75, "h": 5.75 },
     { "type": "warning_sign", "x": 3.9, "y": 10.4, "w": 1.1, "h": 1.1,
       "props": { "glyph": "no_swimming" } },
 
@@ -23,10 +25,16 @@
     { "type": "sign", "x": 21.5, "y": 7.5, "w": 0.9, "h": 0.9,
       "props": { "glyph": "street_diamond" } },
 
-    { "id": "ride1", "type": "moving_platform", "x": 6, "y": 11, "w": 2, "h": 0.5,
-      "props": { "path": [ { "x": 11, "y": 11 } ], "speed": 55 } },
-    { "id": "ride2", "type": "moving_platform", "x": 16.5, "y": 11, "w": 2, "h": 0.5,
-      "props": { "path": [ { "x": 12, "y": 11 } ], "speed": 65 } },
+    { "id": "ride1", "type": "moving_platform", "x": 6, "y": 8, "w": 2, "h": 0.5,
+      "props": { "path": [ { "x": 11, "y": 8 } ], "speed": 55 } },
+    { "id": "ride2", "type": "moving_platform", "x": 16.5, "y": 8, "w": 2, "h": 0.5,
+      "props": { "path": [ { "x": 12, "y": 8 } ], "speed": 65 } },
+
+    { "id": "doorGrotto", "type": "door", "x": 3.4, "y": 6, "w": 1.4, "h": 6,
+      "props": { "exit": "grotto", "secret": true } },
+
+    { "id": "doorDive", "type": "door", "x": 11, "y": 11.5, "w": 1.2, "h": 2,
+      "props": { "exit": "dive", "glyph": "powerFlippers" } },
 
     { "id": "doorSouth", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "south" } },

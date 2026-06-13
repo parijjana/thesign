@@ -51,26 +51,30 @@ class WorldData {
     return null;
   }
 
-  /// THE direction-of-travel rule, single source of truth: is the door from
-  /// [fromNode] via [exitName] one that stays shut until the adjoining ROOM
-  /// is solved? True only for a door on a room's NON-entry (locked) side —
-  /// computed identically from either endpoint, so the two sides can never
-  /// disagree (the bug this kills). Corridor↔corridor/hub doors: never
-  /// gated. Secrets are handled separately.
-  bool isSolveGated(String fromNode, String exitName) {
+  /// THE direction-of-travel rule, single source of truth: which ROOM's
+  /// solve opens the door from [fromNode] via [exitName] — or null if it's
+  /// always open. A door is gated by whichever endpoint room has this side
+  /// as its NON-entry (locked) side. Checking BOTH endpoints means the two
+  /// sides can never disagree (the bug this kills), and it correctly handles
+  /// a room↔room connection (e.g. the capstone/ascent → exit_hall doors).
+  String? gatingRoomId(String fromNode, String exitName) {
     final transition = resolve(fromNode, exitName);
-    if (transition == null) return false;
+    if (transition == null) return null;
     final from = node(fromNode);
-    if (from.type == NodeType.room) {
-      return !from.entries.contains(exitName);
+    if (from.type == NodeType.room && !from.entries.contains(exitName)) {
+      return from.id;
     }
     final to = node(transition.targetId);
     if (to.type == NodeType.room) {
       final side = roomSideTo(to, fromNode);
-      return side != null && !to.entries.contains(side);
+      if (side != null && !to.entries.contains(side)) return to.id;
     }
-    return false;
+    return null;
   }
+
+  /// Is the door from [fromNode] via [exitName] shut until a room is solved?
+  bool isSolveGated(String fromNode, String exitName) =>
+      gatingRoomId(fromNode, exitName) != null;
 
   /// Resolves using [exitName] from [sourceId] → where you end up, and which
   /// of the target's entry points to appear at.
@@ -214,6 +218,7 @@ class LevelData {
     required this.entryPoints,
     required this.start,
     required this.entities,
+    this.assumePowerups = const [],
   });
 
   final int version;
@@ -227,6 +232,11 @@ class LevelData {
   final Map<String, TilePoint> entryPoints;
   final TilePoint start;
   final List<EntityData> entities;
+
+  /// Powerup ids the player is ASSUMED to hold for path-checking this level
+  /// (docs/POWERUPS.md §3) — a powerup-gated room declares its kit so the
+  /// checker verifies reachability the way it's meant to be played.
+  final List<String> assumePowerups;
 
   factory LevelData.fromJson(Map<String, dynamic> json) {
     final size = json['size'] as Map<String, dynamic>;
@@ -243,6 +253,7 @@ class LevelData {
         (k, v) => MapEntry(k, TilePoint.fromJson(v as Map<String, dynamic>)),
       ),
       start: TilePoint.fromJson(json['start'] as Map<String, dynamic>),
+      assumePowerups: (json['assume'] as List? ?? []).cast<String>(),
       entities: [
         for (final e in json['entities'] as List)
           EntityData.fromJson(e as Map<String, dynamic>),

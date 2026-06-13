@@ -177,7 +177,13 @@ Because there is no text, assistance and feedback are their own symbol systems
 - **The collection pays out** — tools and artifacts; see §9b.
 - Lightweight persistence (see ARCHITECTURE §Save). No accounts, fully offline.
 
-## 9b. The Field Kit & artifacts *(DRAFT — design-gate before build)*
+## 9b. The Field Kit & artifacts *(being realized as Metroidvania powerups — see [POWERUPS.md](POWERUPS.md))*
+> **Update:** the Field Kit is being built as **hidden-room powerups that gate routes**
+> (Metroidvania) — flippers (swim), spring boots (double-jump), grapple, lantern. This realizes the
+> tools below as permanent abilities found in secret rooms, each opening areas you saw earlier but
+> couldn't pass. Full design + build status in **[POWERUPS.md](POWERUPS.md)**. The text below is the
+> original sketch, kept for the artifact-combo ideas not yet built.
+
 > ⚠️ **Status: concept locked in spirit; details deliberately open.** Before any of this is built it
 > gets a dedicated design pass (final tool list, per-discipline symbol economy, the artifact combo
 > lattice, socket placement rules) — see ROADMAP §M5.5. Nothing in M0–M5 depends on it; M6+ places

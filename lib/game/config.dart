@@ -22,4 +22,9 @@ abstract final class Config {
   static const double coyoteTime = 0.12; // s of grace after leaving a ledge
   static const double jumpBufferTime = 0.12; // s a jump press is remembered
   static const double carryJumpFactor = 0.82; // carrying limits jump (GDD §5)
+
+  // --- Swim (Flippers powerup) -----------------------------------------------
+  static const double swimSpeed = 95; // logical px/s — slower than running
+  static const double swimBuoyancy = 60; // gentle downward settle in water
+  static const double swimStroke = 260; // upward pull while holding jump
 }

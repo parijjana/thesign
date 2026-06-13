@@ -7,6 +7,7 @@ import 'package:flame/game.dart';
 import 'components/claw_reset.dart';
 import 'components/player.dart';
 import 'components/pushable_block.dart';
+import 'components/water_pool.dart';
 import 'config.dart';
 import 'core/collision_world.dart';
 import 'core/interactable.dart';
@@ -17,12 +18,14 @@ import 'level/level_loader.dart';
 import 'level/level_model.dart';
 import 'level/room_registry.dart';
 import 'palette.dart';
+import 'powerups.dart';
 import 'puzzles/puzzle_script.dart';
 import 'save/progress.dart';
 import 'save/save_service.dart';
 import 'ui/feedback_popups.dart';
 import 'ui/hud.dart';
 import 'ui/interact_prompt.dart';
+import 'ui/powerup_hud.dart';
 
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
@@ -57,6 +60,10 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Blocks in the current node (registered on mount; plates query them).
   final List<PushableBlock> blocks = [];
 
+  /// Water pools in the current node — the player queries these to know if
+  /// it's submerged (swim with Flippers, else reset).
+  final List<WaterPool> waterPools = [];
+
   late final Player player;
   late final ClawReset claw;
   late final RoomRegistry registry;
@@ -77,6 +84,11 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   /// Every node ever entered — feeds the M7 castle map.
   final Set<String> visitedNodes = {};
+
+  /// Permanent Metroidvania abilities owned (docs/POWERUPS.md).
+  final Set<Powerup> powerups = {};
+
+  bool hasPowerup(Powerup p) => powerups.contains(p);
 
   /// The node `start` in px — the NO-DEATH reset point the claw returns to.
   final Vector2 startPoint = Vector2.zero();
@@ -124,6 +136,8 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
       foundEtchings.addAll(progress.foundEtchings);
       discoveredSecrets.addAll(progress.discoveredSecrets);
       visitedNodes.addAll(progress.visitedNodes);
+      powerups.addAll(
+          progress.powerups.map(Powerup.byId).whereType<Powerup>());
     }
     final startNode =
         (progress != null && registry.world.nodes.containsKey(progress.currentNode))
@@ -136,6 +150,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     world.add(InteractPrompt());
     world.add(feedback);
     camera.viewport.add(Hud());
+    camera.viewport.add(PowerupHud());
   }
 
   /// DEV: wipe the save and restart from the very beginning (F2).
@@ -146,6 +161,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     foundEtchings.clear();
     discoveredSecrets.clear();
     visitedNodes.clear();
+    powerups.clear();
     loadNode(registry.world.start);
   }
 
@@ -156,12 +172,20 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
       foundEtchings: foundEtchings,
       discoveredSecrets: discoveredSecrets,
       visitedNodes: visitedNodes,
+      powerups: powerups.map((p) => p.id).toSet(),
     )); // fire-and-forget; nothing blocks on the disk
   }
 
   /// Etching collected: persist + a quiet green celebration.
   void collectEtching(String etchingId, Vector2 at) {
     if (!foundEtchings.add(etchingId)) return;
+    feedback.emit(FeedbackKind.success, at);
+    _autosave();
+  }
+
+  /// Powerup collected: gained forever; green celebration + a teaching pulse.
+  void collectPowerup(Powerup powerup, Vector2 at) {
+    if (!powerups.add(powerup)) return;
     feedback.emit(FeedbackKind.success, at);
     _autosave();
   }
@@ -189,6 +213,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     collisionWorld.solids.clear();
     interactables.clear();
     blocks.clear();
+    waterPools.clear();
 
     final data = await registry.level(nodeId, assets);
     currentNodeId = nodeId;
@@ -232,13 +257,12 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     return rule.isSatisfied(solvedRooms, node.rooms);
   }
 
-  /// Is the ROOM side of the door using [exitName] solved? (Passage doors,
-  /// GDD §4: in a room it's this room's state; elsewhere it's the target's.)
+  /// Is the door using [exitName] open? (Passage doors, GDD §4: open unless
+  /// the room that gates it is still unsolved — which room, from either
+  /// endpoint, is resolved by the world graph's direction-of-travel rule.)
   bool isSolvedSide(String exitName) {
-    final node = registry.node(currentNodeId);
-    if (node.type == NodeType.room) return solvedRooms.contains(currentNodeId);
-    final transition = registry.resolve(currentNodeId, exitName);
-    return transition != null && solvedRooms.contains(transition.targetId);
+    final gating = registry.gatingRoomId(currentNodeId, exitName);
+    return gating == null || solvedRooms.contains(gating);
   }
 
   /// A waterlogged block needs fishing out — queue a claw cargo run.

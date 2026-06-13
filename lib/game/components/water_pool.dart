@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 
 import '../core/aabb.dart';
 import '../escape_game.dart';
+import '../powerups.dart';
 
 /// Water hazard — the kid-friendly jeopardy (GDD §7): fall in and the claw
 /// fishes you out, back to the node start. No death, barely even a splash.
@@ -27,11 +28,30 @@ class WaterPool extends PositionComponent with HasGameReference<EscapeGame> {
   Aabb get trigger =>
       Aabb(position.x + 2, position.y + 6, size.x - 4, size.y - 6);
 
+  /// The full pool box — used for the swim check (more generous than the
+  /// reset trigger, so swimming starts right at the surface).
+  Aabb get surface => Aabb(position.x, position.y, size.x, size.y);
+
+  @override
+  void onMount() {
+    super.onMount();
+    game.waterPools.add(this);
+  }
+
+  @override
+  void onRemove() {
+    game.waterPools.remove(this);
+    super.onRemove();
+  }
+
   @override
   void update(double dt) {
     _t += dt;
     final player = game.player;
-    if (!player.carried && trigger.overlaps(player.aabb)) {
+    // With Flippers the player SWIMS (handled in Player); water never resets.
+    if (!player.carried &&
+        !game.hasPowerup(Powerup.flippers) &&
+        trigger.overlaps(player.aabb)) {
       game.requestReset(); // the claw fishes the player out
     }
     // Blocks sink slowly (buoyant drag); once well under, they hang

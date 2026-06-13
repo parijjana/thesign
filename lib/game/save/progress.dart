@@ -7,16 +7,19 @@ class Progress {
     Set<String>? foundEtchings,
     Set<String>? discoveredSecrets,
     Set<String>? visitedNodes,
+    Set<String>? powerups,
   })  : solvedRooms = solvedRooms ?? {},
         foundEtchings = foundEtchings ?? {},
         discoveredSecrets = discoveredSecrets ?? {},
-        visitedNodes = visitedNodes ?? {};
+        visitedNodes = visitedNodes ?? {},
+        powerups = powerups ?? {};
 
   String currentNode;
   final Set<String> solvedRooms;
   final Set<String> foundEtchings; // lore collection (gallery in M7)
   final Set<String> discoveredSecrets; // '<node>/<exit>' keys
   final Set<String> visitedNodes; // feeds the M7 castle map
+  final Set<String> powerups; // Powerup ids owned (Metroidvania)
 
   Map<String, dynamic> toJson() => {
         'version': 1,
@@ -25,6 +28,7 @@ class Progress {
         'foundEtchings': foundEtchings.toList()..sort(),
         'discoveredSecrets': discoveredSecrets.toList()..sort(),
         'visitedNodes': visitedNodes.toList()..sort(),
+        'powerups': powerups.toList()..sort(),
       };
 
   factory Progress.fromJson(Map<String, dynamic> json) => Progress(
@@ -37,5 +41,6 @@ class Progress {
             (json['discoveredSecrets'] as List? ?? []).cast<String>().toSet(),
         visitedNodes:
             (json['visitedNodes'] as List? ?? []).cast<String>().toSet(),
+        powerups: (json['powerups'] as List? ?? []).cast<String>().toSet(),
       );
 }

@@ -56,12 +56,28 @@
                  "stairs": "corridor_01", "far": "hub_03" } },
 
     { "id": "corridor_04", "type": "corridor", "file": "corridor_04.json",
-      "exits": { "south": "hub_02", "north": "hub_03" } },
+      "exits": { "south": "hub_02", "north": "hub_03",
+                 "dive": "room_dive", "grotto": "secret_grotto" } },
+
+    { "id": "secret_grotto", "type": "room", "file": "secret_grotto.json",
+      "entry": "out",
+      "exits": { "out": "corridor_04" } },
+    { "id": "room_dive", "type": "room", "file": "room_dive.json",
+      "entry": "in",
+      "exits": { "in": "corridor_04" } },
 
     { "id": "hub_03", "type": "hub", "file": "hub_03.json",
       "exits": { "south": "corridor_04", "west": "corridor_03",
                  "split": "room_splitter", "seq": "room_sequence",
+                 "ascent": "room_ascent", "belfry": "secret_belfry",
                  "secret": "secret_attic" } },
+
+    { "id": "secret_belfry", "type": "room", "file": "secret_belfry.json",
+      "entry": "out",
+      "exits": { "out": "hub_03" } },
+    { "id": "room_ascent", "type": "room", "file": "room_ascent.json",
+      "entry": "west",
+      "exits": { "west": "hub_03", "high": "exit_hall" } },
 
     { "id": "room_splitter", "type": "room", "file": "room_splitter.json",
       "entry": "west",
@@ -82,7 +98,7 @@
       "exits": { "west": "corridor_05", "east": "exit_hall" } },
 
     { "id": "exit_hall", "type": "room", "file": "exit_hall.json",
-      "entry": "west",
-      "exits": { "west": "room_capstone" } }
+      "entry": ["west", "high"],
+      "exits": { "west": "room_capstone", "high": "room_ascent" } }
   ]
 }
