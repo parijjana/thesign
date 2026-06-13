@@ -20,7 +20,7 @@
     { "type": "warning_sign", "x": 9, "y": 10.4, "w": 1.1, "h": 1.1,
       "props": { "glyph": "no_swimming" } },
 
-    { "type": "street_badge", "x": 10.75, "y": 4, "w": 2.5, "h": 2,
+    { "type": "street_badge", "x": 3, "y": 9.4, "w": 1.2, "h": 1.2,
       "props": { "glyph": "street_square" } },
 
     { "type": "warning_sign", "x": 7, "y": 10.4, "w": 1.1, "h": 1.1,

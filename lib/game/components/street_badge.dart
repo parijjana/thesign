@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../config.dart';
 import '../escape_game.dart';
 import '../ui/symbols.dart';
 
@@ -20,36 +19,26 @@ class StreetBadge extends PositionComponent with HasGameReference<EscapeGame> {
   @override
   void render(Canvas canvas) {
     final p = game.palette;
-    final rect = size.toRect();
-
-    // A stone cartouche, same stone as the walls — set INTO the masonry.
-    final panel = RRect.fromRectAndRadius(rect, const Radius.circular(7));
+    // A small carved stone plaque, same stone as the walls — a wall marker
+    // at head height, not a posted sign. Round-ish like a worn cartouche.
+    final panel = RRect.fromRectAndRadius(size.toRect(), Radius.circular(size.x * 0.28));
     canvas.drawRRect(panel, Paint()..color = p.surface);
-    // Carved rim: a bright inner edge (top-left, catching light) over an ink
-    // outer groove — the two-tone that says "recessed into the wall".
-    canvas.drawRRect(
-      panel.deflate(2),
-      Paint()
-        ..color = p.bg
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
     canvas.drawRRect(
       panel,
       Paint()
         ..color = p.ink
         ..style = PaintingStyle.stroke
-        ..strokeWidth = Config.strokeHeavy
+        ..strokeWidth = 2.4
         ..strokeJoin = StrokeJoin.round,
     );
 
     // The glyph as raised relief: an ink shadow offset down-right, then the
-    // bright stone face on top — chiselled, no gradients (flat two-tone).
+    // bright stone face on top — chiselled, flat two-tone (no gradients).
     final g = size.x * 0.62;
     final ox = (size.x - g) / 2;
     final oy = (size.y - g) / 2;
     canvas.save();
-    canvas.translate(ox + 1.6, oy + 1.6);
+    canvas.translate(ox + 1.1, oy + 1.1);
     drawSymbol(canvas, glyph, g, p.ink);
     canvas.restore();
     canvas.save();
