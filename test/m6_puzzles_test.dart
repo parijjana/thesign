@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:thesign/game/components/gate.dart';
 import 'package:thesign/game/components/lever.dart';
 import 'package:thesign/game/components/optics.dart';
 import 'package:thesign/game/components/pressure_plate.dart';
@@ -30,44 +31,79 @@ class FakeRoom implements PuzzleRoom {
 }
 
 PressurePlate plate() => PressurePlate(Vector2.zero(), Vector2(64, 8));
-Lever lever(String id) =>
-    Lever(Vector2.zero(), Vector2.all(32), entityId: id);
+Lever lever(String id) => Lever(Vector2.zero(), Vector2.all(32), entityId: id);
 LightSensor sensor(String id) =>
     LightSensor(Vector2.zero(), Vector2.all(32), entityId: id);
+Gate gate() => Gate(Vector2.zero(), Vector2(8, 64));
 
+/// Every M6 room is lever-gated: the mechanism opens `leverGate`, the room is
+/// solved only once `goalSwitch` is pulled.
 void main() {
-  test('sokoban: solved only when ALL plates pressed (latched)', () {
+  test('sokoban: all plates open the lever gate; the lever solves (latched)',
+      () {
     final a = plate();
     final b = plate();
-    final puzzle = SokobanPuzzle()..onLoad(FakeRoom({'a': a, 'b': b}));
+    final gateL = gate();
+    final goal = lever('goalSwitch');
+    final puzzle = SokobanPuzzle()
+      ..onLoad(FakeRoom(
+          {'a': a, 'b': b, 'leverGate': gateL, 'goalSwitch': goal}));
+
     a.pressed = true;
     puzzle.onUpdate(0.016);
+    expect(gateL.open, isFalse, reason: 'one plate is not enough');
     expect(puzzle.isSolved, isFalse);
+
     b.pressed = true;
     puzzle.onUpdate(0.016);
-    expect(puzzle.isSolved, isTrue);
-    a.pressed = false; // latched
+    expect(gateL.open, isTrue, reason: 'both plates open the way to the lever');
+    expect(puzzle.isSolved, isFalse, reason: 'the mechanism alone never solves');
+
+    a.pressed = false; // latched — the way stays open
     puzzle.onUpdate(0.016);
+    expect(gateL.open, isTrue);
+
+    goal.on = true; // pull the goal lever
     expect(puzzle.isSolved, isTrue);
   });
 
-  test('splitter: both sensors must be lit at once', () {
+  test('splitter: both sensors open the lever gate; the lever solves', () {
     final s1 = sensor('s1');
     final s2 = sensor('s2');
-    final puzzle = SplitterPuzzle()..onLoad(FakeRoom({'s1': s1, 's2': s2}));
+    final gateL = gate();
+    final goal = lever('goalSwitch');
+    final puzzle = SplitterPuzzle()
+      ..onLoad(FakeRoom(
+          {'s1': s1, 's2': s2, 'leverGate': gateL, 'goalSwitch': goal}));
+
     s1.lit = true;
     puzzle.onUpdate(0.016);
+    expect(gateL.open, isFalse);
     expect(puzzle.isSolved, isFalse);
+
     s2.lit = true;
     puzzle.onUpdate(0.016);
+    expect(gateL.open, isTrue);
+    expect(puzzle.isSolved, isFalse);
+
+    goal.on = true;
     expect(puzzle.isSolved, isTrue);
   });
 
-  test('sequence: right order solves; wrong flip resets all levers', () {
+  test('sequence: right order opens the gate; wrong flip resets; lever solves',
+      () {
     final l1 = lever('lev1');
     final l2 = lever('lev2');
     final l3 = lever('lev3');
-    final room = FakeRoom({'lev1': l1, 'lev2': l2, 'lev3': l3});
+    final gateL = gate();
+    final goal = lever('goalSwitch');
+    final room = FakeRoom({
+      'lev1': l1,
+      'lev2': l2,
+      'lev3': l3,
+      'leverGate': gateL,
+      'goalSwitch': goal,
+    });
     final puzzle = SequencePuzzle()..onLoad(room);
 
     l1.on = true;
@@ -77,11 +113,18 @@ void main() {
     expect(room.errors, ['lev3']);
     expect(l1.on, isFalse); // everything reset
     expect(l3.on, isFalse);
+    puzzle.onUpdate(0.016);
+    expect(gateL.open, isFalse);
     expect(puzzle.isSolved, isFalse);
 
     puzzle.onInteract('lev1');
     puzzle.onInteract('lev2');
     puzzle.onInteract('lev3');
+    puzzle.onUpdate(0.016);
+    expect(gateL.open, isTrue, reason: 'the sequence opens the way to the lever');
+    expect(puzzle.isSolved, isFalse, reason: 'still need to pull the lever');
+
+    goal.on = true;
     expect(puzzle.isSolved, isTrue);
   });
 }

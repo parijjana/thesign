@@ -41,6 +41,9 @@
     { "id": "crank2", "type": "crank", "x": 11, "y": 10.5, "w": 1, "h": 1.5,
       "props": { "target": "m2" } },
 
-    { "id": "sensorA", "type": "light_sensor", "x": 21, "y": 1.5, "w": 1, "h": 1 }
+    { "id": "sensorA", "type": "light_sensor", "x": 21, "y": 1.5, "w": 1, "h": 1 },
+
+    { "id": "leverGate", "type": "gate", "x": 15, "y": 8, "w": 1, "h": 4 },
+    { "id": "goalSwitch", "type": "lever", "x": 16, "y": 10.75, "w": 1, "h": 1.25 }
   ]
 }

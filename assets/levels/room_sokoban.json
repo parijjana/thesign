@@ -29,6 +29,9 @@
     { "id": "blockA", "type": "pushable_block", "x": 3.5, "y": 11, "w": 1, "h": 1 },
     { "id": "blockB", "type": "pushable_block", "x": 12, "y": 11, "w": 1, "h": 1 },
 
+    { "id": "leverGate", "type": "gate", "x": 16, "y": 8, "w": 1, "h": 4 },
+    { "id": "goalSwitch", "type": "lever", "x": 17, "y": 10.75, "w": 1, "h": 1.25 },
+
     { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "west" } },
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,

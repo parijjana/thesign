@@ -128,6 +128,8 @@ Top-down **discovered-graph** map — play stays side-view; the map is how the m
 ## 6. Authoring workflow (every new level/world change)
 1. Sketch on the graph first; check junction variety + at least one parallel route per room.
 2. Author level JSON per LEVEL_FORMAT conventions (water pools, crank reachability, badges).
+   Every room ends in a **goal lever** (`goalSwitch`) that opens the exit; the puzzle only clears
+   the way to it (a `leverGate` for logic rooms, geometry for physical ones) — PUZZLES.md rule 8.
 3. `flutter test` must pass:
    - **path checker** (every door physically reachable) + **world validator** (no cut-vertex
      rooms, world connected);

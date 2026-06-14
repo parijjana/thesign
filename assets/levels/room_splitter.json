@@ -33,6 +33,9 @@
     { "id": "crank1", "type": "crank", "x": 11, "y": 10.5, "w": 1, "h": 1.5,
       "props": { "target": "m1" } },
 
+    { "id": "leverGate", "type": "gate", "x": 16, "y": 8, "w": 1, "h": 4 },
+    { "id": "goalSwitch", "type": "lever", "x": 17, "y": 10.75, "w": 1, "h": 1.25 },
+
     { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "west" } },
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,

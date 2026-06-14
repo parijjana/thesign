@@ -66,19 +66,30 @@ void main() {
   });
 
   group('OpticsMirrorPuzzle (headless)', () {
-    test('solved latches once the sensor has been lit', () {
+    test('lit sensor opens the lever gate (latched); the lever solves', () {
       final sensor =
           LightSensor(Vector2.zero(), Vector2.all(32), entityId: 'sensorA');
+      final gate = Gate(Vector2.zero(), Vector2(32, 128));
+      final lever =
+          Lever(Vector2.zero(), Vector2(32, 40), entityId: 'goalSwitch');
       final puzzle = OpticsMirrorPuzzle()
-        ..onLoad(FakeRoom({'sensorA': sensor}));
+        ..onLoad(FakeRoom(
+            {'sensorA': sensor, 'leverGate': gate, 'goalSwitch': lever}));
 
       expect(puzzle.isSolved, isFalse);
+      expect(gate.open, isFalse);
+
       sensor.lit = true;
       puzzle.onUpdate(0.016);
-      expect(puzzle.isSolved, isTrue);
-      // Un-aiming the beam later doesn't unsolve the room.
+      expect(gate.open, isTrue, reason: 'the light opens the way to the lever');
+      expect(puzzle.isSolved, isFalse, reason: 'still need to pull the lever');
+
+      // Un-aiming the beam later doesn't re-close the way (latched).
       sensor.lit = false;
       puzzle.onUpdate(0.016);
+      expect(gate.open, isTrue);
+
+      lever.on = true;
       expect(puzzle.isSolved, isTrue);
     });
   });

@@ -20,17 +20,23 @@
     { "type": "warning_sign", "x": 17.2, "y": 10.4, "w": 1.1, "h": 1.1,
       "props": { "glyph": "no_swimming" } },
 
-    { "id": "lev2", "type": "lever", "x": 5.5, "y": 10.75, "w": 1, "h": 1.25 },
+    { "id": "lev2", "type": "lever", "x": 5.5, "y": 10.75, "w": 1, "h": 1.25,
+      "props": { "style": "fireman" } },
     { "type": "sign", "x": 5.55, "y": 8.6, "w": 0.9, "h": 0.9,
       "props": { "pips": 2 } },
 
-    { "id": "lev3", "type": "lever", "x": 10.5, "y": 10.75, "w": 1, "h": 1.25 },
+    { "id": "lev3", "type": "lever", "x": 10.5, "y": 10.75, "w": 1, "h": 1.25,
+      "props": { "style": "fireman" } },
     { "type": "sign", "x": 10.55, "y": 8.6, "w": 0.9, "h": 0.9,
       "props": { "pips": 3 } },
 
-    { "id": "lev1", "type": "lever", "x": 15, "y": 10.75, "w": 1, "h": 1.25 },
+    { "id": "lev1", "type": "lever", "x": 15, "y": 10.75, "w": 1, "h": 1.25,
+      "props": { "style": "fireman" } },
     { "type": "sign", "x": 15.05, "y": 8.6, "w": 0.9, "h": 0.9,
       "props": { "pips": 1 } },
+
+    { "id": "leverGate", "type": "gate", "x": 16.3, "y": 8, "w": 1, "h": 4 },
+    { "id": "goalSwitch", "type": "lever", "x": 17.2, "y": 10.75, "w": 1, "h": 1.25 },
 
     { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "west" } },

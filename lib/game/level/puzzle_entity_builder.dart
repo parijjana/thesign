@@ -36,6 +36,7 @@ Component? buildPuzzleEntity(EntityData e, double t) {
         size,
         entityId: e.id ?? 'lever',
         startsOn: e.props['startsOn'] as bool? ?? false,
+        style: LeverStyle.fromId(e.props['style'] as String?),
       ),
     'pressure_plate' => PressurePlate(pos, size),
     'gate' => Gate(pos, size),

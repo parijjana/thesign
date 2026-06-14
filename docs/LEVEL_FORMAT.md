@@ -115,7 +115,7 @@ spaces whose `door` entities lead to rooms + the onward corridor.
 | `player_start` | sets initial spawn if no entry used | — |
 | `door` | `DoorComponent` | `exit` (exit name in world graph; for a room's entry door this is omitted/`"back"` → returns to parent hub), `locked` (bool), `keyId` (string, if locked) |
 | `gate` | `GateComponent` | `openY`/`openX` (offset when open), `startsOpen` (bool) |
-| `lever` | `LeverComponent` | `startsOn` (bool), `group` (string, for sequences) |
+| `lever` | `LeverComponent` | `startsOn` (bool); `style` (`"goal"` default — the door lever's thin handle; `"fireman"` — a chunky knife-switch for puzzle-input levers, e.g. the sequence room, so they don't read as the door lever) |
 | `pressure_plate` | `PressurePlateComponent` | `requiresWeight` (number, optional) |
 | `pushable_block` | `PushableBlockComponent` | `weight` (number) |
 | `key` | `KeyComponent` | `keyId` (string) |
@@ -182,6 +182,17 @@ abstract class PuzzleScript {
   data and behavior in code, cleanly separated.
 - `isSolved` flipping true is the signal the loader uses to unlock/open the room's exit door.
 - Scripts are **unit-testable headless**: load a room, simulate interacts/triggers, assert `isSolved`.
+
+### The goal-lever convention (every room) — PUZZLES.md rule 8
+Every room's exit hangs on one **goal lever**, and the puzzle is only the way to reach it:
+- Author a `lever` with `id: "goalSwitch"` (default `style`) — pulling it is the room's solve.
+- Lever-gated rooms (optics/logic) also author a `gate` with `id: "leverGate"` sealing the
+  lever's nook; the script opens it when the mechanism is satisfied. Extend `LeverGatedPuzzle`
+  (`lib/game/puzzles/lever_gated.dart`) and implement `mechanismSatisfied` — it wires
+  `goalSwitch`/`leverGate` and makes `isSolved = goalSwitch.on` for you (P1 hand-rolls the same
+  shape; purely physical rooms skip `leverGate` and use `StubSwitchPuzzle`).
+- Tests enforce it: the level-wiring test asserts the mechanism alone can't solve and the lever
+  can; the path checker asserts `goalSwitch` is physically reachable.
 
 ### Example mapping (P1 — pressure plates)
 - JSON declares `plateA`, `blockA`, `gateA`, `goalSwitch`, `doorBack`.

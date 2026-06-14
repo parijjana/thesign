@@ -17,7 +17,8 @@ import 'level_model.dart';
 class PathCheckResult {
   PathCheckResult(this.unreachableDoors);
 
-  /// Door labels (id or exit name) the player can never stand in front of.
+  /// Labels (id or exit name) of doors/goal-levers the player can never stand
+  /// in front of.
   final List<String> unreachableDoors;
 
   bool get ok => unreachableDoors.isEmpty;
@@ -129,23 +130,34 @@ PathCheckResult checkDoorReachability(LevelData level) {
     push(x, y + 1, b); // fall (budget held until landing)
   }
 
-  // A door is reachable if the player can STAND overlapping its frame.
-  final unreachable = <String>[];
-  for (final e in level.entities) {
-    if (e.type != 'door') continue;
+  // Can the player STAND overlapping a target's frame? (Used for both doors
+  // and goal levers — gates are excluded from `solid`, so a lever behind its
+  // mechanism gate counts as reachable in this optimistic "assume solvable"
+  // model; the gate does the real in-game blocking.)
+  bool canStandAt(EntityData e) {
     final x0 = (e.x * _res).floor() - _playerW;
     final x1 = ((e.x + e.w) * _res).ceil();
     final feet = ((e.y + e.h) * _res).round() - 1;
-    var found = false;
-    for (var x = x0; x <= x1 && !found; x++) {
-      for (var y = feet - 2; y <= feet + 1 && !found; y++) {
+    for (var x = x0; x <= x1; x++) {
+      for (var y = feet - 2; y <= feet + 1; y++) {
         if (x >= 0 && x < w && y >= 0 && y < h && standingReached[x][y]) {
-          found = true;
+          return true;
         }
       }
     }
-    if (!found) {
-      unreachable.add(e.id ?? (e.props['exit'] as String? ?? 'door'));
+    return false;
+  }
+
+  // Every door must be reachable, and every lever (the goal switch each room's
+  // exit now hangs on) too — an unreachable lever is a soft-lock.
+  final unreachable = <String>[];
+  for (final e in level.entities) {
+    if (e.type == 'door') {
+      if (!canStandAt(e)) {
+        unreachable.add(e.id ?? (e.props['exit'] as String? ?? 'door'));
+      }
+    } else if (e.type == 'lever') {
+      if (!canStandAt(e)) unreachable.add(e.id ?? 'lever');
     }
   }
   return PathCheckResult(unreachable);

@@ -64,8 +64,21 @@ void main() {
       expect(script.isSolved, isFalse,
           reason: '${node.id}: puzzle reports solved before anything is done');
 
-      // (2b) Satisfying its entities must drive it to solved — proving the
-      //      script can actually open the door.
+      // (2b) THE THEME: every exit hangs on a goal lever. Satisfying the
+      //      mechanism (plates/sensors/sequence) but NOT pulling `goalSwitch`
+      //      must leave the room UNSOLVED — the lever is genuinely needed.
+      if (room.byId<Lever>('goalSwitch') != null) {
+        _satisfyMechanismOnly(puzzleId, script, room);
+        for (var i = 0; i < 6; i++) {
+          script.onUpdate(1 / 60);
+        }
+        expect(script.isSolved, isFalse,
+            reason: '${node.id}: solved by the mechanism alone — the goal '
+                'lever is not actually required to open the exit');
+      }
+
+      // (2c) Satisfying its entities AND pulling the lever must drive it to
+      //      solved — proving the script can actually open the door.
       _driveToSolved(puzzleId, script, room);
       for (var i = 0; i < 6; i++) {
         script.onUpdate(1 / 60);
@@ -82,11 +95,13 @@ void main() {
 void _driveToSolved(String puzzleId, PuzzleScript script, _WiringRoom room) {
   switch (puzzleId) {
     case 'p_sequence':
-      // Pull the levers in the script's expected order.
+      // Pull the puzzle levers in the script's expected order — that opens the
+      // way to the goal lever — then pull the goal lever to open the door.
       for (final id in const ['lev1', 'lev2', 'lev3']) {
         room.byId<Lever>(id)?.on = true;
         script.onInteract(id);
       }
+      room.byId<Lever>('goalSwitch')?.on = true;
     default:
       for (final l in room.allOf<Lever>()) {
         l.on = true;
@@ -100,6 +115,26 @@ void _driveToSolved(String puzzleId, PuzzleScript script, _WiringRoom room) {
       for (final g in room.allOf<Gate>()) {
         g.open = true;
       }
+  }
+}
+
+/// Satisfies a room's MECHANISM (plates, sensors, the lever sequence) but
+/// deliberately leaves the `goalSwitch` lever alone — used to prove the lever
+/// is required (the mechanism alone must not solve the room).
+void _satisfyMechanismOnly(
+    String puzzleId, PuzzleScript script, _WiringRoom room) {
+  if (puzzleId == 'p_sequence') {
+    for (final id in const ['lev1', 'lev2', 'lev3']) {
+      room.byId<Lever>(id)?.on = true;
+      script.onInteract(id);
+    }
+    return;
+  }
+  for (final p in room.allOf<PressurePlate>()) {
+    p.pressed = true;
+  }
+  for (final s in room.allOf<LightSensor>()) {
+    s.lit = true;
   }
 }
 

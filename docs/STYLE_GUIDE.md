@@ -100,7 +100,8 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | Door (open) | rounded portal arch; **discipline glyph on the upper body, small open-padlock on the lower body** | `accentGoal`, `ink` glyphs | "you can pass" |
 | Door (closed) | same arch; **discipline glyph above, small ISO no-entry (red circle-slash) below** | `surface`, `accentDanger` status | "not yet — solve to open" |
 | | *All door glyphs are painted ON the body (rule 9: architecture, not floating UI). The status glyph appears only on sides with a lock condition (always-open entry doors say nothing) and flips live on solve.* | | |
-| Lever | post + handle (clear up/down states) | `accentInteract` | "pull me" |
+| Lever — goal (`style:"goal"`) | base plate + **thin** angled handle, teal knob, clear up/down sweep | `accentInteract` | "pull me to open the door" (the one door verb, PUZZLES.md rule 8) |
+| Lever — fireman (`style:"fireman"`) | a **chunky knife-switch**: slotted base housing + thick bar throwing into it, ball grip | `accentInteract` | "puzzle input" — heavier silhouette so it doesn't read as the door lever |
 | Pressure plate | flat tab on the floor, depresses | `accentInteract` | "step / weigh down" |
 | Pushable block | rounded square with grip marks | `accentInteract` | "push me" |
 | Key | classic key pictogram | `accentInteract` | "carry to lock" |

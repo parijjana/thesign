@@ -22,6 +22,17 @@
 7. **Color never stands alone.** Color-matching puzzles (prism split, beam mixing, reagents) must
    pair every color with a redundant pattern/shape cue — colorblind-safe by construction
    (STYLE_GUIDE §2 rule 8).
+8. **One door verb: the goal lever.** Every room's exit door is opened by pulling a single
+   **goal lever** (`goalSwitch`); the puzzle's only job is to clear the *way to that lever* —
+   physically. A logic/optics puzzle does this by opening an internal `leverGate` blocking the
+   lever's nook; a physical puzzle (stack, seesaw, counterweight) does it by geometry (you climb
+   or ride to the lever). The room is never "solved" by the mechanism alone — pulling the lever
+   is. This keeps the player's final action identical in every room (consistency + teaching), and
+   is enforced in `flutter test` (the level-wiring test: mechanism-without-lever must stay
+   unsolved; the path checker: the goal lever must be reachable). Puzzle-input levers (e.g. the
+   sequence room) wear a distinct **fireman's-switch** look so they don't read as the door lever
+   (STYLE_GUIDE §6). Implementation: `LeverGatedPuzzle` base + `goalSwitch`/`leverGate` entities
+   (LEVEL_FORMAT §4).
 
 ---
 

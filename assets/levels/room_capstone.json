@@ -29,6 +29,9 @@
     { "id": "plateA", "type": "pressure_plate", "x": 5, "y": 11.65, "w": 2, "h": 0.35 },
     { "id": "blockA", "type": "pushable_block", "x": 9, "y": 11, "w": 1, "h": 1 },
 
+    { "id": "leverGate", "type": "gate", "x": 13.5, "y": 8, "w": 1, "h": 4 },
+    { "id": "goalSwitch", "type": "lever", "x": 14.4, "y": 10.75, "w": 1, "h": 1.25 },
+
     { "id": "doorWest", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "west", "glyph": "street_star" } },
     { "id": "doorEast", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
