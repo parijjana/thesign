@@ -15,12 +15,9 @@
     { "type": "floor", "x": 0, "y": 12, "w": 24, "h": 2 },
     { "type": "floor", "x": 0, "y": 5, "w": 4, "h": 1 },
 
-    { "type": "floor", "x": 4.0, "y": 5.7, "w": 1.6, "h": 6.3 },
-    { "type": "floor", "x": 5.6, "y": 6.4, "w": 1.6, "h": 5.6 },
-    { "type": "floor", "x": 7.2, "y": 7.1, "w": 1.6, "h": 4.9 },
-    { "type": "floor", "x": 8.8, "y": 7.8, "w": 1.6, "h": 4.2 },
+    { "type": "ramp", "x": 4, "y": 5, "w": 8, "h": 7, "props": { "highSide": "left" } },
 
-    { "type": "water", "x": 0.75, "y": 5, "w": 22.5, "h": 7 },
+    { "type": "water", "x": 0.75, "y": 6, "w": 22.5, "h": 6 },
 
     { "id": "etch_d1", "type": "etching", "x": 11, "y": 8.5, "w": 1.4, "h": 1.4,
       "props": { "glyph": "spawn" } },

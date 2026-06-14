@@ -11,6 +11,7 @@ import '../components/moving_platform.dart';
 import '../components/optics.dart';
 import '../components/powerup_pickup.dart';
 import '../components/pushable_block.dart';
+import '../components/ramp.dart';
 import '../components/seesaw.dart';
 import '../components/sign.dart';
 import '../components/street_badge.dart';
@@ -144,6 +145,8 @@ class RoomComponent extends PositionComponent
     return switch (e.type) {
       'floor' => Floor(pos, size),
       'wall' => Wall(pos, size),
+      'ramp' => RampComponent(pos, size,
+          highSide: e.props['highSide'] as String? ?? 'left'),
       'water' => WaterPool(pos, size),
       'warning_sign' => WarningSign(pos, glyph: _glyph(e.props['glyph'])),
       'sign' => Sign(

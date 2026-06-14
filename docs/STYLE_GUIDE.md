@@ -97,6 +97,7 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | Object | Construction | Fill token | Read |
 |---|---|---|---|
 | Floor / wall | rounded-rect blocks, heavy outline; **walls carry a sparse brick-coursing motif** (thin ink bed joints + staggered head joints) so masonry reads as masonry | `surface` | solid, immovable |
+| Ramp | a right triangle in masonry tones (slope = hypotenuse, heavy ink outline) | `surface` | "a walkable incline" — you walk *up* it, in walk or swim, no jumping out of water |
 | Door (open) | rounded portal arch; **discipline glyph on the upper body, small open-padlock on the lower body** | `accentGoal`, `ink` glyphs | "you can pass" |
 | Door (closed) | same arch; **discipline glyph above, small ISO no-entry (red circle-slash) below** | `surface`, `accentDanger` status | "not yet — solve to open" |
 | | *All door glyphs are painted ON the body (rule 9: architecture, not floating UI). The status glyph appears only on sides with a lock condition (always-open entry doors say nothing) and flips live on solve.* | | |

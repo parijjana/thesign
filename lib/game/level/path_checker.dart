@@ -58,6 +58,19 @@ PathCheckResult checkDoorReachability(LevelData level) {
 
   for (final e in level.entities) {
     if (e.type == 'floor' || e.type == 'wall') fillRect(e.x, e.y, e.w, e.h);
+    // A ramp is a non-rectangular solid: rasterize the triangle column by
+    // column (fill from the slope surface down to the base) so the flood-fill
+    // can stand on the incline.
+    if (e.type == 'ramp') {
+      final highLeft = (e.props['highSide'] as String? ?? 'left') == 'left';
+      final base = e.y + e.h;
+      final cols = (e.w * _res).ceil();
+      for (var i = 0; i < cols; i++) {
+        final frac = (i + 0.5) / cols; // 0..1 across the ramp
+        final surf = highLeft ? e.y + e.h * frac : base - e.h * frac;
+        fillRect(e.x + i / _res, surf, 1 / _res, base - surf);
+      }
+    }
   }
   fillRect(0, 0, level.widthTiles, synthesizedCeilingTiles(level.type));
 

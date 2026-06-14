@@ -219,6 +219,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     _blockRescueQueue.clear();
     _room?.removeFromParent();
     collisionWorld.solids.clear();
+    collisionWorld.ramps.clear();
     interactables.clear();
     blocks.clear();
     waterPools.clear();

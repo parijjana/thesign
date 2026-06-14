@@ -143,6 +143,11 @@ set-piece**, the title **wordmark**, possibly intricate glyphs. Rules (authoring
   then Y against static geometry → set grounded flag → apply coyote/buffer timers.
 - **Scripted hazards & moving platforms:** kinematic bodies on authored paths/triggers; player
   resolves against them as moving AABBs.
+- **Ramps (walkable slopes):** the collision world holds `ramps` alongside the AABB `solids`. After
+  the X-then-Y AABB pass, `move()` settles the body onto any ramp surface beneath it — lifting it up
+  a rise (so you *walk* up, no auto-step lip) and snapping it down a descent, but only while not
+  moving upward so jumps launch cleanly. One-way support (pass through from below); works in swim
+  mode too, which is how a swimmer climbs out of water. See `collision_world.dart` (`Ramp`).
 - **Forge2D rooms:** room JSON sets `"physics": "forge2d"`; loader spins up a Forge2D world for that
   room only; eligible objects (e.g. rolling boulders) become Forge2D bodies. The player can remain a
   kinematic body bridged into that world. Keep these rooms few and well-tested.

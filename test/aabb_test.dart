@@ -74,4 +74,44 @@ void main() {
       expect(w.isGrounded(Aabb(0, 5, 10, 10)), isFalse); // 5px in the air
     });
   });
+
+  group('Ramp (walkable slope)', () {
+    // Rises to the LEFT: high (y=0) at x0, low (y=100) at x1.
+    final ramp = Ramp(0, 100, 0, 100);
+
+    test('surface/support height along the slope', () {
+      expect(ramp.surfaceY(50), 50);
+      // Support is the highest (leftmost) point under the footprint.
+      expect(ramp.supportY(40, 50), 40);
+      // Footprint clamps to the ramp extent.
+      expect(ramp.supportY(-20, 10), 0);
+    });
+
+    test('walking up a rise lifts the body onto the slope', () {
+      final w = CollisionWorld()..ramps.add(ramp);
+      final box = Aabb(40, 35, 10, 10); // bottom 45, below support (40)
+      w.move(box, 0, 1);
+      expect(box.bottom, 40); // sat on the surface
+    });
+
+    test('walking down the slope snaps onto it (no stair-step off)', () {
+      final w = CollisionWorld()..ramps.add(ramp);
+      final box = Aabb(40, 30, 10, 10); // resting: bottom 40 == support
+      w.move(box, 5, 1); // step toward the low side
+      expect(box.bottom, 45); // hugged the slope down to the new support
+    });
+
+    test('a jump (upward move) launches cleanly off the slope', () {
+      final w = CollisionWorld()..ramps.add(ramp);
+      final box = Aabb(40, 60, 10, 10); // below the surface
+      w.move(box, 0, -5); // rising
+      expect(box.y, 55); // not yanked up onto the slope
+    });
+
+    test('isGrounded true when resting on a ramp', () {
+      final w = CollisionWorld()..ramps.add(ramp);
+      expect(w.isGrounded(Aabb(40, 30, 10, 10)), isTrue); // bottom 40 == support
+      expect(w.isGrounded(Aabb(40, 25, 10, 10)), isFalse); // 5px above
+    });
+  });
 }

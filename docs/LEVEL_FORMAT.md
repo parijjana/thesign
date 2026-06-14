@@ -112,6 +112,7 @@ spaces whose `door` entities lead to rooms + the onward corridor.
 |---|---|---|
 | `floor` | `FloorComponent` | — (solid) |
 | `wall` | `WallComponent` | — (solid) |
+| `ramp` | `RampComponent` | `highSide` (`"left"`/`"right"`, default left) — a **walkable slope** (one-way support surface). The slope runs across the bbox: `highSide` meets the top platform, the other end drops to the bbox bottom. **Author the low end to meet the floor** so a body arriving along the bottom (e.g. a swimmer) climbs from there. The player walks up it in walk *and* swim mode — no jump. |
 | `player_start` | sets initial spawn if no entry used | — |
 | `door` | `DoorComponent` | `exit` (exit name in world graph; for a room's entry door this is omitted/`"back"` → returns to parent hub), `locked` (bool), `keyId` (string, if locked) |
 | `gate` | `GateComponent` | `openY`/`openX` (offset when open), `startsOpen` (bool) |
