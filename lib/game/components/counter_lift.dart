@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -10,11 +9,13 @@ import '../escape_game.dart';
 import 'weight.dart';
 
 /// Counterweight lift (Gravity): a **sunk pressure plate**, held up from
-/// below by a spring, is linked over a pulley to a blue platform. Pile weight
-/// on the plate — it sinks (compressing the spring) and the platform rises,
-/// 1 tile per unit of weight (max 2). Uses the shared weight system, so a
-/// STACK of blocks counts by its full weight (real gravity), not just the
-/// block touching the plate. Load 2, then ride the raised platform to the goal.
+/// below by a spring, is linked over a pulley to a blue platform. The platform
+/// rises by the **net** weight — what's on the plate MINUS what's on the
+/// platform — 1 tile per unit (max 2). So your own weight (and any block) on
+/// the platform pushes back, exactly like a real counterweight: there's no
+/// free ride up. Uses the shared weight system (stacks count fully). To lift
+/// yourself to the top you must out-weigh yourself on the plate (e.g. 3 blocks
+/// beat you + the platform).
 class CounterLift extends PositionComponent
     with HasGameReference<EscapeGame>
     implements Resettable {
@@ -26,10 +27,13 @@ class CounterLift extends PositionComponent
 
   late final double _baseY = position.y;
   late final Aabb _solid = Aabb(position.x, position.y, size.x, size.y);
-  double _weight = 0;
+  double _load = 0; // net lift in tiles (0..2), drives height + spring sink
 
   /// Objects rest on the plate at its top edge (the floor line).
   Aabb get _plateSurface => Aabb(plate.x, plate.y, plate.w, 1);
+
+  /// Objects rest on the platform at ITS top edge — the counter side.
+  Aabb get _liftSurface => Aabb(_solid.x, _solid.y, _solid.w, 1);
 
   @override
   void onMount() {
@@ -49,14 +53,16 @@ class CounterLift extends PositionComponent
   void resetToStart() {
     position.y = _baseY;
     _solid.y = _baseY;
-    _weight = 0;
+    _load = 0;
   }
-
-  double get _load => math.min(_weight, 2);
 
   @override
   void update(double dt) {
-    _weight = weightOn(game, _plateSurface); // stack-aware, counts everything
+    // Net counterweight: plate side minus platform side (both stack-aware).
+    // Whatever stands on the rising platform pushes back — no free ride.
+    final onPlate = weightOn(game, _plateSurface);
+    final onPlatform = weightOn(game, _liftSurface);
+    _load = (onPlate - onPlatform).clamp(0.0, 2.0);
     final targetY = _baseY - _load * Config.tileSize;
     final old = position.y;
     final step = dt * Config.tileSize * 1.5;
@@ -91,19 +97,21 @@ class CounterLift extends PositionComponent
     final plL = plate.x - position.x;
     final plR = plate.right - position.x;
     final plTop = plate.y - position.y;
+    // The plate tab stays FLUSH with the floor — that's where blocks/the player
+    // actually rest, so they sit ON it (no floating gap). Load is told by the
+    // spring squashing beneath and by the far platform rising.
     final recessBottom = plTop + Config.tileSize * 0.7;
-    final sink = _load / 2 * Config.tileSize * 0.5; // plate dips as it loads
+    final plateY = plTop;
 
-    // Recess housing walls + floor.
+    // Recess housing walls + floor (the spring lives below the flush plate).
     canvas.drawLine(Offset(plL, plTop), Offset(plL, recessBottom), ink);
     canvas.drawLine(Offset(plR, plTop), Offset(plR, recessBottom), ink);
     canvas.drawLine(Offset(plL, recessBottom), Offset(plR, recessBottom), ink);
-    // Spring under the plate (a compressing zig-zag).
-    final plateY = plTop + sink;
+    // Spring under the plate — squashes tighter as the load grows.
     final springTop = plateY + 5;
     final coilH = recessBottom - springTop;
+    final coils = 3 + (_load * 2).round(); // more coils = more compressed
     final spring = Path()..moveTo(plL + 4, recessBottom);
-    const coils = 4;
     for (var i = 0; i <= coils; i++) {
       final y = recessBottom - coilH * i / coils;
       spring.lineTo(i.isEven ? plL + 4 : plR - 4, y);

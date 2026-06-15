@@ -12,7 +12,6 @@ import '../components/optics.dart';
 import '../components/powerup_pickup.dart';
 import '../components/pushable_block.dart';
 import '../components/ramp.dart';
-import '../components/seesaw.dart';
 import '../components/sign.dart';
 import '../components/street_badge.dart';
 import '../components/wall.dart';
@@ -171,11 +170,6 @@ class RoomComponent extends PositionComponent
       'boulder' => Boulder(
           Vector2(pos.x + size.x / 2, pos.y + size.y / 2),
           radius: size.x / 2,
-        ),
-      'seesaw' => Seesaw(
-          Vector2(pos.x + size.x / 2, pos.y),
-          armHalf: ((e.props['armHalf'] as num?) ?? 2.5).toDouble() * t,
-          panWidth: ((e.props['panW'] as num?) ?? 1.5).toDouble() * t,
         ),
       'counter_lift' => CounterLift(
           pos,

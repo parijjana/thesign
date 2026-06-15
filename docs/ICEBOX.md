@@ -26,6 +26,22 @@
   version needs the swim posture in the posture-interpolation set (player.dart) plus a float-at-
   surface behavior while awaiting rescue. Pairs naturally with the M7.5 animation pass.
 
+## Fulcrum seesaw mechanic *(retired from M6 — physics too finicky)*
+- A two-pan **balance seesaw** (load weight on one pan → the other rises into a platform you reach).
+  We built it two ways: first a hard "2-block threshold, player weight ignored" (a bandaid that
+  didn't read as real gravity), then a true weight balance on the shared `weightOn` system (tips to
+  the heavier side, counts the player + single blocks). The *physics concept* was right, but the
+  **rider-on-a-tilting-pan handling** never settled — blocks and the player jittered/flapped off the
+  pans, and getting the fulcrum to sit cleanly in the floor (pans must be at floor level for
+  block-loading, which buries the pivot) fought the layout. After several playtest passes it stayed
+  unreliable, so `room_fulcrum` was rebuilt on the **counterweight lift** (`counter_lift`, which
+  already works) and the `Seesaw` component + `seesaw` entity type were removed (recover from git
+  history: last present at the "real weight balance" commit).
+- **To revive:** treat riders properly — move the platform through the collision sweep so it *pushes*
+  riders (don't hand-roll a carry), or rotate the beam as a real angled surface (needs slope support,
+  which the ramp work now provides). Pairs with the M7.5 motion pass. The `weightOn` balance logic is
+  sound and worth reusing.
+
 ## Other parked ideas (from the replayability review)
 - **Castle map / completion view** — post-game map showing solved vs unexplored rooms.
 - **Second solutions** — hidden bonus objective in select rooms (bullseye-with-star glyph).

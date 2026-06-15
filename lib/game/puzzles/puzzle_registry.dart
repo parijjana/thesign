@@ -11,10 +11,10 @@ typedef PuzzleFactory = PuzzleScript Function();
 const Map<String, PuzzleFactory> puzzleRegistry = {
   'stub_switch': StubSwitchPuzzle.new,
   'p1_pressure_plates': P1PressurePlates.new,
-  // Physical puzzles (stacking, seesaw, counterweight): the component does
-  // the physics, a goal lever ends them — the stub script fits.
+  // Physical puzzles (stacking, counterweight): the component does the
+  // physics, a goal lever ends them — the stub script fits. (The seesaw was
+  // retired to the icebox; room_fulcrum now uses the counterweight lift.)
   'p2_box_stack': StubSwitchPuzzle.new,
-  'p3_seesaw': StubSwitchPuzzle.new,
   'p_counterweight': StubSwitchPuzzle.new,
   'optics_mirror': OpticsMirrorPuzzle.new,
   'p_sokoban': SokobanPuzzle.new,
