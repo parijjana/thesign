@@ -158,6 +158,9 @@ in one deliberate pass, with the whole game playable as the test bed.
   contrast debts (`accentNeutral` and `accentHint` vs the bright bg).
 - **Motion polish:** player posture curves, squash/lean feel, claw beat timing, room-transition
   choreography, telegraph animations.
+  - **Water climb-out (mantle) pose:** the climb-out works mechanically (`player.dart` `_advanceClimb`
+    / the `_climbing` render branch) but the figure currently "supermans" up — arms out, body flat.
+    Redo the pose as a believable clamber: grab the lip, plant a knee, push up — weighty, not flying.
 - Readability playtest (kid + a fresh adult) and a colorblind-simulation check.
 - **Exit criteria:** the game looks intentionally designed, not functional; every visible element
   passes the style-guide audit; the claw is a character, not a placeholder.

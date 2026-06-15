@@ -50,6 +50,14 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
   double _runPhase = 0;
   double _swimPhase = 0;
 
+  // Climb-out (mantle): clamber from water onto an adjacent ledge instead of
+  // needing a ramp. A short scripted move from the water to standing on top.
+  bool _climbing = false;
+  double _climbT = 0;
+  final Vector2 _climbFrom = Vector2.zero();
+  final Vector2 _climbTo = Vector2.zero();
+  static const double _climbDur = 0.4;
+
   // Carried-pose pendulum: the claw grips the scruff; the body swings
   // beneath, driven by the claw's own acceleration.
   double _dangle = 0; // rad
@@ -66,6 +74,7 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     _coyoteLeft = 0;
     _bufferLeft = 0;
     _squash = 0;
+    _climbing = false;
   }
 
   /// Pick up a block (called by the block's onInteract).
@@ -140,6 +149,25 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     // Submerged? (Only with Flippers — otherwise water resets, see WaterPool.)
     inWater = game.hasPowerup(Powerup.flippers) &&
         game.waterPools.any((w) => w.surface.overlaps(aabb));
+
+    // Climb-out: clamber from water onto a bank (a scripted move that owns the
+    // body while it plays — so no ramp is needed to exit a pool).
+    if (_climbing) {
+      _advanceClimb(dt);
+      return;
+    }
+    if (inWater && !game.resetting && !isCarrying) {
+      final to = _climbTarget();
+      if (to != null) {
+        _climbing = true;
+        _climbT = 0;
+        _climbFrom.setFrom(position);
+        _climbTo.setFrom(to);
+        velocity.setZero();
+        _advanceClimb(dt);
+        return;
+      }
+    }
 
     _accumulator += math.min(dt, 1 / 15); // clamp hitches, avoid the spiral
     while (_accumulator >= _step) {
@@ -255,6 +283,54 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
     if (grounded) _jumpsUsed = 0;
   }
 
+  /// Eased clamber from the water to standing on the ledge: y leads (pull up),
+  /// x lags (swing over), so it reads as a climb, not a slide.
+  void _advanceClimb(double dt) {
+    _climbT += dt;
+    final t = (_climbT / _climbDur).clamp(0.0, 1.0);
+    final xt = t * t; // x lags — swing over last
+    final yt = 1 - (1 - t) * (1 - t); // y leads — pull up first
+    position.x = _climbFrom.x + (_climbTo.x - _climbFrom.x) * xt;
+    position.y = _climbFrom.y + (_climbTo.y - _climbFrom.y) * yt;
+    if (t >= 1) {
+      _climbing = false;
+      position.setFrom(_climbTo);
+      velocity.setZero();
+      grounded = true;
+      _jumpsUsed = 0;
+      _coyoteLeft = Config.coyoteTime;
+      inWater = false;
+    }
+  }
+
+  /// While swimming and pressing toward an adjacent ledge whose top is within
+  /// reach (and which has clear standing room), returns where to clamber to —
+  /// the climb-out that replaces "add a ramp" for getting out of water.
+  Vector2? _climbTarget() {
+    final axis = game.input.moveAxis;
+    if (axis == 0) return null;
+    final dir = axis > 0 ? 1 : -1;
+    final box = aabb;
+    final feetY = box.bottom;
+    const maxClimb = Config.tileSize * 2.0; // up to ~2 tiles above the feet
+    const reach = Config.tileSize * 0.55; // how far ahead to look
+    for (final s in game.collisionWorld.solids) {
+      final ahead = dir > 0
+          ? (s.left >= box.right - 2 && s.left <= box.right + reach)
+          : (s.right <= box.left + 2 && s.right >= box.left - reach);
+      if (!ahead) continue;
+      if (s.top > feetY + 8 || s.top < feetY - maxClimb) continue; // out of band
+      final landX = dir > 0 ? s.left + 2 : s.right - size.x - 2;
+      final landY = s.top - size.y;
+      final landing = Aabb(landX, landY, size.x, size.y);
+      final blocked = game.collisionWorld.solids
+          .any((o) => !identical(o, s) && o.overlaps(landing));
+      if (blocked) continue; // no headroom / something in the way
+      return Vector2(landX, landY);
+    }
+    return null;
+  }
+
   // --- Rendering: posture-driven pictogram (no sprites) ---------------------
 
   @override
@@ -316,6 +392,17 @@ class Player extends PositionComponent with HasGameReference<EscapeGame> {
         legL = Offset(cx - 5, h * 0.97);
         legR = Offset(cx + 5, h * 0.97);
       }
+    } else if (_climbing) {
+      // Clamber: lean forward, both arms reach up onto the ledge, legs trail.
+      // M7.5: this currently "supermans" (flat, arms out) — redo as a weighty
+      // grab-lip / plant-knee / push-up clamber (ROADMAP M7.5 motion polish).
+      final f = facing.toDouble();
+      hip = Offset(cx + f * 3, h * 0.55);
+      neck = Offset(cx + f * 6, h * 0.30);
+      armL = Offset(cx + f * 12, h * 0.10);
+      armR = Offset(cx + f * 9, h * 0.22);
+      legL = Offset(cx - f * 6, h * 0.92);
+      legR = Offset(cx - f * 10, h * 0.84);
     } else if (inWater) {
       // Treading water: arms scull, legs flutter — floating, never sinking.
       final paddle = math.sin(_swimPhase);
