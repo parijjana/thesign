@@ -101,6 +101,14 @@ void main() {
       expect(box.bottom, 45); // hugged the slope down to the new support
     });
 
+    test('a body well below the surface passes under (no phantom lift)', () {
+      final w = CollisionWorld()..ramps.add(ramp);
+      // Deep under the slope (support at x40..50 is 40; bottom is 90).
+      final box = Aabb(40, 80, 10, 10);
+      w.move(box, 0, 1); // sinking, but far below — must not teleport up
+      expect(box.y, 81);
+    });
+
     test('a jump (upward move) launches cleanly off the slope', () {
       final w = CollisionWorld()..ramps.add(ramp);
       final box = Aabb(40, 60, 10, 10); // below the surface

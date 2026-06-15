@@ -52,6 +52,12 @@ class CollisionWorld {
   /// so walking *down* a slope sticks instead of stair-stepping off the edge.
   static const double _rampSnap = 8;
 
+  /// Most a ramp may lift a body in one move. Walking up a slope penetrates the
+  /// surface only a pixel or two per step, so a small cap keeps the climb while
+  /// letting a body that's well below the surface (e.g. a swimmer under the
+  /// ledge) pass *underneath* instead of being teleported up onto the ramp.
+  static const double _rampMaxLift = 18;
+
   /// Moves [box] by ([dx], [dy]) resolving X first, then Y (the classic
   /// kinematic order: walking into a wall doesn't kill your fall, landing
   /// doesn't stop your run), then settling onto any ramp surface beneath it.
@@ -72,10 +78,10 @@ class CollisionWorld {
         if (!r.overlapsX(box.left, box.right)) continue;
         final support = r.supportY(box.left, box.right);
         final penetration = box.bottom - support; // >0 = below the surface
-        if (penetration > 0) {
-          box.y -= penetration; // lift onto the slope
+        if (penetration > 0 && penetration <= _rampMaxLift) {
+          box.y -= penetration; // lift onto the slope (a small step)
           hitY = true;
-        } else if (-penetration <= _rampSnap) {
+        } else if (penetration <= 0 && -penetration <= _rampSnap) {
           box.y -= penetration; // snap down (penetration<0 → moves down)
           hitY = true;
         }
