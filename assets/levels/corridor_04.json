@@ -3,40 +3,42 @@
   "id": "corridor_04",
   "code": "C04",
   "type": "corridor",
-  "name": "Diamond street - rides & the deep (dev label)",
+  "name": "Diamond street - stepping stones & the deep (dev label)",
   "size": { "w": 24, "h": 14 },
   "entryPoints": {
-    "south": { "x": 2.5, "y": 11 },
+    "south": { "x": 4, "y": 11 },
     "north": { "x": 20.5, "y": 11 },
-    "dive": { "x": 11.5, "y": 11 },
-    "grotto": { "x": 4, "y": 11 }
+    "dive": { "x": 13, "y": 11 },
+    "grotto": { "x": 2.6, "y": 11 }
   },
-  "start": { "x": 2.5, "y": 11 },
+  "start": { "x": 4, "y": 11 },
   "entities": [
     { "type": "wall", "x": 0, "y": 0, "w": 0.75, "h": 12 },
     { "type": "wall", "x": 23.25, "y": 0, "w": 0.75, "h": 12 },
     { "type": "floor", "x": 0, "y": 12, "w": 5.5, "h": 2 },
     { "type": "floor", "x": 18.5, "y": 12, "w": 5.5, "h": 2 },
-    { "type": "water", "x": 5.25, "y": 8.25, "w": 13.75, "h": 5.75 },
-    { "type": "warning_sign", "x": 3.9, "y": 10.4, "w": 1.1, "h": 1.1,
+
+    { "type": "water", "x": 5.25, "y": 12.25, "w": 13.25, "h": 1.75 },
+    { "type": "warning_sign", "x": 5, "y": 10.4, "w": 1.1, "h": 1.1,
       "props": { "glyph": "no_swimming" } },
 
-    { "type": "street_badge", "x": 2, "y": 8.1, "w": 1.2, "h": 1.2,
+    { "id": "doorGrotto", "type": "door", "x": 0.75, "y": 0, "w": 1.5, "h": 12,
+      "props": { "exit": "grotto", "secret": true } },
+    { "type": "street_badge", "x": 1.05, "y": 4, "w": 1.2, "h": 1.2,
       "props": { "glyph": "street_diamond" } },
 
-    { "id": "ride1", "type": "moving_platform", "x": 6, "y": 8, "w": 2, "h": 0.5,
-      "props": { "path": [ { "x": 11, "y": 8 } ], "speed": 55 } },
-    { "id": "ride2", "type": "moving_platform", "x": 16.5, "y": 8, "w": 2, "h": 0.5,
-      "props": { "path": [ { "x": 12, "y": 8 } ], "speed": 65 } },
+    { "id": "doorSouth", "type": "door", "x": 3, "y": 10, "w": 1.2, "h": 2,
+      "props": { "exit": "south" } },
 
-    { "id": "doorGrotto", "type": "door", "x": 3.4, "y": 6, "w": 1.4, "h": 6,
-      "props": { "exit": "grotto", "secret": true } },
+    { "type": "floor", "x": 6.8, "y": 12, "w": 1.5, "h": 2 },
+    { "type": "floor", "x": 9.6, "y": 12, "w": 1.2, "h": 2 },
 
-    { "id": "doorDive", "type": "door", "x": 11, "y": 11.5, "w": 1.2, "h": 2,
+    { "id": "doorDive", "type": "door", "x": 11, "y": 12.2, "w": 1.2, "h": 1.8,
       "props": { "exit": "dive", "glyph": "powerFlippers" } },
 
-    { "id": "doorSouth", "type": "door", "x": 1.6, "y": 10, "w": 1.2, "h": 2,
-      "props": { "exit": "south" } },
+    { "type": "floor", "x": 12.5, "y": 12, "w": 1.5, "h": 2 },
+    { "type": "floor", "x": 15.2, "y": 12, "w": 1.5, "h": 2 },
+
     { "id": "doorNorth", "type": "door", "x": 21, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "north" } }
   ]
