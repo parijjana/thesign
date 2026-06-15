@@ -33,6 +33,18 @@
    sequence room) wear a distinct **fireman's-switch** look so they don't read as the door lever
    (STYLE_GUIDE §6). Implementation: `LeverGatedPuzzle` base + `goalSwitch`/`leverGate` entities
    (LEVEL_FORMAT §4).
+9. **Live gates, then solved-for-good (game-wide).** *While solving*, a mechanism gate (the
+   **portcullis**) is a *live readout* of its inputs: up only **while** the condition holds, and it
+   **drops the instant any input is removed** (lift a block off a plate, aim a beam off its sensor).
+   But the moment the **`goalSwitch` lever is thrown the room is solved for good** — the lever is a
+   **one-way commit that can't be reset**, and from then on the portcullis (and the exit door)
+   **stay open regardless of the mechanism**. This is non-negotiable anti-soft-lock: the lever sits
+   *behind* the gate, so if the gate could drop after solving it would trap the player and they
+   could never retrace to the corridor and pick another route (kindness law, GDD §4/§8). Enforced
+   programmatically: `level_wiring_test` solves every real room, then undoes the mechanism and
+   asserts the gate is still open. Authoring consequence: keep the mechanism satisfied **passively**
+   (a block per plate, mirrors cranked in place), never by the player's own weight — and give every
+   plate its own block.
 
 ---
 

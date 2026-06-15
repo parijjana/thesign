@@ -66,7 +66,7 @@ void main() {
   });
 
   group('OpticsMirrorPuzzle (headless)', () {
-    test('lit sensor opens the lever gate (latched); the lever solves', () {
+    test('lit sensor opens the lever gate (live); the lever solves', () {
       final sensor =
           LightSensor(Vector2.zero(), Vector2.all(32), entityId: 'sensorA');
       final gate = Gate(Vector2.zero(), Vector2(32, 128));
@@ -84,13 +84,23 @@ void main() {
       expect(gate.open, isTrue, reason: 'the light opens the way to the lever');
       expect(puzzle.isSolved, isFalse, reason: 'still need to pull the lever');
 
-      // Un-aiming the beam later doesn't re-close the way (latched).
+      // LIVE gate: aim the beam off the sensor and the portcullis drops again.
       sensor.lit = false;
+      puzzle.onUpdate(0.016);
+      expect(gate.open, isFalse);
+
+      sensor.lit = true; // re-aim — it reopens
       puzzle.onUpdate(0.016);
       expect(gate.open, isTrue);
 
       lever.on = true;
       expect(puzzle.isSolved, isTrue);
+
+      // Anti-soft-lock: once solved, aiming the beam away leaves the portcullis
+      // UP (the lever overrides the mechanism) so the player can retrace.
+      sensor.lit = false;
+      puzzle.onUpdate(0.016);
+      expect(gate.open, isTrue, reason: 'solved gate stays open for retracing');
     });
   });
 }

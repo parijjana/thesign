@@ -53,6 +53,10 @@ class Lever extends PositionComponent
 
   @override
   void onInteract() {
+    // The goal lever is a ONE-WAY commit: once thrown to open the exit it can't
+    // be thrown back. The room stays solved for good, so the player can never
+    // un-solve it and can always retrace their steps (kindness, GDD §8).
+    if (style == LeverStyle.goal && on) return;
     on = !on;
     game.roomPuzzle?.onInteract(entityId);
   }

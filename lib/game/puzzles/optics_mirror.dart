@@ -4,8 +4,8 @@ import 'puzzle_script.dart';
 
 /// Optics — Mirror routing (the first "wow" room, worked example doc):
 /// rotate the mirrors until the beam lands on `sensorA`. The lit sensor opens
-/// the way to the goal lever ([LeverGatedPuzzle]); the latch means once the
-/// light has touched the sensor, un-aiming it doesn't re-close the way.
+/// the way to the goal lever ([LeverGatedPuzzle]) — a LIVE gate: aim the beam
+/// off the sensor and the portcullis drops again (game-wide live-gate rule).
 class OpticsMirrorPuzzle extends LeverGatedPuzzle {
   LightSensor? _sensor;
 

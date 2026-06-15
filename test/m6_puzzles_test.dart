@@ -39,8 +39,7 @@ Gate gate() => Gate(Vector2.zero(), Vector2(8, 64));
 /// Every M6 room is lever-gated: the mechanism opens `leverGate`, the room is
 /// solved only once `goalSwitch` is pulled.
 void main() {
-  test('sokoban: all plates open the lever gate; the lever solves (latched)',
-      () {
+  test('sokoban: all plates open the lever gate (live); the lever solves', () {
     final a = plate();
     final b = plate();
     final gateL = gate();
@@ -59,12 +58,23 @@ void main() {
     expect(gateL.open, isTrue, reason: 'both plates open the way to the lever');
     expect(puzzle.isSolved, isFalse, reason: 'the mechanism alone never solves');
 
-    a.pressed = false; // latched — the way stays open
+    a.pressed = false; // LIVE gate: lift a plate and the portcullis drops
+    puzzle.onUpdate(0.016);
+    expect(gateL.open, isFalse, reason: 'live gate closes when a plate frees');
+
+    a.pressed = true; // press it again — the way reopens
     puzzle.onUpdate(0.016);
     expect(gateL.open, isTrue);
 
     goal.on = true; // pull the goal lever
     expect(puzzle.isSolved, isTrue);
+
+    // Anti-soft-lock: solved overrides the mechanism — lift a plate now and the
+    // portcullis STAYS up, so the player can retrace and isn't trapped.
+    a.pressed = false;
+    b.pressed = false;
+    puzzle.onUpdate(0.016);
+    expect(gateL.open, isTrue, reason: 'solved gate stays open for retracing');
   });
 
   test('splitter: both sensors open the lever gate; the lever solves', () {

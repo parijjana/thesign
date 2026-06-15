@@ -103,6 +103,7 @@ Constructed like a restroom/exit-sign person, but our protagonist:
 | | *All door glyphs are painted ON the body (rule 9: architecture, not floating UI). The status glyph appears only on sides with a lock condition (always-open entry doors say nothing) and flips live on solve.* | | |
 | Lever — goal (`style:"goal"`) | base plate + **thin** angled handle, teal knob, clear up/down sweep | `accentInteract` | "pull me to open the door" (the one door verb, PUZZLES.md rule 8) |
 | Lever — fireman (`style:"fireman"`) | a **chunky knife-switch**: slotted base housing + thick bar throwing into it, ball grip | `accentInteract` | "puzzle input" — heavier silhouette so it doesn't read as the door lever |
+| Gate (portcullis) | an iron lattice (vertical bars + cross-bars, **spiked bottom**) hanging from a stone header; raises into the header when open, leaving the header + spike tips in view (never vanishes) | `ink` bars, `surface` header | "a live barrier — up only while the mechanism holds (PUZZLES.md rule 9)" |
 | Pressure plate | flat tab on the floor, depresses | `accentInteract` | "step / weigh down" |
 | Pushable block | rounded square with grip marks | `accentInteract` | "push me" |
 | Key | classic key pictogram | `accentInteract` | "carry to lock" |

@@ -22,7 +22,9 @@ class P1PressurePlates extends PuzzleScript {
 
   @override
   void onUpdate(double dt) {
-    _gate?.open = _plate?.pressed ?? false;
+    // Live while solving; latched open once the goal lever is thrown (the room
+    // stays solved, so the player can retrace — anti-soft-lock, PUZZLES rule 9).
+    _gate?.open = isSolved || (_plate?.pressed ?? false);
   }
 
   @override

@@ -86,6 +86,26 @@ void main() {
       expect(script.isSolved, isTrue,
           reason: '${node.id}: puzzle never reports solved even when every '
               'entity is satisfied — it can never open the exit');
+
+      // (2d) ANTI-SOFT-LOCK: once solved, the lever gate must STAY OPEN even if
+      //      the mechanism is undone (a block lifted off a plate, a beam aimed
+      //      away). Otherwise the portcullis drops and traps the player behind
+      //      it — they can't retrace. The solved lever overrides the mechanism.
+      final leverGate = room.byId<Gate>('leverGate');
+      if (leverGate != null) {
+        for (final p in room.allOf<PressurePlate>()) {
+          p.pressed = false;
+        }
+        for (final s in room.allOf<LightSensor>()) {
+          s.lit = false;
+        }
+        for (var i = 0; i < 6; i++) {
+          script.onUpdate(1 / 60);
+        }
+        expect(leverGate.open, isTrue,
+            reason: '${node.id}: the portcullis dropped after the room was '
+                'solved — undoing the mechanism can trap the player behind it');
+      }
     });
   }
 }
