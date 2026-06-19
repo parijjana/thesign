@@ -14,6 +14,7 @@ import '../components/pushable_block.dart';
 import '../components/ramp.dart';
 import '../components/sign.dart';
 import '../components/street_badge.dart';
+import '../components/trail_mark.dart';
 import '../components/wall.dart';
 import '../components/water_pool.dart';
 import '../components/warning_sign.dart';
@@ -156,6 +157,7 @@ class RoomComponent extends PositionComponent
         ),
       'street_badge' =>
         StreetBadge(pos, size, glyph: _glyph(e.props['glyph'])),
+      'trail_mark' => TrailMark(pos, size, glyph: _glyph(e.props['glyph'])),
       'door' => _door(e),
       'moving_platform' => MovingPlatform(
           pos,

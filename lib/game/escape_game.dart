@@ -27,6 +27,7 @@ import 'ui/feedback_popups.dart';
 import 'ui/hud.dart';
 import 'ui/interact_prompt.dart';
 import 'ui/powerup_hud.dart';
+import 'ui/spine_hud.dart';
 
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
@@ -158,6 +159,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     world.add(feedback);
     camera.viewport.add(Hud());
     camera.viewport.add(PowerupHud());
+    camera.viewport.add(SpineHud());
     camera.viewport.add(DebugHud());
   }
 
