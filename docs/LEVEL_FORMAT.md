@@ -127,10 +127,12 @@ spaces whose `door` entities lead to rooms + the onward corridor.
 | `trigger_zone` | invisible `TriggerZone` | `zoneId` (string) — fires enter/exit to the puzzle script |
 | `warning_sign` | `WarningSignComponent` | `glyph` (a symbol id, e.g. `"hazard"`, `"spike"`, `"boulder"`) — telegraph only |
 | `etching` | `EtchingComponent` | `etchingId` (string) — a findable lore etching; first touch records it in the profile's gallery (GDD §9). Non-solid, purely collectible. |
-| `anchor_socket` *(DRAFT)* | `AnchorSocketComponent` | `accepts` (tool id, e.g. `"tool_pulley"`) — marked point where a Field Kit tool attaches (GDD §9b). **Do not author until the §9b design pass closes (ROADMAP M5.5);** schema may change. |
+| `powerup_pickup` | `PowerupPickup` | `powerup` (id: `"flippers"` \| `"springBoots"` \| `"grapple"` \| `"lantern"`) — a pedestal holding the glyph; walk up to collect → permanent ability, autosave, `fb_success` (GDD §9b, POWERUPS.md). Place in hidden rooms only. |
+| `anchor_socket` *(grapple — later phase)* | `AnchorSocketComponent` | `accepts` (powerup id, currently only `"grapple"`) — marked point where the grapple powerup pulls across a gap (GDD §9b rule 5). Schema reserved; authored when the grapple wing is built (POWERUPS Phase C+). |
 
-> *(DRAFT, same gate)*: `door` gains an optional `requiresTool`/`requiresArtifact` prop for
-> star-marked **bonus doors** — never used on the main path (GDD §9b rule 4).
+> `door` gains an optional `requiresPowerup` prop (a powerup id) for star-marked **bonus doors** —
+> never used on the main path (GDD §9b rule 4; kindness validator enforces). *(Reserved for the
+> grapple/lantern graph-edge gates; flipper/spring gates are geometry, not props.)*
 
 > Solid vs trigger is determined by type (floor/wall/gate/platform = solid; plate/spike/zone/door =
 > trigger). The loader assigns this; JSON authors don't set it.

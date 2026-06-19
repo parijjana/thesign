@@ -19,8 +19,8 @@
   demonstration (never a text tooltip).
 - Draw every glyph in `ink` (near-black) line on the active palette, base stroke weight, rounded
   joins/caps (spikes/hazard points excepted). Fill flat with a token only when meaning needs it.
-- **Every collectible glyph is intentional:** it must contribute to at least one reward — its
-  discipline's tool row, an artifact combo, or both ([GDD §9b](GDD.md)). No filler stamps.
+- **Every collectible glyph is intentional:** it must feed at least one reward — a discipline row's
+  completion payoff, a powerup, or the etchings gallery ([GDD §9b](GDD.md)). No filler stamps.
 
 **Source column key:** `STD` = recognized standard · `STD*` = standard, lightly stylized ·
 `INV` = invented for this game (must be taught).
@@ -89,18 +89,25 @@ rule). Color = the discipline's palette. Earned as legend stamps on first solve 
 | `d_sound` | Sound & waves | tuning fork + arcs | STD* |
 | `d_sports` | Sports | a ball | STD* |
 
-## 5b. Tools, sockets & artifacts *(DRAFT — pending the GDD §9b design pass)*
-The Field Kit ([GDD §9b](GDD.md)): discipline rows award tools; cross-discipline symbol combos
-unlock artifacts. **Do not build or finalize these glyphs until the design pass closes** (ROADMAP
-§M5.5) — rows below are placeholders to reserve the ids and the teaching obligations.
-| id | Meaning | Glyph (sketch) | Source | Teach |
+## 5b. Powerups (the Field Kit), sockets & bonus doors *(M5.5 design pass closed)*
+The Field Kit is the **Metroidvania powerup set** ([GDD §9b](GDD.md), engine in
+[POWERUPS.md](POWERUPS.md)): permanent abilities found in hidden rooms that gate bonus routes.
+Each is shown on the pictogram figure and stamps into the legend when found. The ids below match
+`symbols.dart` (`powerFlippers`, `powerSpring`, `powerGrapple`, `powerLantern`) — **final, not
+placeholders.**
+| id | Meaning | Glyph | Source | Teach |
 |---|---|---|---|---|
-| `anchor_socket` | A tool attaches here | ring/eyelet bolted to wall, dashed outline until usable | INV | first socket seen with a matching tool owned |
-| `bonus_door` | Bonus content (tool/artifact gated, never the main path) | door + star | INV | first encountered; the star never appears on required paths |
-| `tool_pulley` | Portable pulley (Mechanics row) | pulley wheel + hook | STD* | awarded with the Mechanics row stamp |
-| `tool_mirror` | Pocket mirror (Optics row) | hand mirror | STD* | awarded with the Optics row |
-| `tool_*` | One per remaining tool | *(design pass)* | — | — |
-| `artifact_*` | Cross-discipline artifacts (e.g. periscope, steam key) | *(design pass)* | INV | combo-completion moment on the legend screen |
+| `powerFlippers` | Flippers — swim in water that used to reset you | swim-fin | STD* | found in `secret_grotto`; teaching pulse on pickup; fins appear on the figure's feet |
+| `powerSpring` | Spring boots — one extra mid-air (double) jump | coiled spring | STD* | found in `secret_belfry`; spring shown under the figure's feet |
+| `powerGrapple` | Grapple claw — pull across a wide gap at an anchor socket | hook | INV | found in its wing; only usable at an `anchor_socket` |
+| `powerLantern` | Lantern — lights a dark room | lamp | STD* | found in its wing; glow appears around the figure |
+| `anchor_socket` | A powerup attaches here (grapple) | ring/eyelet bolted to wall, dashed outline until usable | INV | first socket seen while owning the matching powerup |
+| `bonus_door` | Bonus content (powerup-gated, **never** the main path) | door + star | INV | first encountered; the star never appears on required paths |
+
+> **Deferred (not in this pass):** cross-discipline **artifact** glyphs (periscope, steam key, …)
+> are out of MVP scope (GDD §9b) — no ids reserved until that layer is revived. The retired
+> charge-based discipline-row tools (`tool_pulley`, `tool_mirror`, …) are **dropped**: those world
+> actions now live as per-room puzzle elements (PUZZLES.md), not collectible gear.
 
 ## 6. Quantity & state representations *(never numerals)*
 The grammar for showing amounts, forces, angles, counts, time — all visual.
