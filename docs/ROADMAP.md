@@ -81,16 +81,21 @@ something runnable on **web + Windows**. Mobile is validated early but polished 
 - Build & playtest the slice on a real **mid-range Android device**; check 60 fps and ergonomics.
 - **Exit criteria:** the vertical slice is comfortably playable on a phone.
 
-## M5.5 — Field Kit design pass *(docs only — the design-gate for GDD §9b)*
+## M5.5 — Field Kit design pass ✅ *(closed — docs only; the design-gate for GDD §9b)*
 **Goal:** turn the Field Kit/artifact concept from DRAFT into a buildable spec. **No code.**
-- Finalize the tool list (portable pulley, pocket mirror, …) and each tool's exact behavior + charges.
-- Define the **symbol economy**: how many collectible symbols per discipline, where each is earned —
-  every symbol must feed at least one reward (the intentionality rule, GDD §9b).
-- Design the **artifact lattice**: which cross-discipline combos exist, what each unlocks, and the
-  wordless way a player discovers a combo.
-- Socket placement rules + how a socket telegraphs which tool it accepts.
-- Update GDD §9b (drop the DRAFT flag), SYMBOLS §5b (real glyphs), LEVEL_FORMAT (final schemas).
-- **Exit criteria:** GDD §9b is no longer DRAFT; M6 can place sockets/bonus doors with confidence.
+**Decision:** the Field Kit **is** the Metroidvania **powerup set** ([POWERUPS.md](POWERUPS.md)) —
+permanent, found-by-exploration abilities that gate bonus routes. The original charge/socket/
+discipline-row tool model is **retired**; cross-discipline **artifacts** are **deferred** to a later
+phase (POWERUPS Phase C+/Act IV); the **symbol-economy rule** is locked while per-room counts land
+with the content.
+- ✅ Kit finalized as powerups (flippers, spring boots, grapple, lantern) — charges dropped.
+- ✅ Symbol-economy *rule* defined (intentionality preserved); per-room tallies deferred to M6+/M7.
+- ✅ Artifact lattice deferred (hook preserved in GDD §9b), not built.
+- ✅ Socket rule: only aim-prone powerups (grapple) are socket-constrained; traversal powerups are
+  geometry-gated.
+- ✅ GDD §9b de-DRAFTed; SYMBOLS §5b carries the real powerup glyphs; GDD §13 open question closed.
+- **Exit criteria met:** GDD §9b is no longer DRAFT; M6 places powerup pickups/bonus doors with
+  confidence (already done — POWERUPS Phases 1–3).
 
 ## M5.7 — Maze topology design pass ✅ *(closed — spec in [MAZE.md](MAZE.md))*
 **Goal:** turn the GDD §4 passage/maze model from a proven mini-loop into a full castle spec.

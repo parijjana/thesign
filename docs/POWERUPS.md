@@ -125,7 +125,9 @@ Layer onto the existing 22-node castle (don't rebuild it). New content hangs off
 **Phase 4 — verify + ship** [~]
 - [x] analyze + tests + windows build + launch.
 - [ ] USER PLAYTEST (swim feel, double-jump feel, wing pacing) — pending.
-- [ ] docs: GDD §9b note (Field Kit realized as powerups); ROADMAP; memory — partial.
+- [x] docs (M5.5 design pass): GDD §9b de-DRAFTed (Field Kit = powerups; charges/row-tools retired;
+      artifacts deferred; symbol-economy rule locked), §13 closed; SYMBOLS §5b real glyphs;
+      ROADMAP M5.5 closed; LEVEL_FORMAT `powerup_pickup`/`anchor_socket`/`requiresPowerup`. memory — pending.
 
 **Phase 5+ — NEXT SESSIONS (documented, not built):** grapple wing (wide-chasm corridor +
 `gated_door` entity + anchor sockets), lantern wing (dark catacombs + dark-room render), Act IV

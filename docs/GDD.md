@@ -177,54 +177,66 @@ Because there is no text, assistance and feedback are their own symbol systems
 - **The collection pays out** — tools and artifacts; see §9b.
 - Lightweight persistence (see ARCHITECTURE §Save). No accounts, fully offline.
 
-## 9b. The Field Kit & artifacts *(being realized as Metroidvania powerups — see [POWERUPS.md](POWERUPS.md))*
-> **Update:** the Field Kit is being built as **hidden-room powerups that gate routes**
-> (Metroidvania) — flippers (swim), spring boots (double-jump), grapple, lantern. This realizes the
-> tools below as permanent abilities found in secret rooms, each opening areas you saw earlier but
-> couldn't pass. Full design + build status in **[POWERUPS.md](POWERUPS.md)**. The text below is the
-> original sketch, kept for the artifact-combo ideas not yet built.
+## 9b. The Field Kit — Metroidvania powerups *(design pass closed; build status in [POWERUPS.md](POWERUPS.md))*
+> **Decision (M5.5):** the Field Kit **is** the powerup set. The original sketch of charge-based,
+> discipline-row-awarded tools used at sockets is **retired** in favour of a single, simpler model:
+> permanent **powerups** found in hidden rooms that **gate routes** (Metroidvania). One reward
+> system for a kid to learn — *find a thing → you can do a new thing forever.*
 
-> ⚠️ **Status: concept locked in spirit; details deliberately open.** Before any of this is built it
-> gets a dedicated design pass (final tool list, per-discipline symbol economy, the artifact combo
-> lattice, socket placement rules) — see ROADMAP §M5.5. Nothing in M0–M5 depends on it; M6+ places
-> sockets/bonus doors only after that pass.
+The symbol collection (§9) is not just a sticker book — it pays out, and the Field Kit is how.
 
-The symbol collection (§9) is not just a sticker book — it pays out.
+### The kit = powerups (the whole reward system)
+Each powerup is **found once, kept forever**, shown on the pictogram figure (no invisible stat
+buffs — STYLE_GUIDE rule 9), and persists per profile. A powerup **changes what an existing verb
+does** (swim, double-jump, cross, see) — it never adds a button (the fixed verb budget, §10). The
+canonical set (flippers, spring boots, grapple, lantern) and engine design live in
+**[POWERUPS.md](POWERUPS.md)**; this section is the *design law* they obey.
 
-**Every symbol is intentional.** A glyph only enters the collectible legend if collecting it
-contributes to at least one reward — its discipline's tool, an artifact combo, or both. No filler
-stamps.
+**Powerup rules** (pillar-compatible constraints — not open questions):
+1. **Permanent.** Never lost, never timed, no charges — no take-backs for a kid. *(This retires the
+   old "charges, not timers" rule: charges are gone.)*
+2. **World-acting / world-traversing, never invisible.** A powerup visibly changes what the figure
+   can do, shown on the figure (Pillar 1: clarity). No hidden stat modifiers.
+3. **Found by exploration, not by completion.** A powerup is earned by *discovering its hidden room*
+   — not by completing a discipline's legend row. *(This retires the old discipline-row→tool award.)*
+4. **Bonus & shortcut only — never the sole path.** A powerup gates bonus wings, shortcuts, second
+   solutions, and etching alcoves; the base capstone route to the exit always works without any
+   powerup (Pillar 3, kindness law §4). **Enforced in `flutter test`** — the kindness validator
+   keeps the exit reachable with an empty kit, and the path checker's per-level `assume` prop checks
+   gated rooms under their required powerup (POWERUPS §6).
+5. **Socket-constrained where it needs aim.** Powerups that could otherwise become a skill/aim toy
+   (the grapple) apply only at marked **anchor sockets** (SYMBOLS §5b) — designers control exactly
+   where they work; no sequence breaks (Pillar 2). Traversal powerups (flippers, spring boots) are
+   gated by *geometry* (water depth, ledge height), needing no socket.
 
-**Tools — discipline rows award gear (the "Field Kit").** Completing a discipline's legend row
-awards that discipline's **tool**: the lesson made portable. Illustrative set (final list in the
-design pass):
-- Mechanics → **portable pulley** — clip into a marked **anchor socket** on a wall/ceiling and
-  hoist yourself or a heavy block up the rope (deliberate and slow — a thinking grapple, not a swing).
-- Optics → **pocket mirror** — place on a marked stand to extend a beam where room mirrors can't reach.
-- Magnetism → **magnet glove** — pull a metal block toward you across a gap.
-- Chemistry → **grease vial** — coat a marked surface so a block slides with one push.
-- Thermo → **ember / ice cube** — melt one small ice lock, or freeze one puddle.
-- Sports → **bouncy ball** — throw it to press a plate you can't reach.
+**Where the old "world-acting tools" went.** Ideas like grease-a-surface, freeze-a-puddle, or
+throw-a-ball-at-a-plate aren't lost — they live as **per-room puzzle elements** (PUZZLES.md),
+authored into the room that needs them, rather than as portable gear carried between rooms. Cleaner:
+the puzzle owns its mechanics; the kit owns traversal.
 
-**Tool rules** (pillar-compatible constraints — these are *not* open questions):
-1. **Permanent.** Never lost, never timed — no take-backs for a kid.
-2. **World-acting, never player-buffing.** A tool visibly changes the world; no invisible stat
-   modifiers (Pillar 1: clarity).
-3. **Socket-constrained.** Tools apply only at marked **anchor sockets / stands** (a signage glyph,
-   SYMBOLS §5b) — designers control exactly where they work; no sequence breaks, no aim skill
-   (Pillar 2).
-4. **Bonus path only.** The main path never requires a tool (never hard-blocked, Pillar 3). Tools
-   open star-marked bonus doors, shortcuts, second solutions, and etching alcoves.
-5. **Charges, not timers.** A limited tool carries per-room charges shown as pips; the claw's
-   whirlwind refills them on reset.
+### Every symbol is intentional (the economy rule)
+A glyph only enters the collectible legend if collecting it **feeds at least one reward** — a
+discipline row's completion payoff, a powerup, or a found-etching gallery slot. No filler stamps.
+Concretely:
+- **Discipline glyphs** stamp in on first solve in that discipline; completing all of a discipline's
+  rooms **completes its row** (a collection/achievement payoff — the legend screen, M7). Under the
+  Metroidvania model a completed row no longer *grants gear*; its payoff is the completion itself
+  plus whatever cosmetic/lore the legend screen presents.
+- **Powerup glyphs** stamp in when the powerup is found.
+- **Etchings** record into the gallery when touched.
 
-**Artifacts — cross-discipline combos open cross paths.** Beyond per-row tools, **artifacts**
-unlock from *combinations of symbols across disciplines* — illustrative: optics + mechanics stamps
-assemble a **periscope**; thermo + fluids forge a **steam key** that opens one sealed
-cross-discipline bonus room. The reward structure is a **lattice, not a line**: spreading across
-disciplines is itself rewarded, so progression grows cross paths instead of grinding one row — and
-it primes the late-game fusion rooms (PUZZLES §Difficulty) by getting the player to *think across
-disciplines on their own initiative*.
+> **Deferred (not cut): per-room symbol counts.** Exactly how many collectibles each discipline
+> carries and the precise earn-point of each is **left to land as rooms are built** — freezing
+> numbers before the content is kid-tested is the expensive mistake. The *rule* above is the gate
+> M5.5 closes; the *tally* fills in during M6+/M7.
+
+### Artifacts — deferred to a later phase (documented, not built)
+Cross-discipline **artifact combos** (e.g. optics + mechanics → periscope; thermo + fluids → steam
+key) that open sealed cross-discipline bonus rooms remain an attractive late layer, but are **out of
+MVP scope** and explicitly **not part of this design pass**. They hang off the same future shelf as
+POWERUPS.md Phase C+/Act IV (the multi-powerup wing). The hook is preserved here so the idea isn't
+lost; when revived, artifacts must obey the same five powerup rules above (permanent, visible,
+bonus-only, validator-guarded).
 
 ## 10. Controls (abstracted across platforms)
 | Action | Desktop/Web | Mobile |
@@ -303,11 +315,7 @@ Deferred until the vertical slice plays well silently. Music & SFX will be **CC0
 - Is the player one continuous figure or does it "snap" to ledges (climb anim)? (MVP: continuous.)
 - Carry limit: exactly one object? (Assumed yes.)
 - Does the twist ending make the cut for v1? (Assumed stretch.)
-- **Field Kit design pass (§9b — must close before M6 builds on it):**
-  - Final tool list and what each does; which (if any) carry charges.
-  - **Symbol economy:** how many collectible symbols per discipline row, and where each is earned
-    (first solve? per room? hidden?) — every one must feed a reward (the intentionality rule).
-  - **The artifact lattice:** which cross-discipline combos exist, what each unlocks (bonus room,
-    shortcut, cosmetic, lore), and how the player *discovers* a combo wordlessly.
-  - Socket placement rules (density, telegraphing, how a socket shows *which* tool it accepts).
-  - Does equipped gear show on the pictogram figure (tool belt) or stay HUD-only?
+- ~~**Field Kit design pass (§9b):**~~ **CLOSED (M5.5).** The Field Kit is the Metroidvania
+  powerup set ([POWERUPS.md](POWERUPS.md)); charge/socket/discipline-row tools retired; the symbol
+  economy *rule* is locked (per-room counts land with the content); artifacts deferred to a later
+  phase. Equipped powerups **show on the pictogram figure** (not HUD-only). See §9b.
