@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "start": "corridor_01",
+  "start": "meadow",
   "nodes": [
     { "id": "corridor_01", "type": "corridor", "file": "corridor_01.json",
       "exits": { "east": "hub_01", "stairs": "corridor_03" } },
@@ -99,6 +99,9 @@
 
     { "id": "exit_hall", "type": "room", "file": "exit_hall.json",
       "entry": ["west", "high"],
-      "exits": { "west": "room_capstone", "high": "room_ascent" } }
+      "exits": { "west": "room_capstone", "high": "room_ascent", "out": "meadow" } },
+
+    { "id": "meadow", "type": "meadow", "file": "meadow.json",
+      "exits": { "to_circle": "corridor_01", "to_square": "corridor_03", "to_star": "corridor_05" } }
   ]
 }

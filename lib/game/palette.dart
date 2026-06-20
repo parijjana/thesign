@@ -82,5 +82,26 @@ abstract final class Palettes {
     water: Color(0xFF3D77B5),
   );
 
-  static const Map<String, Palette> byId = {'amber': amber, 'optics': optics};
+  /// The meadow — the start/hub/ending overworld (GDD §3 twist). A **dark
+  /// night forest**: a deep-blue sky so the teleporter glows read as the only
+  /// light, the figure and tree in ink. Deliberately the opposite of the lit
+  /// dungeon so "you got out" lands. Values first-pass; tuned in M7.5.
+  static const Palette meadow = Palette(
+    bg: Color(0xFF12182B), // night sky
+    ink: Color(0xFFE8E8EC), // light ink — outlines read on the dark bg
+    surface: Color(0xFF1C2A22), // dark grass/earth
+    accentDanger: Color(0xFFC4452E),
+    accentGoal: Color(0xFF55C98A), // teleporter "lit" glow
+    accentInteract: Color(0xFF5B7FD4),
+    accentNeutral: Color(0xFF3A4358), // dormant teleporter / dim
+    beam: Color(0xFFF2E27A),
+    accentHint: Color(0xFFF2C94C),
+    water: Color(0xFF2F6DA4),
+  );
+
+  static const Map<String, Palette> byId = {
+    'amber': amber,
+    'optics': optics,
+    'meadow': meadow,
+  };
 }

@@ -49,8 +49,10 @@ class TouchControls extends PositionComponent with HasGameReference<EscapeGame> 
       // Right thumb: jump nearest the corner, interact inboard (bottom-right).
       _TouchButton(_Btn.jump, this, btn, _Corner.bottomRight, near, _edge),
       _TouchButton(_Btn.interact, this, btn, _Corner.bottomRight, far, _edge),
-      // Meta: the lone claw/restart, top-right (the only one — no HUD dupe).
+      // Meta: claw/restart top-right, pause top-left (the HUD row is hidden on
+      // touch, so the overlay owns these).
       _TouchButton(_Btn.restart, this, btn, _Corner.topRight, near, _edge),
+      _TouchButton(_Btn.pause, this, btn, _Corner.topLeft, near, _edge),
     ]);
     addAll(_buttons);
   }
@@ -90,15 +92,17 @@ class TouchControls extends PositionComponent with HasGameReference<EscapeGame> 
         if (down) input.interactPressed = true;
       case _Btn.restart:
         if (down) input.restartPressed = true;
+      case _Btn.pause:
+        if (down) input.pausePressed = true;
     }
   }
 
   double _axis() => (_rightHeld ? 1.0 : 0.0) - (_leftHeld ? 1.0 : 0.0);
 }
 
-enum _Btn { left, right, jump, interact, restart }
+enum _Btn { left, right, jump, interact, restart, pause }
 
-enum _Corner { bottomLeft, bottomRight, topRight }
+enum _Corner { bottomLeft, bottomRight, topRight, topLeft }
 
 class _TouchButton extends PositionComponent
     with TapCallbacks, HasGameReference<EscapeGame> {
@@ -120,7 +124,7 @@ class _TouchButton extends PositionComponent
     super.onGameResize(size);
     final isRight =
         corner == _Corner.bottomRight || corner == _Corner.topRight;
-    final isTop = corner == _Corner.topRight;
+    final isTop = corner == _Corner.topRight || corner == _Corner.topLeft;
     final x = isRight ? size.x - offX - this.size.x : offX;
     final y = isTop ? offY : size.y - offY - this.size.y;
     position = Vector2(x, y);
@@ -175,6 +179,8 @@ class _TouchButton extends PositionComponent
         _glyph(canvas, SymbolId.interact, g, ink);
       case _Btn.restart:
         _glyph(canvas, SymbolId.restartClaw, g, ink);
+      case _Btn.pause:
+        _glyph(canvas, SymbolId.pause, g, ink);
     }
   }
 

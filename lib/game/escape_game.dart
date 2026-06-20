@@ -32,6 +32,10 @@ import 'ui/powerup_hud.dart';
 import 'ui/spine_hud.dart';
 import 'ui/touch_controls.dart';
 
+/// App-level phase (M7 shell, GDD §10b). The play space only ticks in
+/// [playing]; [title] and [paused] freeze it behind a Flutter overlay.
+enum GamePhase { title, playing, paused }
+
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
 /// orchestration (ARCHITECTURE.md §5).
@@ -77,6 +81,43 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   /// DEV: F3 toggles the room-id overlay.
   bool showDebug = false;
+
+  /// App phase (M7 shell). Starts at the title; the play space ticks only in
+  /// [GamePhase.playing]. Overlay names match `main.dart`'s overlayBuilderMap.
+  GamePhase phase = GamePhase.title;
+
+  static const titleOverlay = 'title';
+  static const pauseOverlay = 'pause';
+
+  /// Title → play. (Also returns from pause via [setPlaying].)
+  void startGame() => setPlaying();
+
+  void setPlaying() {
+    phase = GamePhase.playing;
+    overlays.remove(titleOverlay);
+    overlays.remove(pauseOverlay);
+  }
+
+  void pauseGame() {
+    if (phase != GamePhase.playing) return;
+    phase = GamePhase.paused;
+    overlays.add(pauseOverlay);
+  }
+
+  void resumeGame() {
+    if (phase != GamePhase.paused) return;
+    setPlaying();
+  }
+
+  /// Leave the run and show the title (the play space stays loaded behind it).
+  void exitToTitle() {
+    phase = GamePhase.title;
+    overlays.remove(pauseOverlay);
+    overlays.add(titleOverlay);
+  }
+
+  void togglePause() =>
+      phase == GamePhase.paused ? resumeGame() : pauseGame();
 
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};
@@ -173,11 +214,11 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
       powerups.addAll(
           progress.powerups.map(Powerup.byId).whereType<Powerup>());
     }
-    final startNode =
-        (progress != null && registry.world.nodes.containsKey(progress.currentNode))
-            ? progress.currentNode
-            : registry.world.start;
-    await loadNode(startNode);
+    // Always boot at the meadow HUB (world.start), not the last room — the
+    // meadow is home base (M7). Progress (solved/visited/powerups, and so the
+    // lit teleporters) is restored above, so you resume by re-entering a portal
+    // rather than mid-room. Kinder and consistent with "you start in the meadow".
+    await loadNode(registry.world.start);
 
     world.add(player);
     world.add(claw);
@@ -337,6 +378,17 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   @override
   void update(double dt) {
+    // The pause toggle is honoured even while frozen (Esc / touch pause btn).
+    if (input.pausePressed) {
+      togglePause();
+      input.clearEdges();
+      return;
+    }
+    // Title/pause freeze the play space behind the Flutter overlay.
+    if (phase != GamePhase.playing) {
+      input.clearEdges();
+      return;
+    }
     _clock += dt;
     super.update(dt); // components read edges during their update...
 

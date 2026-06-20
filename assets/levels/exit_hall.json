@@ -17,8 +17,8 @@
     { "type": "floor", "x": 0, "y": 12, "w": 24, "h": 2 },
 
     { "type": "floor", "x": 10, "y": 10.75, "w": 4, "h": 1.25 },
-    { "type": "sign", "x": 11, "y": 7.4, "w": 2, "h": 2,
-      "props": { "glyph": "spawn" } },
+    { "type": "teleporter", "x": 11.1, "y": 8.55, "w": 1.8, "h": 2.2,
+      "props": { "exit": "out" } },
 
     { "type": "floor", "x": 19.5, "y": 6, "w": 4.5, "h": 0.6 },
 

@@ -168,6 +168,14 @@ Remaining: user playthrough + kid test.)*
 ## M7.5 — Visual style overhaul *(the dedicated art stage, pre-release)*
 **Goal:** MVP ships with functional programmer-drawn signage art; this stage makes it *beautiful*
 in one deliberate pass, with the whole game playable as the test bed.
+- **ART DIRECTION (locked):** **signage foreground + pixelart environment.** Anything interactive
+  or gameplay-critical (the figure, doors, hazards, levers, glyphs, teleporter irises) stays crisp
+  **signage** so it's always legible (Pillar 1). The **backdrop/atmosphere** (skies, trees, stone,
+  scenery) becomes textured **pixelart**. Boundary rule: *if you can act on it, it's a sign; if it's
+  scenery, it's pixels.* First realization landed in M7: the night-meadow SVG backdrop
+  (`assets/art/meadow_bg.svg`, rendered via `flutter_svg` → a `Backdrop` component) with signage iris
+  portals on top. M7.5 authors true pixelart sprites/tiles for the environments; the meadow SVG is
+  the bridge/placeholder.
 - **Style-guide audit** of every component: silhouettes, line weights, construction consistency,
   the §2 rules (incl. the color-redundancy rule 8) — fix every deviation.
 - **Authored SVG art** (pipeline: ARCHITECTURE §5.2b, rules: STYLE_GUIDE §11) replacing

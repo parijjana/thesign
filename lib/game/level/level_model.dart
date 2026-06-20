@@ -6,14 +6,18 @@ library;
 
 // --- World graph (world.json) ------------------------------------------------
 
-enum NodeType { corridor, hub, room }
+enum NodeType { corridor, hub, room, meadow }
 
 /// Thickness (tiles) of the brick ceiling synthesized on every node, flush
 /// from the very top edge: thin in rooms/hubs (a hall with a roof), massive
-/// in corridors (a tunnel at half room height). Shared by the loader AND the
-/// path checker so they can never disagree about the playable space.
-double synthesizedCeilingTiles(NodeType type) =>
-    type == NodeType.corridor ? 6.0 : 1.5;
+/// in corridors (a tunnel at half room height), NONE in the meadow (open sky —
+/// the outdoor ending, GDD §3 twist). Shared by the loader AND the path checker
+/// so they can never disagree about the playable space.
+double synthesizedCeilingTiles(NodeType type) => switch (type) {
+      NodeType.corridor => 6.0,
+      NodeType.meadow => 0.0,
+      _ => 1.5,
+    };
 
 class WorldData {
   WorldData({required this.version, required this.start, required this.nodes});

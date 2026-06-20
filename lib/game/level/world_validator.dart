@@ -65,6 +65,11 @@ List<String> findDirectionViolations(WorldData world) {
         v.add('${n.id}: exit "${e.key}" points at unknown node "${e.value}"');
         continue;
       }
+      // Meadow teleporter edges are one-way BY DESIGN (the overworld ending:
+      // you dive back into the castle and leave only by re-escaping). Not a
+      // trap — undirected reachability still connects everything, so the
+      // kindness guard above covers it. Exempt them from the return-door rule.
+      if (n.type == NodeType.meadow || target.type == NodeType.meadow) continue;
       if (!target.exits.values.contains(n.id)) {
         v.add('${n.id} → ${e.value} ("${e.key}") has no return door — '
             'one-way connections trap the player');
