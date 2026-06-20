@@ -1,8 +1,10 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 
 import 'components/claw_reset.dart';
 import 'components/player.dart';
@@ -28,18 +30,13 @@ import 'ui/hud.dart';
 import 'ui/interact_prompt.dart';
 import 'ui/powerup_hud.dart';
 import 'ui/spine_hud.dart';
+import 'ui/touch_controls.dart';
 
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
 /// orchestration (ARCHITECTURE.md §5).
 class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
-  EscapeGame()
-      : super(
-          camera: CameraComponent.withFixedResolution(
-            width: Config.viewportWidth,
-            height: Config.viewportHeight,
-          ),
-        );
+  EscapeGame() : super(camera: CameraComponent());
 
   /// The active palette; rooms swap this when they declare a discipline
   /// palette (LEVEL_FORMAT.md §3).
@@ -98,6 +95,13 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   bool hasPowerup(Powerup p) => powerups.contains(p);
 
+  /// Show on-screen touch controls on touch-first platforms (ROADMAP M5).
+  /// v1 is platform-gated (Android/iOS); web touch-vs-mouse runtime detection
+  /// is a documented follow-up.
+  bool get useTouchControls =>
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+
   /// The node `start` in px — the NO-DEATH reset point the claw returns to.
   final Vector2 startPoint = Vector2.zero();
 
@@ -124,13 +128,35 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Entity lookup in the current room (cranks resolve their targets here).
   T? roomEntity<T>(String id) => _room?.byId<T>(id);
 
-  /// Letterbox bars render in ink, framing the room like a sign's border.
+  /// Any uncovered margin renders in ink, framing the room like a sign's border.
   @override
   Color backgroundColor() => palette.ink;
 
+  /// Cover-fit the fixed 24×14 logical room to the device screen: zoom so the
+  /// room fills the whole viewport (no bars), centred — the screen crops the
+  /// decorative top/bottom (ceiling brick, floor base) on tall/wide aspects
+  /// while the play area stays framed. (Replaces the M1 letterbox now that
+  /// mobile makes pillarboxing waste too much of a small screen — ROADMAP M5.)
+  void _fitCamera(Vector2 size) {
+    if (size.x <= 0 || size.y <= 0) return;
+    camera.viewfinder.zoom = math.max(
+      size.x / Config.viewportWidth,
+      size.y / Config.viewportHeight,
+    );
+  }
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    _fitCamera(size);
+  }
+
   @override
   Future<void> onLoad() async {
-    camera.viewfinder.anchor = Anchor.topLeft;
+    camera.viewfinder.anchor = Anchor.center;
+    camera.viewfinder.position =
+        Vector2(Config.viewportWidth / 2, Config.viewportHeight / 2);
+    _fitCamera(size);
     add(KeyboardInput(input));
     registry = await RoomRegistry.load(assets);
     player = Player();
@@ -157,7 +183,14 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     world.add(claw);
     world.add(InteractPrompt());
     world.add(feedback);
-    camera.viewport.add(Hud());
+    // The top-right meta row (claw/settings/pause) is a desktop display row;
+    // on touch the TouchControls overlay owns the (tappable) claw, so showing
+    // both would duplicate the glyph — pick one per platform.
+    if (useTouchControls) {
+      camera.viewport.add(TouchControls());
+    } else {
+      camera.viewport.add(Hud());
+    }
     camera.viewport.add(PowerupHud());
     camera.viewport.add(SpineHud());
     camera.viewport.add(DebugHud());

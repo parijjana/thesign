@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../config.dart';
 import '../escape_game.dart';
 import '../powerups.dart';
 import 'symbols.dart';
@@ -16,8 +15,9 @@ class PowerupHud extends PositionComponent with HasGameReference<EscapeGame> {
   static const double gap = 8;
 
   @override
-  void onLoad() {
-    position = Vector2(14, Config.viewportHeight - glyphSize - 18);
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    position = Vector2(14, size.y - glyphSize - 18);
   }
 
   @override

@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../config.dart';
 import '../escape_game.dart';
 import 'symbols.dart';
 
@@ -19,10 +18,11 @@ class Hud extends PositionComponent with HasGameReference<EscapeGame> {
   ];
 
   @override
-  void onLoad() {
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
     final width = _glyphs.length * (glyphSize + gap) - gap;
-    position = Vector2(Config.viewportWidth - width - 14, 14);
-    size = Vector2(width, glyphSize);
+    this.size = Vector2(width, glyphSize);
+    position = Vector2(size.x - width - 14, 14);
   }
 
   @override

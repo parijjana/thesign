@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../config.dart';
 import '../escape_game.dart';
 import 'symbols.dart';
 
@@ -31,10 +30,11 @@ class SpineHud extends PositionComponent with HasGameReference<EscapeGame> {
   int get _count => _streets.length + 1; // + the exit cap
 
   @override
-  void onLoad() {
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
     final width = _count * (glyphSize + gap) - gap;
-    position = Vector2((Config.viewportWidth - width) / 2, 16);
-    size = Vector2(width, glyphSize);
+    this.size = Vector2(width, glyphSize);
+    position = Vector2((size.x - width) / 2, 16);
   }
 
   @override

@@ -74,11 +74,23 @@ something runnable on **web + Windows**. Mobile is validated early but polished 
   solve one → onward door opens → quit → relaunch resumes. Plays well *silently*, and **your 8-year-old
   can complete the loop unaided.** This is the slice we show people.
 
-## M5 — Mobile & touch validation
+## M5 — Mobile & touch validation *(in progress)*
 **Goal:** prove cross-platform early, before content piles up.
-- `touch_controls.dart` (left d-pad, right action buttons) feeding the same `GameInput`.
-- Runtime pointer-type detection (web touch vs mouse/keyboard).
-- Build & playtest the slice on a real **mid-range Android device**; check 60 fps and ergonomics.
+- ✅ `touch_controls.dart` (left move pad, right jump/interact, top-right claw) feeding the same
+  `GameInput`. Uniform 62 px buttons glued to real screen corners. Tap-jump latches `jumpHeld`
+  ~0.33 s so a tap = full jump (the keyboard's variable-height hop is too brief for touch; kinder
+  per GDD §2). On touch the desktop HUD meta-row is hidden (it owns the lone claw — no glyph dupe).
+- ✅ **Fill-screen camera:** the fixed 24×14 room now **cover-fits** the device (no pillarbox bars),
+  centred, cropping only decorative top/bottom margins — a small phone screen can't afford letterbox
+  waste. HUD/overlays re-anchor to the real screen via `onGameResize` (replaces M1's letterbox).
+- ✅ Android build env: scaffold `android/` (`flutter create --platforms=android .`) + disable Kotlin
+  incremental compilation (`kotlin.incremental=false`) — the pub cache (C:) and project (D:) on
+  different drive roots break Kotlin's relocatable cache. *(Capture in a run-skill.)*
+- ✅ Built & playtested on a real **moto g57** (Android 16) — plays well; jump/move/interact verified.
+- [ ] Runtime pointer-type detection (web touch vs mouse/keyboard) — still platform-gated for now.
+- [ ] **Hide touch controls when a gamepad is connected** (GDD §10 future controller) — same
+  input-source-detection hook as the web-touch detection above.
+- [ ] 60 fps check + kid ergonomics pass.
 - **Exit criteria:** the vertical slice is comfortably playable on a phone.
 
 ## M5.5 — Field Kit design pass ✅ *(closed — docs only; the design-gate for GDD §9b)*
@@ -132,6 +144,8 @@ Remaining: user playthrough + kid test.)*
   (resume/restart-claw/settings/exit-to-title). HUD final pass. Play-space screens strictly
   wordless; shell screens symbol-first (STYLE_GUIDE §8b boundary).
 - **Settings screen:** sound/music toggles + volume bars (symbol-only), credits entry (heart glyph).
+  **Touch-control size** adjustment (symbol-only slider; `TouchControls.btn` is already a single
+  knob — wire it to a saved setting so a player can scale the buttons to their hands).
 - **Inventory / Field Kit screen:** carried item, earned tools with charge pips, artifacts (GDD §9b).
 - **Attributions/credits screen:** renders `assets/credits.json` with **clickable artist links**
   (`url_launcher`) — the most text-heavy shell screen (plain ink-on-bg typography). The registry
