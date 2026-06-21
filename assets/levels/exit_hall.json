@@ -18,7 +18,7 @@
 
     { "type": "floor", "x": 10, "y": 10.75, "w": 4, "h": 1.25 },
     { "type": "teleporter", "x": 11.1, "y": 8.55, "w": 1.8, "h": 2.2,
-      "props": { "exit": "out" } },
+      "props": { "exit": "out", "availableFromStart": true } },
 
     { "type": "floor", "x": 19.5, "y": 6, "w": 4.5, "h": 0.6 },
 
