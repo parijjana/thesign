@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/widgets.dart';
 
 import 'game/escape_game.dart';
+import 'game/ui/shell/map_overlay.dart';
 import 'game/ui/shell/shell_overlays.dart';
 
 void main() {
@@ -14,6 +15,7 @@ void main() {
       overlayBuilderMap: {
         EscapeGame.titleOverlay: (_, EscapeGame g) => TitleOverlay(g),
         EscapeGame.pauseOverlay: (_, EscapeGame g) => PauseOverlay(g),
+        EscapeGame.mapOverlay: (_, EscapeGame g) => MapOverlay(g),
       },
     ),
   );

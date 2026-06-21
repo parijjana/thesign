@@ -83,6 +83,8 @@ class PauseOverlay extends StatelessWidget {
               },
             ),
             const SizedBox(width: 18),
+            _ShellButton(icon: Icons.map_rounded, onTap: game.showMap),
+            const SizedBox(width: 18),
             _ShellButton(icon: Icons.home_rounded, onTap: game.exitToTitle),
           ],
         ),

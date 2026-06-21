@@ -88,6 +88,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   static const titleOverlay = 'title';
   static const pauseOverlay = 'pause';
+  static const mapOverlay = 'map';
 
   /// Title → play. (Also returns from pause via [setPlaying].)
   void startGame() => setPlaying();
@@ -118,6 +119,17 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   void togglePause() =>
       phase == GamePhase.paused ? resumeGame() : pauseGame();
+
+  /// Castle map (MAZE.md §5) — opened from pause, returns to pause on close.
+  void showMap() {
+    overlays.remove(pauseOverlay);
+    overlays.add(mapOverlay);
+  }
+
+  void hideMap() {
+    overlays.remove(mapOverlay);
+    overlays.add(pauseOverlay);
+  }
 
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};

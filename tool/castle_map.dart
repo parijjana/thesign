@@ -164,6 +164,7 @@ String _buildHtml(
         NodeType.corridor => '#cfe8ff',
         NodeType.hub => '#d6f5d6',
         NodeType.room => '#fff7cc',
+        NodeType.meadow => '#d8d0f0',
       };
 
   final edges = StringBuffer();
