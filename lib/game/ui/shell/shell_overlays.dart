@@ -243,6 +243,7 @@ class PauseOverlay extends StatelessWidget {
     Icons.replay_rounded,
     Icons.map_rounded,
     Icons.backpack_rounded,
+    Icons.auto_stories_rounded,
     Icons.settings_rounded,
     Icons.home_rounded,
   ];
@@ -560,6 +561,151 @@ class _GlyphPainter extends CustomPainter {
       old.id != id || old.color != color;
 }
 
+/// Collection / achievements board (M7): a wordless progress book. Lore
+/// etchings the player has found appear as filled stamps (a growing gallery);
+/// two pip meters show rooms solved and castle explored. View-only; Esc/Enter
+/// or the back button returns to the pause menu. (A discipline-stamp legend
+/// needs a content index of each room's discipline — a later pass.)
+class CollectionOverlay extends StatelessWidget {
+  const CollectionOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    final solved = game.solvedRooms.length.clamp(0, game.totalRooms);
+    final visited = game.visitedNodes.length.clamp(0, game.totalNodes);
+    final etchings = game.foundEtchings.length;
+    return Container(
+      color: _amber.bg,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 18,
+            right: 18,
+            child: _ShellButton(
+              icon: Icons.arrow_back_rounded,
+              size: 56,
+              onTap: game.hideCollection,
+            ),
+          ),
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 460),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 30, vertical: 26),
+              decoration: BoxDecoration(
+                color: _amber.surface,
+                border: Border.all(color: _amber.ink, width: 4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Etchings gallery: each found etching is a filled lore stamp;
+                  // a faint placeholder when none found yet ("collect these").
+                  const Icon(Icons.auto_stories_rounded,
+                      size: 40, color: Color(0xFF101010)),
+                  const SizedBox(height: 18),
+                  _EtchingGallery(found: etchings),
+                  const SizedBox(height: 24),
+                  _PipMeter(
+                    icon: Icons.lock_open_rounded,
+                    filled: solved,
+                    total: game.totalRooms,
+                  ),
+                  const SizedBox(height: 14),
+                  _PipMeter(
+                    icon: Icons.travel_explore_rounded,
+                    filled: visited,
+                    total: game.totalNodes,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A row of lore-etching stamps — one filled diamond per found etching. With
+/// none yet, a single faint diamond hints that lore is out there to collect.
+class _EtchingGallery extends StatelessWidget {
+  const _EtchingGallery({required this.found});
+  final int found;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = found == 0 ? 1 : found;
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (var i = 0; i < count; i++)
+          Transform.rotate(
+            angle: 0.785398, // 45° → diamond
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: found == 0 ? _amber.bg : _amber.accentHint,
+                border: Border.all(
+                  color: found == 0
+                      ? _amber.ink.withValues(alpha: 0.3)
+                      : _amber.ink,
+                  width: 3,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// A wordless progress meter: a category glyph + a ribbon of pips, [filled] of
+/// [total] inked in. No numerals (STYLE_GUIDE §8b).
+class _PipMeter extends StatelessWidget {
+  const _PipMeter({
+    required this.icon,
+    required this.filled,
+    required this.total,
+  });
+  final IconData icon;
+  final int filled;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 30, color: _amber.ink),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (var i = 0; i < total; i++)
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: i < filled ? _amber.accentGoal : _amber.bg,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _amber.ink, width: 2),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Win/ending overlay: you escaped the castle. A bright celebration —
 /// confetti raining down and balloons drifting up behind the sun seal; keep
 /// exploring the meadow (the exit stays free) or go home.
@@ -787,17 +933,19 @@ class _MenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: game.shellSelection,
-      builder: (context, sel, child) => Row(
-        mainAxisSize: MainAxisSize.min,
+      // Wrap (not a fixed Row) so a growing menu stays on-screen on narrow
+      // windows / phones instead of overflowing.
+      builder: (context, sel, child) => Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 18,
+        runSpacing: 18,
         children: [
-          for (var i = 0; i < icons.length; i++) ...[
-            if (i > 0) const SizedBox(width: 18),
+          for (var i = 0; i < icons.length; i++)
             _ShellButton(
               icon: icons[i],
               selected: i == sel,
               onTap: actions[i],
             ),
-          ],
         ],
       ),
     );

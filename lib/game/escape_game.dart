@@ -105,6 +105,14 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   static const winOverlay = 'win';
   static const settingsOverlay = 'settings';
   static const inventoryOverlay = 'inventory';
+  static const collectionOverlay = 'collection';
+
+  /// Total puzzle rooms in the castle (the collection screen's denominators).
+  int get totalRooms =>
+      registry.world.nodes.values.where((n) => n.type == NodeType.room).length;
+
+  /// Total nodes (rooms + hubs + corridors + meadow) — castle-explored meter.
+  int get totalNodes => registry.world.nodes.length;
 
   /// Bumped whenever a setting changes so the SettingsOverlay rebuilds.
   final ValueNotifier<int> settingsVersion = ValueNotifier<int>(0);
@@ -166,6 +174,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     overlays.remove(winOverlay);
     overlays.remove(settingsOverlay);
     overlays.remove(inventoryOverlay);
+    overlays.remove(collectionOverlay);
   }
 
   void pauseGame() {
@@ -213,6 +222,17 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   void hideInventory() {
     overlays.remove(inventoryOverlay);
+    overlays.add(pauseOverlay);
+  }
+
+  /// Collection / achievements board (M7) — etchings + progress, from pause.
+  void showCollection() {
+    overlays.remove(pauseOverlay);
+    overlays.add(collectionOverlay);
+  }
+
+  void hideCollection() {
+    overlays.remove(collectionOverlay);
     overlays.add(pauseOverlay);
   }
 
@@ -306,6 +326,10 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
           if (back || confirm) hideInventory();
           return true;
         }
+        if (overlays.isActive(collectionOverlay)) {
+          if (back || confirm) hideCollection();
+          return true;
+        }
         if (back) {
           resumeGame();
           return true;
@@ -332,6 +356,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     },
     showMap,
     showInventory,
+    showCollection,
     showSettings,
     exitToTitle,
   ];

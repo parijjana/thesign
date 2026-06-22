@@ -221,6 +221,11 @@ in one deliberate pass, with the whole game playable as the test bed.
     / the `_climbing` render branch) but the figure currently "supermans" up — arms out, body flat.
     Redo the pose as a believable clamber: grab the lip, plant a knee, push up — weighty, not flying.
 - Readability playtest (kid + a fresh adult) and a colorblind-simulation check.
+- **Shell-screen visual review (earmarked from M7):** the M7 shell screens shipped functional, not
+  final — give them the art/layout pass here. Specifically the **collection / achievements board**
+  (`CollectionOverlay`): the etchings gallery (placeholder rotated-square stamps → real etching art),
+  the pip meters, and overall composition. Also revisit the inventory/Field-Kit shelf, settings, and
+  profile-select chrome against the style guide.
 - **Exit criteria:** the game looks intentionally designed, not functional; every visible element
   passes the style-guide audit; the claw is a character, not a placeholder.
 

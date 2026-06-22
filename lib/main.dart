@@ -35,6 +35,8 @@ void main() {
             ShellKeys(game: g, child: SettingsOverlay(g)),
         EscapeGame.inventoryOverlay: (_, EscapeGame g) =>
             ShellKeys(game: g, child: InventoryOverlay(g)),
+        EscapeGame.collectionOverlay: (_, EscapeGame g) =>
+            ShellKeys(game: g, child: CollectionOverlay(g)),
       },
     ),
   );
