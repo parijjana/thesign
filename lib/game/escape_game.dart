@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 
 import 'components/claw_reset.dart';
 import 'components/player.dart';
@@ -24,6 +25,7 @@ import 'powerups.dart';
 import 'puzzles/puzzle_script.dart';
 import 'save/progress.dart';
 import 'save/save_service.dart';
+import 'save/settings.dart';
 import 'ui/debug_hud.dart';
 import 'ui/feedback_popups.dart';
 import 'ui/hud.dart';
@@ -75,6 +77,14 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   // Reassigned when the player picks an avatar slot (M7 profile select).
   SaveService _saves = SaveService();
 
+  /// App-wide settings (sound/music toggles, touch-control size). Loaded in
+  /// [onLoad]; global, not per-profile.
+  AppSettings settings = AppSettings();
+
+  /// The mounted touch controls (touch platforms only) — held so a size-preset
+  /// change can remount them at the new size.
+  TouchControls? _touch;
+
   RoomComponent? _room;
   String currentNodeId = '';
 
@@ -93,6 +103,10 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   static const pauseOverlay = 'pause';
   static const mapOverlay = 'map';
   static const winOverlay = 'win';
+  static const settingsOverlay = 'settings';
+
+  /// Bumped whenever a setting changes so the SettingsOverlay rebuilds.
+  final ValueNotifier<int> settingsVersion = ValueNotifier<int>(0);
 
   /// Which menu button the keyboard cursor is on (M7 keyboard nav). Overlays
   /// listen to this to highlight the selection; mouse taps act directly. Reset
@@ -110,6 +124,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Show the avatar-select screen; pre-highlight the last-played slot.
   Future<void> showProfileSelect() async {
     phase = GamePhase.profileSelect;
+
     overlays.remove(titleOverlay);
     overlays.add(profileOverlay);
     profilesWithSaves.value = await SaveService.profilesWithSaves();
@@ -148,6 +163,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     overlays.remove(pauseOverlay);
     overlays.remove(mapOverlay);
     overlays.remove(winOverlay);
+    overlays.remove(settingsOverlay);
   }
 
   void pauseGame() {
@@ -165,6 +181,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Leave the run and show the title (the play space stays loaded behind it).
   void exitToTitle() {
     phase = GamePhase.title;
+
     shellSelection.value = 0;
     overlays.remove(pauseOverlay);
     overlays.remove(winOverlay);
@@ -195,47 +212,98 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     overlays.add(winOverlay);
   }
 
-  /// Keyboard-driven navigation for the frozen shell phases. Each menu is a
-  /// short list of actions; Left/Right (or A/D, ↑/↓) move the cursor and
-  /// Enter/Space/E confirm. Mirrors the same actions the overlays' taps call.
-  void _updateShell() {
+  /// A key press routed from the **visible shell overlay's own Flutter focus**
+  /// (`_ShellKeys` in shell_overlays.dart) — the reliable way to drive the
+  /// frozen menus, since Flame's GameWidget only gets keyboard focus after the
+  /// first click (so the launch title / settings would otherwise be keyboard-
+  /// dead). The overlay on top always has focus and forwards keys here. Returns
+  /// true if consumed. Arrows/A-D/W-S move the cursor; Enter/Space/E confirm;
+  /// Esc backs out.
+  bool handleShellKey(LogicalKeyboardKey key) {
+    final next = {
+      LogicalKeyboardKey.arrowRight,
+      LogicalKeyboardKey.arrowDown,
+      LogicalKeyboardKey.keyD,
+      LogicalKeyboardKey.keyS,
+    };
+    final prev = {
+      LogicalKeyboardKey.arrowLeft,
+      LogicalKeyboardKey.arrowUp,
+      LogicalKeyboardKey.keyA,
+      LogicalKeyboardKey.keyW,
+    };
+    final confirm = {
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.space,
+      LogicalKeyboardKey.keyE,
+    };
+    return _shellNav(
+      next.contains(key),
+      prev.contains(key),
+      confirm.contains(key),
+      key == LogicalKeyboardKey.escape,
+    );
+  }
+
+  /// Shared menu dispatch for the frozen shell phases — the single source of
+  /// truth for keyboard nav. The overlays' taps call the same action lists.
+  bool _shellNav(bool next, bool prev, bool confirm, bool back) {
     void move(int count) {
-      if (input.uiNextPressed) {
-        shellSelection.value = (shellSelection.value + 1) % count;
-      }
-      if (input.uiPrevPressed) {
+      if (next) shellSelection.value = (shellSelection.value + 1) % count;
+      if (prev) {
         shellSelection.value = (shellSelection.value - 1 + count) % count;
       }
     }
 
+    // Settings floats over either the title or the pause menu, so handle it
+    // before the phase switch.
+    if (overlays.isActive(settingsOverlay)) {
+      if (back) {
+        hideSettings();
+      } else {
+        move(settingsActions.length);
+        if (confirm) settingsActions[shellSelection.value]();
+      }
+      return true;
+    }
+
     switch (phase) {
       case GamePhase.title:
-        if (input.uiConfirmPressed) startGame();
+        move(titleActions.length);
+        if (confirm) titleActions[shellSelection.value]();
+        return true;
       case GamePhase.profileSelect:
-        if (input.pausePressed) {
+        if (back) {
           exitToTitle(); // Esc backs out to the title
-          break;
+        } else {
+          move(profileActions.length);
+          if (confirm) profileActions[shellSelection.value]();
         }
-        move(profileActions.length);
-        if (input.uiConfirmPressed) profileActions[shellSelection.value]();
+        return true;
       case GamePhase.won:
         move(winActions.length);
-        if (input.uiConfirmPressed) winActions[shellSelection.value]();
+        if (confirm) winActions[shellSelection.value]();
+        return true;
       case GamePhase.paused:
         if (overlays.isActive(mapOverlay)) {
-          if (input.pausePressed || input.uiConfirmPressed) hideMap();
-          break;
+          if (back || confirm) hideMap();
+          return true;
         }
-        if (input.pausePressed) {
+        if (back) {
           resumeGame();
-          break;
+          return true;
         }
         move(pauseActions.length);
-        if (input.uiConfirmPressed) pauseActions[shellSelection.value]();
+        if (confirm) pauseActions[shellSelection.value]();
+        return true;
       case GamePhase.playing:
-        break;
+        return false;
     }
   }
+
+  /// Title-screen actions (same-order contract with TitleOverlay): play (→
+  /// avatar select) or open settings.
+  late final List<void Function()> titleActions = [startGame, showSettings];
 
   /// Pause-menu actions, in row order. The PauseOverlay draws its icons in the
   /// SAME order, so taps and the keyboard cursor stay in lockstep.
@@ -246,6 +314,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
       resumeGame();
     },
     showMap,
+    showSettings,
     exitToTitle,
   ];
 
@@ -258,6 +327,60 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   late final List<void Function()> profileActions = [
     for (final id in SaveService.profileIds) () => chooseProfile(id),
   ];
+
+  // Where to return when the settings screen closes ('title' or 'pause') —
+  // settings is reachable from both, and the phase stays put while it's open.
+  String _settingsReturn = 'title';
+
+  /// Open settings over the title or the pause menu (whichever is showing).
+  void showSettings() {
+    _settingsReturn = phase == GamePhase.paused ? 'pause' : 'title';
+
+    shellSelection.value = 0;
+    overlays.remove(_settingsReturn == 'pause' ? pauseOverlay : titleOverlay);
+    overlays.add(settingsOverlay);
+  }
+
+  void hideSettings() {
+    overlays.remove(settingsOverlay);
+
+    shellSelection.value = 0;
+    overlays.add(_settingsReturn == 'pause' ? pauseOverlay : titleOverlay);
+  }
+
+  /// Settings-screen actions, in row order (same-order contract with
+  /// SettingsOverlay): toggle sound, toggle music, cycle touch size, back.
+  late final List<void Function()> settingsActions = [
+    () {
+      settings.soundOn = !settings.soundOn;
+      _settingsChanged();
+    },
+    () {
+      settings.musicOn = !settings.musicOn;
+      _settingsChanged();
+    },
+    () {
+      settings.touchScale = settings.touchScale.next;
+      _settingsChanged();
+      _applyTouchScale();
+    },
+    hideSettings,
+  ];
+
+  void _settingsChanged() {
+    settings.save(); // fire-and-forget
+    settingsVersion.value++;
+  }
+
+  /// Remount the touch controls so a new size preset takes effect immediately
+  /// (no-op on desktop, where they aren't mounted).
+  void _applyTouchScale() {
+    final touch = _touch;
+    if (touch == null) return;
+    touch.removeFromParent();
+    _touch = TouchControls();
+    camera.viewport.add(_touch!);
+  }
 
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};
@@ -339,6 +462,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
         Vector2(Config.viewportWidth / 2, Config.viewportHeight / 2);
     _fitCamera(size);
     add(KeyboardInput(input));
+    settings = await AppSettings.load();
     registry = await RoomRegistry.load(assets);
     player = Player();
     claw = ClawReset();
@@ -374,7 +498,8 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     // on touch the TouchControls overlay owns the (tappable) claw, so showing
     // both would duplicate the glyph — pick one per platform.
     if (useTouchControls) {
-      camera.viewport.add(TouchControls());
+      _touch = TouchControls();
+      camera.viewport.add(_touch!);
     } else {
       camera.viewport.add(Hud());
     }
@@ -534,7 +659,8 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     // shell is driven entirely by the keyboard (and mouse taps) here, so the
     // whole game is playable without a pointer (GDD §10 keyboard nav).
     if (phase != GamePhase.playing) {
-      _updateShell();
+      // The play space is frozen; the visible shell overlay owns the keyboard
+      // (via its own Flutter focus → handleShellKey), so nothing to do here.
       input.clearEdges();
       return;
     }

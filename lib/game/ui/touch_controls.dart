@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 
 import '../escape_game.dart';
+import '../save/settings.dart';
 import 'symbols.dart';
 
 /// On-screen touch controls (GDD §10, ROADMAP M5): a left move-pad and right
@@ -30,18 +31,22 @@ class TouchControls extends PositionComponent with HasGameReference<EscapeGame> 
   bool _jumpFinger = false;
   double _jumpHold = 0;
 
-  /// One uniform button size for every control (px). Player-adjustable in the
-  /// M7 settings shell (wire this to a saved setting) — ROADMAP M7.
-  static const double btn = 68;
+  /// Base uniform button size (px) before the player's size preset is applied.
+  static const double baseBtn = 68;
   static const double _edge = 26; // gap from the screen edge
   static const double _gap = 16; // gap between paired buttons
+
+  /// The live button size = base × the player's chosen size preset (M7 settings
+  /// touch-control sizing). Re-read on mount; [EscapeGame] remounts this
+  /// component when the preset changes so the new size takes effect at once.
+  double get btn => baseBtn * game.settings.touchScale.factor;
 
   @override
   Future<void> onLoad() async {
     // Buttons glue to the real screen corners (offX/offY = gap from that edge
     // to the button), so they stay reachable on any device aspect.
-    const near = _edge;
-    const far = _edge + btn + _gap;
+    final near = _edge;
+    final far = _edge + btn + _gap;
     _buttons.addAll([
       // Left thumb: move pad (bottom-left).
       _TouchButton(_Btn.left, this, btn, _Corner.bottomLeft, near, _edge),

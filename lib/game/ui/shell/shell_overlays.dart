@@ -2,10 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 import '../../escape_game.dart';
 import '../../palette.dart';
 import '../../save/save_service.dart';
+import '../../save/settings.dart';
 
 /// M7 shell overlays (GDD §10b). The play space is strictly wordless; the
 /// shell is **text/icon-permitted but symbol-first**, so these use standard
@@ -18,6 +20,55 @@ import '../../save/save_service.dart';
 /// and keyboard can never drift apart.
 
 const _amber = Palettes.amber;
+
+/// Wraps a shell overlay so the overlay ITSELF owns the keyboard while it's the
+/// top widget — the reliable path for menu nav. The GameWidget keeps keyboard
+/// focus for gameplay (autofocus), so a passive `autofocus` here would NOT
+/// steal it; instead this **forcibly requests** focus on mount (post-frame, so
+/// the node is attached) and forwards keys to [EscapeGame.handleShellKey]. When
+/// the overlay is dismissed the node is disposed and focus returns to the game.
+class ShellKeys extends StatefulWidget {
+  const ShellKeys({super.key, required this.game, required this.child});
+  final EscapeGame game;
+  final Widget child;
+
+  @override
+  State<ShellKeys> createState() => _ShellKeysState();
+}
+
+class _ShellKeysState extends State<ShellKeys> {
+  final FocusNode _node = FocusNode(debugLabel: 'shellKeys');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _node.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: _node,
+      onKeyEvent: (node, event) {
+        // KeyDownEvent only (not KeyRepeatEvent) → one step per press.
+        if (event is KeyDownEvent &&
+            widget.game.handleShellKey(event.logicalKey)) {
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: widget.child,
+    );
+  }
+}
 
 /// Title screen: wordmark + play. The play space sits frozen behind it.
 class TitleOverlay extends StatelessWidget {
@@ -51,12 +102,28 @@ class TitleOverlay extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
-          // Always shown selected: Enter/Space (or a tap) starts the game.
-          _ShellButton(
-            icon: Icons.play_arrow_rounded,
-            size: 92,
-            selected: true,
-            onTap: game.startGame,
+          // Play (→ avatar select) and settings, keyboard-navigable. Play is
+          // index 0 so Enter on a fresh launch starts straight away.
+          ValueListenableBuilder<int>(
+            valueListenable: game.shellSelection,
+            builder: (context, sel, _) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ShellButton(
+                  icon: Icons.play_arrow_rounded,
+                  size: 92,
+                  selected: sel == 0,
+                  onTap: game.titleActions[0],
+                ),
+                const SizedBox(width: 22),
+                _ShellButton(
+                  icon: Icons.settings_rounded,
+                  size: 68,
+                  selected: sel == 1,
+                  onTap: game.titleActions[1],
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -173,6 +240,7 @@ class PauseOverlay extends StatelessWidget {
     Icons.play_arrow_rounded,
     Icons.replay_rounded,
     Icons.map_rounded,
+    Icons.settings_rounded,
     Icons.home_rounded,
   ];
 
@@ -190,6 +258,177 @@ class PauseOverlay extends StatelessWidget {
         ),
         child: _MenuRow(game: game, icons: _icons, actions: game.pauseActions),
       ),
+    );
+  }
+}
+
+/// Settings (GDD §10b): sound + music toggles and the touch-control size
+/// preset, all wordless. Reached from the title or the pause menu; Esc or the
+/// back row returns to whichever opened it. Rows are a keyboard-navigable list
+/// (same-order contract with [EscapeGame.settingsActions]); confirm toggles or
+/// cycles the focused row. Sound/music are stored but inert until the audio
+/// pass; the size preset live-scales the touch buttons.
+class SettingsOverlay extends StatelessWidget {
+  const SettingsOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    // Rebuild on either cursor moves or value changes.
+    return ValueListenableBuilder<int>(
+      valueListenable: game.settingsVersion,
+      builder: (context, _, _) => ValueListenableBuilder<int>(
+        valueListenable: game.shellSelection,
+        builder: (context, sel, _) {
+          final s = game.settings;
+          return Container(
+            color: _amber.bg,
+            alignment: Alignment.center,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 26),
+              decoration: BoxDecoration(
+                color: _amber.surface,
+                border: Border.all(color: _amber.ink, width: 4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _SettingRow(
+                    icon: s.soundOn
+                        ? Icons.volume_up_rounded
+                        : Icons.volume_off_rounded,
+                    selected: sel == 0,
+                    onTap: game.settingsActions[0],
+                    trailing: _Toggle(on: s.soundOn),
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingRow(
+                    icon: s.musicOn
+                        ? Icons.music_note_rounded
+                        : Icons.music_off_rounded,
+                    selected: sel == 1,
+                    onTap: game.settingsActions[1],
+                    trailing: _Toggle(on: s.musicOn),
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingRow(
+                    icon: Icons.touch_app_rounded,
+                    selected: sel == 2,
+                    onTap: game.settingsActions[2],
+                    trailing: _SizePips(scale: s.touchScale),
+                  ),
+                  const SizedBox(height: 22),
+                  _ShellButton(
+                    icon: Icons.arrow_back_rounded,
+                    size: 60,
+                    selected: sel == 3,
+                    onTap: game.settingsActions[3],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// One settings row: a leading glyph chip + a trailing value widget, in an
+/// ink-bordered pill that brightens when the keyboard cursor is on it.
+class _SettingRow extends StatelessWidget {
+  const _SettingRow({
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+    required this.trailing,
+  });
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 300,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? _amber.accentHint : _amber.accentNeutral,
+          border: Border.all(color: _amber.ink, width: selected ? 4 : 2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 34, color: _amber.ink),
+            const Spacer(),
+            trailing,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A wordless on/off pill — filled ink dot on the right when on, left when off.
+class _Toggle extends StatelessWidget {
+  const _Toggle({required this.on});
+  final bool on;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 28,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: on ? _amber.accentGoal : _amber.bg,
+        border: Border.all(color: _amber.ink, width: 2),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Align(
+        alignment: on ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: _amber.ink,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Touch-size indicator: 1–3 growing pips, plus a live preview circle at the
+/// chosen size (so the effect reads even on desktop, where the touch buttons
+/// aren't shown).
+class _SizePips extends StatelessWidget {
+  const _SizePips({required this.scale});
+  final TouchScale scale;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < TouchScale.values.length; i++) ...[
+          if (i > 0) const SizedBox(width: 6),
+          Container(
+            width: 10 + i * 5,
+            height: 10 + i * 5,
+            decoration: BoxDecoration(
+              color: i < scale.pips ? _amber.ink : _amber.bg,
+              shape: BoxShape.circle,
+              border: Border.all(color: _amber.ink, width: 2),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
