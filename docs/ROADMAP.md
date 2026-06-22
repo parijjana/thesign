@@ -171,6 +171,9 @@ Remaining: user playthrough + kid test.)*
 - **Exit criteria:** no rough edges in the core loop; a stranger (or a child) can play unaided.
 
 ## M7.3 — Grand Castle Expansion *(the "many hours" content build)*
+> **Full spec + the revised symbol/badge economy: [M7.3_PLAN.md](M7.3_PLAN.md)** (the resume
+> artifact — district model, scale targets, economy linking graph, phasing, open decisions).
+
 **Goal:** turn the short complete loop into a **large, deep game** — many hours of play. M6 proved
 the castle pattern (22 nodes, ~10 rooms); this milestone **multiplies it massively** in both size
 and complexity, keeping every law intact (no-death, no-text, kindness/no-soft-lock validator green,
