@@ -81,23 +81,27 @@
 </g>
 
 <g fill="#1b1530">
+<!-- decorative upper canopy -->
 <path d="M72 50 C 185 52 275 70 358 65 C 285 86 178 88 76 82 Z"/>
-<path d="M72 150 C 175 152 250 166 318 162 C 256 180 168 182 78 178 Z"/>
-<path d="M82 296 C 170 298 235 308 296 305 C 240 320 160 322 90 318 Z"/>
 <path d="M608 96 C 500 98 410 114 326 109 C 405 128 508 130 604 124 Z"/>
-<path d="M606 196 C 510 198 440 210 372 206 C 444 222 520 224 600 220 Z"/>
 <path d="M598 332 C 520 334 460 342 402 339 C 470 352 540 354 594 350 Z"/>
+<!-- PLATFORM branches: flat tops spanning each portal's invisible floor and
+     rooted INTO the trunk. star x57-320@y114 · circle x71-330@y269 ·
+     square x354-620@y191 (svg space; floors widened to match in meadow.json) -->
+<path d="M55 120 C 150 113 240 112 325 112 C 245 124 150 127 60 126 Z"/>
+<path d="M68 276 C 165 268 255 267 333 267 C 258 280 165 283 76 282 Z"/>
+<path d="M622 200 C 520 191 440 190 352 190 C 442 202 528 205 614 205 Z"/>
 </g>
 <g stroke="#463c62" stroke-width="1.4" fill="none" opacity="0.65" stroke-linecap="round">
 <path d="M72 50 C 185 52 275 70 358 65"/>
-<path d="M72 150 C 175 152 250 166 318 162"/>
 <path d="M608 96 C 500 98 410 114 326 109"/>
-<path d="M606 196 C 510 198 440 210 372 206"/>
+<path d="M55 120 C 150 113 240 112 325 112"/>
+<path d="M68 276 C 165 268 255 267 333 267"/>
+<path d="M622 200 C 520 191 440 190 352 190"/>
 </g>
 <g stroke="#171225" stroke-width="5" fill="none" stroke-linecap="round">
-<path d="M340 65 l 22 -12 M350 67 l 18 6"/>
-<path d="M308 162 l 20 -10 M316 164 l 16 7"/>
-<path d="M340 109 l -22 -12 M330 111 l -18 6"/>
-<path d="M388 206 l -20 -10 M380 208 l -16 7"/>
+<path d="M325 112 l 16 -8 M321 114 l 13 6"/>
+<path d="M333 267 l 16 -8 M329 269 l 13 6"/>
+<path d="M352 190 l -16 -8 M358 192 l -13 6"/>
 </g>
 </svg>

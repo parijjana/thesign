@@ -19,19 +19,19 @@
     { "type": "teleporter", "x": 2.0, "y": 9.9, "w": 1.7, "h": 2.1,
       "props": { "isExit": true } },
 
-    { "type": "floor", "x": 9.0, "y": 9.4, "w": 2.6, "h": 0.4, "props": { "invisible": true } },
+    { "type": "floor", "x": 2.5, "y": 9.4, "w": 9.15, "h": 0.4, "props": { "invisible": true } },
     { "type": "teleporter", "x": 9.5, "y": 7.3, "w": 1.7, "h": 2.1,
-      "props": { "exit": "to_circle", "availableFromStart": true,
+      "props": { "exit": "to_circle", "availableFromStart": true, "badge": "street_circle",
                  "completesRooms": ["room_plates", "room_stack"] } },
 
-    { "type": "floor", "x": 13.2, "y": 6.7, "w": 2.6, "h": 0.4, "props": { "invisible": true } },
+    { "type": "floor", "x": 12.5, "y": 6.7, "w": 9.4, "h": 0.4, "props": { "invisible": true } },
     { "type": "teleporter", "x": 13.7, "y": 4.6, "w": 1.7, "h": 2.1,
-      "props": { "exit": "to_square", "requiresVisited": "corridor_03",
+      "props": { "exit": "to_square", "requiresVisited": "corridor_03", "badge": "street_square",
                  "completesRooms": ["room_counter", "room_sokoban"] } },
 
-    { "type": "floor", "x": 8.6, "y": 4.0, "w": 2.6, "h": 0.4, "props": { "invisible": true } },
+    { "type": "floor", "x": 2.0, "y": 4.0, "w": 9.3, "h": 0.4, "props": { "invisible": true } },
     { "type": "teleporter", "x": 9.1, "y": 1.9, "w": 1.7, "h": 2.1,
-      "props": { "exit": "to_star", "requiresVisited": "corridor_05",
+      "props": { "exit": "to_star", "requiresVisited": "corridor_05", "badge": "street_star",
                  "completesRooms": ["room_splitter", "room_sequence"] } }
   ]
 }

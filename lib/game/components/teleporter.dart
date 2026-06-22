@@ -7,6 +7,7 @@ import '../config.dart';
 import '../core/aabb.dart';
 import '../core/interactable.dart';
 import '../escape_game.dart';
+import '../ui/symbols.dart';
 
 /// How lit a meadow teleporter is (M7 hub/ending, GDD §3 twist):
 /// - [dark]  — the iris is shut; not yet available (area unreached).
@@ -30,6 +31,7 @@ class Teleporter extends PositionComponent
     this.completesRooms = const [],
     this.availableFromStart = false,
     this.isExit = false,
+    this.badge,
   }) : super(position: position, size: size, priority: 3);
 
   final String? exitName;
@@ -37,6 +39,11 @@ class Teleporter extends PositionComponent
   final List<String> completesRooms;
   final bool availableFromStart;
   final bool isExit;
+
+  /// Destination wayfinding glyph posted above the iris (the street it leads
+  /// to, or the home seal for the exit). Tells the player where each portal
+  /// goes — and, on the meadow, where they would dive back into the castle.
+  final SymbolId? badge;
 
   static const _blades = 7;
   double _t = 0;
@@ -177,6 +184,40 @@ class Teleporter extends PositionComponent
           Offset(math.cos(a) * rOuter * 1.6, math.sin(a) * rOuter * 1.6),
           ray,
         );
+      }
+    }
+
+    // Destination wayfinding, embedded INTO the portal: small street-shape
+    // satellites orbiting the housing rim (○/□/☆ for where it leads, the home
+    // seal for the exit). They identify each portal even while shut, and spin
+    // faster + tint goal-green as the iris opens — part of the mechanism, not
+    // a posted board.
+    final mark = badge;
+    if (mark != null) {
+      const count = 3;
+      final rOrbit = rOuter * 1.26;
+      final ms = size.x * 0.26; // satellite glyph size
+      final lit = !isExit && lvl == TeleLevel.full;
+      final alpha = isExit
+          ? 0.7
+          : switch (lvl) {
+              TeleLevel.dark => 0.5,
+              TeleLevel.half => 0.95,
+              TeleLevel.full => 1.0,
+            };
+      final orbitSpeed = isExit ? 0.0 : (0.35 + spin * 0.6);
+      final tint = lit ? p.accentGoal : p.ink;
+      for (var i = 0; i < count; i++) {
+        final a = _t * orbitSpeed + i * 2 * math.pi / count;
+        final ox = math.cos(a) * rOrbit;
+        final oy = math.sin(a) * rOrbit;
+        // A small bg disc lifts the mark off the busy iris behind it.
+        canvas.drawCircle(Offset(ox, oy), ms * 0.78,
+            Paint()..color = p.bg.withValues(alpha: 0.85 * alpha));
+        canvas.save();
+        canvas.translate(ox - ms / 2, oy - ms / 2);
+        drawSymbol(canvas, mark, ms, tint.withValues(alpha: alpha));
+        canvas.restore();
       }
     }
     canvas.restore();

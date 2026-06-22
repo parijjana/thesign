@@ -209,6 +209,7 @@ class RoomComponent extends PositionComponent
               (e.props['completesRooms'] as List?)?.cast<String>() ?? const [],
           availableFromStart: e.props['availableFromStart'] as bool? ?? false,
           isExit: e.props['isExit'] as bool? ?? false,
+          badge: e.props['badge'] != null ? _glyph(e.props['badge']) : null,
         ),
       'tree' => Tree(pos, size, mirror: e.props['mirror'] as bool? ?? false),
       'backdrop' => Backdrop(pos, size,
