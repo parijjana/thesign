@@ -47,6 +47,16 @@ class KeyboardInput extends Component with KeyboardHandler {
         if (key == LogicalKeyboardKey.escape) input.pausePressed = true;
         if (key == LogicalKeyboardKey.f2) input.devResetPressed = true;
         if (key == LogicalKeyboardKey.f3) input.debugTogglePressed = true;
+        // Shell/menu navigation — keyboard plays the whole game (no mouse).
+        if (_interact.contains(key) || key == LogicalKeyboardKey.space) {
+          input.uiConfirmPressed = true;
+        }
+        if (_right.contains(key) || key == LogicalKeyboardKey.arrowDown) {
+          input.uiNextPressed = true;
+        }
+        if (_left.contains(key) || key == LogicalKeyboardKey.arrowUp) {
+          input.uiPrevPressed = true;
+        }
       }
     }
     return true;
