@@ -165,6 +165,38 @@ Remaining: user playthrough + kid test.)*
 - CI/lint guard: **no user-facing strings / number rendering** in gameplay paths.
 - **Exit criteria:** no rough edges in the core loop; a stranger (or a child) can play unaided.
 
+## M7.3 — Grand Castle Expansion *(the "many hours" content build)*
+**Goal:** turn the short complete loop into a **large, deep game** — many hours of play. M6 proved
+the castle pattern (22 nodes, ~10 rooms); this milestone **multiplies it massively** in both size
+and complexity, keeping every law intact (no-death, no-text, kindness/no-soft-lock validator green,
+direction-of-travel as data, per-room discipline palettes). Build on the M6/M5.7 machinery — this is
+*content scale*, not new engine work, so it can largely be authored in JSON + per-room scripts.
+Reuse the existing pipeline before adding tech; only reach for `forge2d` when a puzzle truly needs it.
+
+**Shape — grow the castle into multiple ACTS (wings), gated by powerups (true Metroidvania depth):**
+- **Many more streets, plazas & rooms.** Target a step-change in node count (M6 was 22; aim for a
+  multiple of that across the new wings). Each plaza keeps the variety rule — sibling rooms span
+  *different* disciplines.
+- **Fill out the disciplines.** M6 leaned mechanics/optics. Expand into the full PUZZLES.md set:
+  **chemistry ratios, fluids, gravity, electricity/magnetism, thermo, sound**, plus the **sports**
+  grab-bag (tennis rally, basketball, mini-golf, billiards). Each new discipline brings its palette.
+- **Difficulty ramp + fusion rooms.** Later wings escalate; capstone rooms **FUSE disciplines** (GDD)
+  — e.g. optics+mechanics, fluids+thermo — as gate-guardians between acts.
+- **Deepen the powerup gating (POWERUPS §7 Phase 5):** land the remaining kit — **grapple wing**,
+  **lantern / dark rooms** — and put **Act IV (or the deepest wing) behind 2 powerups**, so routes
+  genuinely open up as the kid earns abilities. More secret rooms behind cracked walls.
+- **More traversal & hazard variety:** more moving-platform choreography, boulder runs, conveyor /
+  timing rooms — non-lethal throughout.
+- **Collectibles that pay off:** many more **lore etchings** + the symbol-economy rewards (per-room
+  tallies, deferred since M5.5, finally land here) so exploration is always rewarded. The teleporter
+  3-state irises and spine/map HUD already give wordless progress feedback across a big world.
+- **Author at scale:** the path-checker + kindness/direction/corridor-liveness validators run over the
+  whole expanded `world.json` in `flutter test` — never ship a wing without them. Watch memory
+  footprint as node count grows (cold room loads stay budgeted; profile data scales per-profile).
+- **Exit criteria:** a single playthrough is **many hours**; the castle feels vast and layered;
+  multiple powerup-gated acts; every discipline represented; all validators green; an 8-year-old can
+  keep discovering new wings over many sessions (save/resume across a big world holds up).
+
 ## M7.5 — Visual style overhaul *(the dedicated art stage, pre-release)*
 **Goal:** MVP ships with functional programmer-drawn signage art; this stage makes it *beautiful*
 in one deliberate pass, with the whole game playable as the test bed.
