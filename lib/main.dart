@@ -16,6 +16,7 @@ void main() {
         EscapeGame.titleOverlay: (_, EscapeGame g) => TitleOverlay(g),
         EscapeGame.pauseOverlay: (_, EscapeGame g) => PauseOverlay(g),
         EscapeGame.mapOverlay: (_, EscapeGame g) => MapOverlay(g),
+        EscapeGame.winOverlay: (_, EscapeGame g) => WinOverlay(g),
       },
     ),
   );

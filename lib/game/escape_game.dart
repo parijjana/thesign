@@ -33,8 +33,8 @@ import 'ui/spine_hud.dart';
 import 'ui/touch_controls.dart';
 
 /// App-level phase (M7 shell, GDD §10b). The play space only ticks in
-/// [playing]; [title] and [paused] freeze it behind a Flutter overlay.
-enum GamePhase { title, playing, paused }
+/// [playing]; [title], [paused] and [won] freeze it behind a Flutter overlay.
+enum GamePhase { title, playing, paused, won }
 
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
@@ -89,6 +89,12 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   static const titleOverlay = 'title';
   static const pauseOverlay = 'pause';
   static const mapOverlay = 'map';
+  static const winOverlay = 'win';
+
+  /// Which menu button the keyboard cursor is on (M7 keyboard nav). Overlays
+  /// listen to this to highlight the selection; mouse taps act directly. Reset
+  /// to 0 whenever a menu opens.
+  final ValueNotifier<int> shellSelection = ValueNotifier<int>(0);
 
   /// Title → play. (Also returns from pause via [setPlaying].)
   void startGame() => setPlaying();
@@ -97,11 +103,14 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     phase = GamePhase.playing;
     overlays.remove(titleOverlay);
     overlays.remove(pauseOverlay);
+    overlays.remove(mapOverlay);
+    overlays.remove(winOverlay);
   }
 
   void pauseGame() {
     if (phase != GamePhase.playing) return;
     phase = GamePhase.paused;
+    shellSelection.value = 0;
     overlays.add(pauseOverlay);
   }
 
@@ -113,7 +122,9 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Leave the run and show the title (the play space stays loaded behind it).
   void exitToTitle() {
     phase = GamePhase.title;
+    shellSelection.value = 0;
     overlays.remove(pauseOverlay);
+    overlays.remove(winOverlay);
     overlays.add(titleOverlay);
   }
 
@@ -130,6 +141,66 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     overlays.remove(mapOverlay);
     overlays.add(pauseOverlay);
   }
+
+  /// You escaped the castle (GDD §3 twist): arriving back in the meadow from a
+  /// castle node. A celebratory ending — but the exit stays free, so the
+  /// player can dive back in and keep exploring (ICEBOX replayability).
+  void _winEscape() {
+    phase = GamePhase.won;
+    shellSelection.value = 0;
+    overlays.add(winOverlay);
+  }
+
+  /// Keyboard-driven navigation for the frozen shell phases. Each menu is a
+  /// short list of actions; Left/Right (or A/D, ↑/↓) move the cursor and
+  /// Enter/Space/E confirm. Mirrors the same actions the overlays' taps call.
+  void _updateShell() {
+    void move(int count) {
+      if (input.uiNextPressed) {
+        shellSelection.value = (shellSelection.value + 1) % count;
+      }
+      if (input.uiPrevPressed) {
+        shellSelection.value = (shellSelection.value - 1 + count) % count;
+      }
+    }
+
+    switch (phase) {
+      case GamePhase.title:
+        if (input.uiConfirmPressed) startGame();
+      case GamePhase.won:
+        move(winActions.length);
+        if (input.uiConfirmPressed) winActions[shellSelection.value]();
+      case GamePhase.paused:
+        if (overlays.isActive(mapOverlay)) {
+          if (input.pausePressed || input.uiConfirmPressed) hideMap();
+          break;
+        }
+        if (input.pausePressed) {
+          resumeGame();
+          break;
+        }
+        move(pauseActions.length);
+        if (input.uiConfirmPressed) pauseActions[shellSelection.value]();
+      case GamePhase.playing:
+        break;
+    }
+  }
+
+  /// Pause-menu actions, in row order. The PauseOverlay draws its icons in the
+  /// SAME order, so taps and the keyboard cursor stay in lockstep.
+  late final List<void Function()> pauseActions = [
+    resumeGame,
+    () {
+      requestReset();
+      resumeGame();
+    },
+    showMap,
+    exitToTitle,
+  ];
+
+  /// Win-screen actions (same-order contract with WinOverlay): keep exploring
+  /// the free meadow, or return to the title.
+  late final List<void Function()> winActions = [setPlaying, exitToTitle];
 
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};
@@ -343,7 +414,13 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     if (_resetting) return;
     final transition = registry.resolve(currentNodeId, exitName);
     if (transition == null) return; // dead exit — author error, fail soft
+    // Escaping = arriving at the meadow (world.start) FROM a castle node. The
+    // only such edge is exit_hall's "out" portal (meadow→castle edges are
+    // one-way re-entries), so this is precisely THE win.
+    final escaping = currentNodeId != registry.world.start &&
+        transition.targetId == registry.world.start;
     loadNode(transition.targetId, entryKey: transition.entryKey);
+    if (escaping) _winEscape();
   }
 
   /// Is the current node's `unlock` rule satisfied? (Optional special gates.)
@@ -390,14 +467,17 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   @override
   void update(double dt) {
-    // The pause toggle is honoured even while frozen (Esc / touch pause btn).
-    if (input.pausePressed) {
-      togglePause();
+    // Title/pause/win freeze the play space behind a Flutter overlay; the
+    // shell is driven entirely by the keyboard (and mouse taps) here, so the
+    // whole game is playable without a pointer (GDD §10 keyboard nav).
+    if (phase != GamePhase.playing) {
+      _updateShell();
       input.clearEdges();
       return;
     }
-    // Title/pause freeze the play space behind the Flutter overlay.
-    if (phase != GamePhase.playing) {
+    // Playing: Esc / touch pause button opens the pause menu.
+    if (input.pausePressed) {
+      pauseGame();
       input.clearEdges();
       return;
     }
