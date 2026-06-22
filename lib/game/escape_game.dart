@@ -104,6 +104,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   static const mapOverlay = 'map';
   static const winOverlay = 'win';
   static const settingsOverlay = 'settings';
+  static const inventoryOverlay = 'inventory';
 
   /// Bumped whenever a setting changes so the SettingsOverlay rebuilds.
   final ValueNotifier<int> settingsVersion = ValueNotifier<int>(0);
@@ -164,6 +165,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     overlays.remove(mapOverlay);
     overlays.remove(winOverlay);
     overlays.remove(settingsOverlay);
+    overlays.remove(inventoryOverlay);
   }
 
   void pauseGame() {
@@ -200,6 +202,17 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   void hideMap() {
     overlays.remove(mapOverlay);
+    overlays.add(pauseOverlay);
+  }
+
+  /// Field Kit / inventory (GDD §9b) — the powerup shelf, opened from pause.
+  void showInventory() {
+    overlays.remove(pauseOverlay);
+    overlays.add(inventoryOverlay);
+  }
+
+  void hideInventory() {
+    overlays.remove(inventoryOverlay);
     overlays.add(pauseOverlay);
   }
 
@@ -289,6 +302,10 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
           if (back || confirm) hideMap();
           return true;
         }
+        if (overlays.isActive(inventoryOverlay)) {
+          if (back || confirm) hideInventory();
+          return true;
+        }
         if (back) {
           resumeGame();
           return true;
@@ -314,6 +331,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
       resumeGame();
     },
     showMap,
+    showInventory,
     showSettings,
     exitToTitle,
   ];

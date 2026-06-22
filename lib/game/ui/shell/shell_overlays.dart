@@ -6,8 +6,10 @@ import 'package:flutter/services.dart';
 
 import '../../escape_game.dart';
 import '../../palette.dart';
+import '../../powerups.dart';
 import '../../save/save_service.dart';
 import '../../save/settings.dart';
+import '../symbols.dart';
 
 /// M7 shell overlays (GDD §10b). The play space is strictly wordless; the
 /// shell is **text/icon-permitted but symbol-first**, so these use standard
@@ -240,6 +242,7 @@ class PauseOverlay extends StatelessWidget {
     Icons.play_arrow_rounded,
     Icons.replay_rounded,
     Icons.map_rounded,
+    Icons.backpack_rounded,
     Icons.settings_rounded,
     Icons.home_rounded,
   ];
@@ -431,6 +434,130 @@ class _SizePips extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Field Kit / inventory (GDD §9b): the powerup shelf. Every powerup has a
+/// fixed slot, so the shape of the kit is the same for everyone — owned ones
+/// glow on a neutral chip with their real in-game glyph; not-yet-found ones sit
+/// as faint silhouettes (a wordless "there's more out there"). View-only;
+/// Esc/Enter or the back button returns to the pause menu.
+class InventoryOverlay extends StatelessWidget {
+  const InventoryOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _amber.bg,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 18,
+            right: 18,
+            child: _ShellButton(
+              icon: Icons.arrow_back_rounded,
+              size: 56,
+              onTap: game.hideInventory,
+            ),
+          ),
+          Center(
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+              decoration: BoxDecoration(
+                color: _amber.surface,
+                border: Border.all(color: _amber.ink, width: 4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < Powerup.values.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 18),
+                    _KitSlot(
+                      powerup: Powerup.values[i],
+                      owned: game.hasPowerup(Powerup.values[i]),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One Field-Kit slot: the powerup's glyph on a chip. Found = ink glyph on a
+/// neutral chip with a green "have it" dot; not found = faint silhouette on the
+/// background (still occupies its slot, so the kit's shape is always visible).
+class _KitSlot extends StatelessWidget {
+  const _KitSlot({required this.powerup, required this.owned});
+  final Powerup powerup;
+  final bool owned;
+
+  static const double _side = 76;
+
+  @override
+  Widget build(BuildContext context) {
+    final glyphColor =
+        owned ? _amber.ink : _amber.ink.withValues(alpha: 0.18);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: _side,
+          height: _side,
+          decoration: BoxDecoration(
+            color: owned ? _amber.accentNeutral : _amber.bg,
+            border: Border.all(
+              color: owned ? _amber.ink : _amber.ink.withValues(alpha: 0.3),
+              width: 3,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: CustomPaint(
+              size: const Size(_side * 0.6, _side * 0.6),
+              painter: _GlyphPainter(powerup.glyph, glyphColor),
+            ),
+          ),
+        ),
+        if (owned)
+          Positioned(
+            right: -3,
+            top: -3,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: _amber.accentGoal,
+                shape: BoxShape.circle,
+                border: Border.all(color: _amber.ink, width: 3),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Paints one signage glyph (the same [drawSymbol] used on the figure/HUD) so
+/// the inventory shows the exact symbol the player sees in the world.
+class _GlyphPainter extends CustomPainter {
+  _GlyphPainter(this.id, this.color);
+  final SymbolId id;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawSymbol(canvas, id, size.width, color);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GlyphPainter old) =>
+      old.id != id || old.color != color;
 }
 
 /// Win/ending overlay: you escaped the castle. A bright celebration —
