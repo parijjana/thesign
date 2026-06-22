@@ -33,8 +33,9 @@ import 'ui/spine_hud.dart';
 import 'ui/touch_controls.dart';
 
 /// App-level phase (M7 shell, GDD §10b). The play space only ticks in
-/// [playing]; [title], [paused] and [won] freeze it behind a Flutter overlay.
-enum GamePhase { title, playing, paused, won }
+/// [playing]; [title], [profileSelect], [paused] and [won] freeze it behind a
+/// Flutter overlay.
+enum GamePhase { title, profileSelect, playing, paused, won }
 
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
@@ -71,7 +72,8 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   late final ClawReset claw;
   late final RoomRegistry registry;
   late final FeedbackPopups feedback;
-  final SaveService _saves = SaveService();
+  // Reassigned when the player picks an avatar slot (M7 profile select).
+  SaveService _saves = SaveService();
 
   RoomComponent? _room;
   String currentNodeId = '';
@@ -87,6 +89,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   GamePhase phase = GamePhase.title;
 
   static const titleOverlay = 'title';
+  static const profileOverlay = 'profile';
   static const pauseOverlay = 'pause';
   static const mapOverlay = 'map';
   static const winOverlay = 'win';
@@ -96,12 +99,52 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// to 0 whenever a menu opens.
   final ValueNotifier<int> shellSelection = ValueNotifier<int>(0);
 
-  /// Title → play. (Also returns from pause via [setPlaying].)
-  void startGame() => setPlaying();
+  /// Profile slots that already hold a saved run — the select screen shows a
+  /// resume dot on these. Refreshed each time the screen opens.
+  final ValueNotifier<Set<String>> profilesWithSaves =
+      ValueNotifier<Set<String>>(const {});
+
+  /// Title → avatar/profile select (GDD §10b screen flow).
+  void startGame() => showProfileSelect();
+
+  /// Show the avatar-select screen; pre-highlight the last-played slot.
+  Future<void> showProfileSelect() async {
+    phase = GamePhase.profileSelect;
+    overlays.remove(titleOverlay);
+    overlays.add(profileOverlay);
+    profilesWithSaves.value = await SaveService.profilesWithSaves();
+    final last = await SaveService.lastProfile();
+    final i = last == null ? 0 : SaveService.profileIds.indexOf(last);
+    shellSelection.value = i < 0 ? 0 : i;
+  }
+
+  /// Pick an avatar slot: bind saves to it, load its run (or start fresh), and
+  /// drop into play. Clears any in-memory progress from a prior slot first.
+  Future<void> chooseProfile(String id) async {
+    _saves = SaveService(profile: id);
+    await _saves.markActive();
+    solvedRooms.clear();
+    foundEtchings.clear();
+    discoveredSecrets.clear();
+    visitedNodes.clear();
+    powerups.clear();
+    final progress = await _saves.load();
+    if (progress != null) {
+      solvedRooms.addAll(progress.solvedRooms);
+      foundEtchings.addAll(progress.foundEtchings);
+      discoveredSecrets.addAll(progress.discoveredSecrets);
+      visitedNodes.addAll(progress.visitedNodes);
+      powerups
+          .addAll(progress.powerups.map(Powerup.byId).whereType<Powerup>());
+    }
+    await loadNode(registry.world.start);
+    setPlaying();
+  }
 
   void setPlaying() {
     phase = GamePhase.playing;
     overlays.remove(titleOverlay);
+    overlays.remove(profileOverlay);
     overlays.remove(pauseOverlay);
     overlays.remove(mapOverlay);
     overlays.remove(winOverlay);
@@ -125,6 +168,7 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     shellSelection.value = 0;
     overlays.remove(pauseOverlay);
     overlays.remove(winOverlay);
+    overlays.remove(profileOverlay);
     overlays.add(titleOverlay);
   }
 
@@ -167,6 +211,13 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     switch (phase) {
       case GamePhase.title:
         if (input.uiConfirmPressed) startGame();
+      case GamePhase.profileSelect:
+        if (input.pausePressed) {
+          exitToTitle(); // Esc backs out to the title
+          break;
+        }
+        move(profileActions.length);
+        if (input.uiConfirmPressed) profileActions[shellSelection.value]();
       case GamePhase.won:
         move(winActions.length);
         if (input.uiConfirmPressed) winActions[shellSelection.value]();
@@ -201,6 +252,12 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Win-screen actions (same-order contract with WinOverlay): keep exploring
   /// the free meadow, or return to the title.
   late final List<void Function()> winActions = [setPlaying, exitToTitle];
+
+  /// Profile-select actions, one per avatar slot (same-order contract with
+  /// ProfileOverlay): pick that slot and drop into play.
+  late final List<void Function()> profileActions = [
+    for (final id in SaveService.profileIds) () => chooseProfile(id),
+  ];
 
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};
@@ -286,6 +343,12 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
     player = Player();
     claw = ClawReset();
     feedback = FeedbackPopups();
+
+    // Default the save binding to the last-played slot so the world frozen
+    // behind the title matches a returning player (they confirm the slot on
+    // the select screen, which reloads it anyway). Fresh installs stay on p1.
+    final last = await SaveService.lastProfile();
+    if (last != null) _saves = SaveService(profile: last);
 
     // Resume where the player left off (GDD §9); fresh start otherwise.
     final progress = await _saves.load();

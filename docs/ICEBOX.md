@@ -81,6 +81,33 @@
   promoting beyond the prototype. Avoid an explicit arrow/compass *to* the exit (kills the maze's
   "wait, I've been here" — GDD §4); ambient "lit spine" is the kinder cue.
 
+## Avatars as the player sprite, each with a signature ability
+> Surfaced while building the M7 profile/avatar-select screen — promote the avatar from a save-slot
+> badge into the actual in-world figure *and* a playstyle choice.
+- **The idea:** the chosen avatar IS the player sprite, and each carries a signature movement trait —
+  e.g. **bunny = higher jump**, **cat = wall-climb/cling**, **bird = glide/short flight** (or hover,
+  double-flap, etc.). Pick your creature, play the whole castle in its style. Adds replay (run it
+  again as a different animal) and personality.
+- **Hard constraint it must respect — kindness / no-soft-lock (GDD §0):** abilities may **never gate
+  required progress.** Every route to every door must stay completable by *every* avatar, or the
+  path-checker/kindness validators break and a kid picks the "wrong" animal and gets stuck. So traits
+  have to be **conveniences or alternate routes**, not keys — the cat's wall-climb is a *shortcut* up
+  a shaft that also has a normal way up; the bird's glide *eases* a gap that's still jumpable. The
+  validators would need to prove reachability under the **weakest** traversal kit (likely: assume no
+  avatar ability at all), exactly as `path_checker` already does for powerups.
+- **Big open tension — avatars vs. the Metroidvania powerups (POWERUPS.md):** the found-powerup kit
+  (flippers/spring-boots/grapple/lantern) already *is* the ability-gating system, and it's built to
+  gate *bonus* routes fairly because everyone can eventually find every powerup. Per-avatar permanent
+  traits collide with that: do avatar traits overlap powerups (bunny ≈ spring-boots)? Stack with
+  them? Does picking the cat mean you never need the climb powerup? Resolve before promoting —
+  otherwise two ability systems fight over the same routes.
+- **Other open questions:** how each trait reads wordlessly; balancing so no avatar is strictly best;
+  sprite/animation cost (each avatar needs the full posture set — pairs with the M7.5 art pass);
+  whether traits are fixed or a light unlock. Touches player.dart movement, the validators, the
+  powerup design, and save data, so it's a real design gate, not a quick add.
+- **Connects to:** the profile-select screen (M7, already built), POWERUPS.md (overlap to resolve),
+  and the NG+/remix replay ideas below (different-avatar runs are a replay axis).
+
 ## Other parked ideas (from the replayability review)
 - **Castle map / completion view** — post-game map showing solved vs unexplored rooms.
 - **Second solutions** — hidden bonus objective in select rooms (bullseye-with-star glyph).

@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 
 import '../../escape_game.dart';
 import '../../palette.dart';
+import '../../save/save_service.dart';
 
 /// M7 shell overlays (GDD §10b). The play space is strictly wordless; the
 /// shell is **text/icon-permitted but symbol-first**, so these use standard
@@ -59,6 +60,106 @@ class TitleOverlay extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Avatar / profile select (GDD §10b): pick one of the fixed pictogram avatar
+/// slots — no typed names (symbol-first). A slot that already holds a run shows
+/// a small resume dot; the keyboard cursor pre-lands on the last-played slot.
+/// Esc (or the back button) returns to the title.
+class ProfileOverlay extends StatelessWidget {
+  const ProfileOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  /// One icon per slot, same order as [SaveService.profileIds] /
+  /// [EscapeGame.profileActions]. Friendly creatures — the kitten the claw
+  /// rescues, and two companions.
+  static const _avatars = [
+    Icons.pets, // cat
+    Icons.cruelty_free, // bunny
+    Icons.flutter_dash, // bird
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _amber.bg,
+      alignment: Alignment.center,
+      child: Stack(
+        children: [
+          // Back to title (top-left), mirrors the Esc shortcut.
+          Positioned(
+            top: 18,
+            left: 18,
+            child: _ShellButton(
+              icon: Icons.arrow_back_rounded,
+              size: 56,
+              onTap: game.exitToTitle,
+            ),
+          ),
+          Center(
+            child: ValueListenableBuilder<Set<String>>(
+              valueListenable: game.profilesWithSaves,
+              builder: (context, saves, _) => ValueListenableBuilder<int>(
+                valueListenable: game.shellSelection,
+                builder: (context, sel, _) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < _avatars.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 26),
+                      _AvatarSlot(
+                        icon: _avatars[i],
+                        selected: i == sel,
+                        hasSave: saves.contains(SaveService.profileIds[i]),
+                        onTap: game.profileActions[i],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One avatar button with an optional resume dot (the slot has a saved run).
+class _AvatarSlot extends StatelessWidget {
+  const _AvatarSlot({
+    required this.icon,
+    required this.selected,
+    required this.hasSave,
+    required this.onTap,
+  });
+  final IconData icon;
+  final bool selected;
+  final bool hasSave;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _ShellButton(icon: icon, size: 96, selected: selected, onTap: onTap),
+        if (hasSave)
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: _amber.accentGoal,
+                shape: BoxShape.circle,
+                border: Border.all(color: _amber.ink, width: 3),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
