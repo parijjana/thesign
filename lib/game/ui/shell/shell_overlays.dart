@@ -2,9 +2,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 import '../../escape_game.dart';
 import '../../palette.dart';
+import '../../powerups.dart';
+import '../../save/save_service.dart';
+import '../../save/settings.dart';
+import '../symbols.dart';
 
 /// M7 shell overlays (GDD §10b). The play space is strictly wordless; the
 /// shell is **text/icon-permitted but symbol-first**, so these use standard
@@ -17,6 +22,55 @@ import '../../palette.dart';
 /// and keyboard can never drift apart.
 
 const _amber = Palettes.amber;
+
+/// Wraps a shell overlay so the overlay ITSELF owns the keyboard while it's the
+/// top widget — the reliable path for menu nav. The GameWidget keeps keyboard
+/// focus for gameplay (autofocus), so a passive `autofocus` here would NOT
+/// steal it; instead this **forcibly requests** focus on mount (post-frame, so
+/// the node is attached) and forwards keys to [EscapeGame.handleShellKey]. When
+/// the overlay is dismissed the node is disposed and focus returns to the game.
+class ShellKeys extends StatefulWidget {
+  const ShellKeys({super.key, required this.game, required this.child});
+  final EscapeGame game;
+  final Widget child;
+
+  @override
+  State<ShellKeys> createState() => _ShellKeysState();
+}
+
+class _ShellKeysState extends State<ShellKeys> {
+  final FocusNode _node = FocusNode(debugLabel: 'shellKeys');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _node.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: _node,
+      onKeyEvent: (node, event) {
+        // KeyDownEvent only (not KeyRepeatEvent) → one step per press.
+        if (event is KeyDownEvent &&
+            widget.game.handleShellKey(event.logicalKey)) {
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: widget.child,
+    );
+  }
+}
 
 /// Title screen: wordmark + play. The play space sits frozen behind it.
 class TitleOverlay extends StatelessWidget {
@@ -50,15 +104,131 @@ class TitleOverlay extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
-          // Always shown selected: Enter/Space (or a tap) starts the game.
-          _ShellButton(
-            icon: Icons.play_arrow_rounded,
-            size: 92,
-            selected: true,
-            onTap: game.startGame,
+          // Play (→ avatar select) and settings, keyboard-navigable. Play is
+          // index 0 so Enter on a fresh launch starts straight away.
+          ValueListenableBuilder<int>(
+            valueListenable: game.shellSelection,
+            builder: (context, sel, _) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ShellButton(
+                  icon: Icons.play_arrow_rounded,
+                  size: 92,
+                  selected: sel == 0,
+                  onTap: game.titleActions[0],
+                ),
+                const SizedBox(width: 22),
+                _ShellButton(
+                  icon: Icons.settings_rounded,
+                  size: 68,
+                  selected: sel == 1,
+                  onTap: game.titleActions[1],
+                ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Avatar / profile select (GDD §10b): pick one of the fixed pictogram avatar
+/// slots — no typed names (symbol-first). A slot that already holds a run shows
+/// a small resume dot; the keyboard cursor pre-lands on the last-played slot.
+/// Esc (or the back button) returns to the title.
+class ProfileOverlay extends StatelessWidget {
+  const ProfileOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  /// One icon per slot, same order as [SaveService.profileIds] /
+  /// [EscapeGame.profileActions]. Friendly creatures — the kitten the claw
+  /// rescues, and two companions.
+  static const _avatars = [
+    Icons.pets, // cat
+    Icons.cruelty_free, // bunny
+    Icons.flutter_dash, // bird
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _amber.bg,
+      alignment: Alignment.center,
+      child: Stack(
+        children: [
+          // Back to title (top-left), mirrors the Esc shortcut.
+          Positioned(
+            top: 18,
+            left: 18,
+            child: _ShellButton(
+              icon: Icons.arrow_back_rounded,
+              size: 56,
+              onTap: game.exitToTitle,
+            ),
+          ),
+          Center(
+            child: ValueListenableBuilder<Set<String>>(
+              valueListenable: game.profilesWithSaves,
+              builder: (context, saves, _) => ValueListenableBuilder<int>(
+                valueListenable: game.shellSelection,
+                builder: (context, sel, _) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < _avatars.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 26),
+                      _AvatarSlot(
+                        icon: _avatars[i],
+                        selected: i == sel,
+                        hasSave: saves.contains(SaveService.profileIds[i]),
+                        onTap: game.profileActions[i],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One avatar button with an optional resume dot (the slot has a saved run).
+class _AvatarSlot extends StatelessWidget {
+  const _AvatarSlot({
+    required this.icon,
+    required this.selected,
+    required this.hasSave,
+    required this.onTap,
+  });
+  final IconData icon;
+  final bool selected;
+  final bool hasSave;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _ShellButton(icon: icon, size: 96, selected: selected, onTap: onTap),
+        if (hasSave)
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: _amber.accentGoal,
+                shape: BoxShape.circle,
+                border: Border.all(color: _amber.ink, width: 3),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -72,6 +242,9 @@ class PauseOverlay extends StatelessWidget {
     Icons.play_arrow_rounded,
     Icons.replay_rounded,
     Icons.map_rounded,
+    Icons.backpack_rounded,
+    Icons.auto_stories_rounded,
+    Icons.settings_rounded,
     Icons.home_rounded,
   ];
 
@@ -89,6 +262,446 @@ class PauseOverlay extends StatelessWidget {
         ),
         child: _MenuRow(game: game, icons: _icons, actions: game.pauseActions),
       ),
+    );
+  }
+}
+
+/// Settings (GDD §10b): sound + music toggles and the touch-control size
+/// preset, all wordless. Reached from the title or the pause menu; Esc or the
+/// back row returns to whichever opened it. Rows are a keyboard-navigable list
+/// (same-order contract with [EscapeGame.settingsActions]); confirm toggles or
+/// cycles the focused row. Sound/music are stored but inert until the audio
+/// pass; the size preset live-scales the touch buttons.
+class SettingsOverlay extends StatelessWidget {
+  const SettingsOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    // Rebuild on either cursor moves or value changes.
+    return ValueListenableBuilder<int>(
+      valueListenable: game.settingsVersion,
+      builder: (context, _, _) => ValueListenableBuilder<int>(
+        valueListenable: game.shellSelection,
+        builder: (context, sel, _) {
+          final s = game.settings;
+          return Container(
+            color: _amber.bg,
+            alignment: Alignment.center,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 26),
+              decoration: BoxDecoration(
+                color: _amber.surface,
+                border: Border.all(color: _amber.ink, width: 4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _SettingRow(
+                    icon: s.soundOn
+                        ? Icons.volume_up_rounded
+                        : Icons.volume_off_rounded,
+                    selected: sel == 0,
+                    onTap: game.settingsActions[0],
+                    trailing: _Toggle(on: s.soundOn),
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingRow(
+                    icon: s.musicOn
+                        ? Icons.music_note_rounded
+                        : Icons.music_off_rounded,
+                    selected: sel == 1,
+                    onTap: game.settingsActions[1],
+                    trailing: _Toggle(on: s.musicOn),
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingRow(
+                    icon: Icons.touch_app_rounded,
+                    selected: sel == 2,
+                    onTap: game.settingsActions[2],
+                    trailing: _SizePips(scale: s.touchScale),
+                  ),
+                  const SizedBox(height: 22),
+                  _ShellButton(
+                    icon: Icons.arrow_back_rounded,
+                    size: 60,
+                    selected: sel == 3,
+                    onTap: game.settingsActions[3],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// One settings row: a leading glyph chip + a trailing value widget, in an
+/// ink-bordered pill that brightens when the keyboard cursor is on it.
+class _SettingRow extends StatelessWidget {
+  const _SettingRow({
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+    required this.trailing,
+  });
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 300,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? _amber.accentHint : _amber.accentNeutral,
+          border: Border.all(color: _amber.ink, width: selected ? 4 : 2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 34, color: _amber.ink),
+            const Spacer(),
+            trailing,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A wordless on/off pill — filled ink dot on the right when on, left when off.
+class _Toggle extends StatelessWidget {
+  const _Toggle({required this.on});
+  final bool on;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 28,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: on ? _amber.accentGoal : _amber.bg,
+        border: Border.all(color: _amber.ink, width: 2),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Align(
+        alignment: on ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: _amber.ink,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Touch-size indicator: 1–3 growing pips, plus a live preview circle at the
+/// chosen size (so the effect reads even on desktop, where the touch buttons
+/// aren't shown).
+class _SizePips extends StatelessWidget {
+  const _SizePips({required this.scale});
+  final TouchScale scale;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < TouchScale.values.length; i++) ...[
+          if (i > 0) const SizedBox(width: 6),
+          Container(
+            width: 10 + i * 5,
+            height: 10 + i * 5,
+            decoration: BoxDecoration(
+              color: i < scale.pips ? _amber.ink : _amber.bg,
+              shape: BoxShape.circle,
+              border: Border.all(color: _amber.ink, width: 2),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Field Kit / inventory (GDD §9b): the powerup shelf. Every powerup has a
+/// fixed slot, so the shape of the kit is the same for everyone — owned ones
+/// glow on a neutral chip with their real in-game glyph; not-yet-found ones sit
+/// as faint silhouettes (a wordless "there's more out there"). View-only;
+/// Esc/Enter or the back button returns to the pause menu.
+class InventoryOverlay extends StatelessWidget {
+  const InventoryOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _amber.bg,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 18,
+            right: 18,
+            child: _ShellButton(
+              icon: Icons.arrow_back_rounded,
+              size: 56,
+              onTap: game.hideInventory,
+            ),
+          ),
+          Center(
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+              decoration: BoxDecoration(
+                color: _amber.surface,
+                border: Border.all(color: _amber.ink, width: 4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < Powerup.values.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 18),
+                    _KitSlot(
+                      powerup: Powerup.values[i],
+                      owned: game.hasPowerup(Powerup.values[i]),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One Field-Kit slot: the powerup's glyph on a chip. Found = ink glyph on a
+/// neutral chip with a green "have it" dot; not found = faint silhouette on the
+/// background (still occupies its slot, so the kit's shape is always visible).
+class _KitSlot extends StatelessWidget {
+  const _KitSlot({required this.powerup, required this.owned});
+  final Powerup powerup;
+  final bool owned;
+
+  static const double _side = 76;
+
+  @override
+  Widget build(BuildContext context) {
+    final glyphColor =
+        owned ? _amber.ink : _amber.ink.withValues(alpha: 0.18);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: _side,
+          height: _side,
+          decoration: BoxDecoration(
+            color: owned ? _amber.accentNeutral : _amber.bg,
+            border: Border.all(
+              color: owned ? _amber.ink : _amber.ink.withValues(alpha: 0.3),
+              width: 3,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: CustomPaint(
+              size: const Size(_side * 0.6, _side * 0.6),
+              painter: _GlyphPainter(powerup.glyph, glyphColor),
+            ),
+          ),
+        ),
+        if (owned)
+          Positioned(
+            right: -3,
+            top: -3,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: _amber.accentGoal,
+                shape: BoxShape.circle,
+                border: Border.all(color: _amber.ink, width: 3),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Paints one signage glyph (the same [drawSymbol] used on the figure/HUD) so
+/// the inventory shows the exact symbol the player sees in the world.
+class _GlyphPainter extends CustomPainter {
+  _GlyphPainter(this.id, this.color);
+  final SymbolId id;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawSymbol(canvas, id, size.width, color);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GlyphPainter old) =>
+      old.id != id || old.color != color;
+}
+
+/// Collection / achievements board (M7): a wordless progress book. Lore
+/// etchings the player has found appear as filled stamps (a growing gallery);
+/// two pip meters show rooms solved and castle explored. View-only; Esc/Enter
+/// or the back button returns to the pause menu. (A discipline-stamp legend
+/// needs a content index of each room's discipline — a later pass.)
+class CollectionOverlay extends StatelessWidget {
+  const CollectionOverlay(this.game, {super.key});
+  final EscapeGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    final solved = game.solvedRooms.length.clamp(0, game.totalRooms);
+    final visited = game.visitedNodes.length.clamp(0, game.totalNodes);
+    final etchings = game.foundEtchings.length;
+    return Container(
+      color: _amber.bg,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 18,
+            right: 18,
+            child: _ShellButton(
+              icon: Icons.arrow_back_rounded,
+              size: 56,
+              onTap: game.hideCollection,
+            ),
+          ),
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 460),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 30, vertical: 26),
+              decoration: BoxDecoration(
+                color: _amber.surface,
+                border: Border.all(color: _amber.ink, width: 4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Etchings gallery: each found etching is a filled lore stamp;
+                  // a faint placeholder when none found yet ("collect these").
+                  const Icon(Icons.auto_stories_rounded,
+                      size: 40, color: Color(0xFF101010)),
+                  const SizedBox(height: 18),
+                  _EtchingGallery(found: etchings),
+                  const SizedBox(height: 24),
+                  _PipMeter(
+                    icon: Icons.lock_open_rounded,
+                    filled: solved,
+                    total: game.totalRooms,
+                  ),
+                  const SizedBox(height: 14),
+                  _PipMeter(
+                    icon: Icons.travel_explore_rounded,
+                    filled: visited,
+                    total: game.totalNodes,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A row of lore-etching stamps — one filled diamond per found etching. With
+/// none yet, a single faint diamond hints that lore is out there to collect.
+class _EtchingGallery extends StatelessWidget {
+  const _EtchingGallery({required this.found});
+  final int found;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = found == 0 ? 1 : found;
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (var i = 0; i < count; i++)
+          Transform.rotate(
+            angle: 0.785398, // 45° → diamond
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: found == 0 ? _amber.bg : _amber.accentHint,
+                border: Border.all(
+                  color: found == 0
+                      ? _amber.ink.withValues(alpha: 0.3)
+                      : _amber.ink,
+                  width: 3,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// A wordless progress meter: a category glyph + a ribbon of pips, [filled] of
+/// [total] inked in. No numerals (STYLE_GUIDE §8b).
+class _PipMeter extends StatelessWidget {
+  const _PipMeter({
+    required this.icon,
+    required this.filled,
+    required this.total,
+  });
+  final IconData icon;
+  final int filled;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 30, color: _amber.ink),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (var i = 0; i < total; i++)
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: i < filled ? _amber.accentGoal : _amber.bg,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _amber.ink, width: 2),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -320,17 +933,19 @@ class _MenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: game.shellSelection,
-      builder: (context, sel, child) => Row(
-        mainAxisSize: MainAxisSize.min,
+      // Wrap (not a fixed Row) so a growing menu stays on-screen on narrow
+      // windows / phones instead of overflowing.
+      builder: (context, sel, child) => Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 18,
+        runSpacing: 18,
         children: [
-          for (var i = 0; i < icons.length; i++) ...[
-            if (i > 0) const SizedBox(width: 18),
+          for (var i = 0; i < icons.length; i++)
             _ShellButton(
               icon: icons[i],
               selected: i == sel,
               onTap: actions[i],
             ),
-          ],
         ],
       ),
     );

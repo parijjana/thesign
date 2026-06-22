@@ -33,13 +33,6 @@ class GameInput {
   /// Edge: DEV ONLY — toggle the debug overlay (F3).
   bool debugTogglePressed = false;
 
-  /// SHELL/MENU edges (M7 keyboard nav, GDD §10): move the menu cursor and
-  /// confirm — so the whole game is playable without a mouse. Set on keydown,
-  /// read by the shell phases in [EscapeGame.update].
-  bool uiNextPressed = false;
-  bool uiPrevPressed = false;
-  bool uiConfirmPressed = false;
-
   /// Called by the game after each update tick, so edges last exactly one tick.
   void clearEdges() {
     jumpPressed = false;
@@ -48,8 +41,5 @@ class GameInput {
     pausePressed = false;
     devResetPressed = false;
     debugTogglePressed = false;
-    uiNextPressed = false;
-    uiPrevPressed = false;
-    uiConfirmPressed = false;
   }
 }

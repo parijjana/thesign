@@ -1,0 +1,31 @@
+name: CI
+
+# Build gate for The Sign: analyze + the full test suite on every push and PR.
+# The suite includes the design guards — the no-soft-lock world validator, the
+# path checker (every door reachable), the kindness/direction rules, and the
+# no-text play-space lint — so a regression in any of them fails the build.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test

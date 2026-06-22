@@ -81,6 +81,60 @@
   promoting beyond the prototype. Avoid an explicit arrow/compass *to* the exit (kills the maze's
   "wait, I've been here" — GDD §4); ambient "lit spine" is the kinder cue.
 
+## Avatars as the player sprite, each with a signature ability
+> Surfaced while building the M7 profile/avatar-select screen — promote the avatar from a save-slot
+> badge into the actual in-world figure *and* a playstyle choice.
+- **The idea:** the chosen avatar IS the player sprite, and each carries a signature movement trait —
+  e.g. **bunny = higher jump**, **cat = wall-climb/cling**, **bird = glide/short flight** (or hover,
+  double-flap, etc.). Pick your creature, play the whole castle in its style. Adds replay (run it
+  again as a different animal) and personality.
+- **Hard constraint it must respect — kindness / no-soft-lock (GDD §0):** abilities may **never gate
+  required progress.** Every route to every door must stay completable by *every* avatar, or the
+  path-checker/kindness validators break and a kid picks the "wrong" animal and gets stuck. So traits
+  have to be **conveniences or alternate routes**, not keys — the cat's wall-climb is a *shortcut* up
+  a shaft that also has a normal way up; the bird's glide *eases* a gap that's still jumpable. The
+  validators would need to prove reachability under the **weakest** traversal kit (likely: assume no
+  avatar ability at all), exactly as `path_checker` already does for powerups.
+- **Big open tension — avatars vs. the Metroidvania powerups (POWERUPS.md):** the found-powerup kit
+  (flippers/spring-boots/grapple/lantern) already *is* the ability-gating system, and it's built to
+  gate *bonus* routes fairly because everyone can eventually find every powerup. Per-avatar permanent
+  traits collide with that: do avatar traits overlap powerups (bunny ≈ spring-boots)? Stack with
+  them? Does picking the cat mean you never need the climb powerup? Resolve before promoting —
+  otherwise two ability systems fight over the same routes.
+- **Other open questions:** how each trait reads wordlessly; balancing so no avatar is strictly best;
+  sprite/animation cost (each avatar needs the full posture set — pairs with the M7.5 art pass);
+  whether traits are fixed or a light unlock. Touches player.dart movement, the validators, the
+  powerup design, and save data, so it's a real design gate, not a quick add.
+- **Connects to:** the profile-select screen (M7, already built), POWERUPS.md (overlap to resolve),
+  and the NG+/remix replay ideas below (different-avatar runs are a replay axis).
+
+## Wordless hint halo *(built a v1, scrapped on looks — revisit)*
+> Was an M7 deliverable; built a working v1 during the shell pass, but the visual didn't land, so it
+> was reverted (working tree back to the collection-board commit) and parked here. The *mechanism* was
+> sound; the *look* needs a real design pass (pairs with the M7.5 art stage).
+- **The idea (STYLE_GUIDE §8d):** an **opt-in** hint. The player toggles it (H key / a touch
+  lightbulb / the HUD lightbulb glyph lit while active); a wordless glow appears around the thing to
+  focus on — "look here," never "do this." v1 is a single target; chain-walking later.
+- **What the v1 did (all reverted, recoverable from git history at the collection-board commit):**
+  - Added `PuzzleScript.hintTargetId` (a getter scripts override, returning the entity id to glow
+    around). Could reflect **live state** for a *progressive* hint — e.g. P1 pressure-plate returned
+    `plateA` until the plate was pressed, then `goalSwitch` ("weigh this, now go pull that"). Wired in
+    `P1PressurePlates` + `StubSwitchPuzzle` (goal lever) as the two demo types.
+  - `EscapeGame.hintActive` + `hintTargetCenter()` (resolve id → `byId<PositionComponent>` → centre);
+    a `HintHalo` world component (priority −5, under the player) drawing a pulsing breathing disc +
+    ring in `accentHint`; toggle on H (keyboard) and a new touch lightbulb `_Btn.hint`; HUD gained a
+    lightbulb glyph that lit (`accentHint` chip) while active.
+- **Why parked:** the glow itself **looked bad** (the pulsing amber disc/ring read as cheap/unclear,
+  not the crisp signage language). Needs an art-led treatment — maybe a drawn signage "look-here"
+  mark (a framed arrow/target glyph that pops over the entity) rather than a soft glow, or an
+  animated bracket. Decide the visual in the **M7.5 art pass**, then rebuild on the same mechanism.
+- **Open questions for the revisit:** the visual treatment (glow vs. drawn mark vs. bracket); whether
+  it nudges toward a *target* or a *direction* (avoid an explicit compass to the exit — GDD §4); how
+  it advances for multi-step puzzles (the progressive-`hintTargetId` hook is there); and authoring
+  cost — only P1 + stub-switch had targets, every bespoke M6 script would need one.
+- **Connects to:** STYLE_GUIDE §8d, the M7.5 art stage, and the symbol/feedback language (the
+  lightbulb is already `SymbolId.hint`, the `fb_idea` glyph).
+
 ## Other parked ideas (from the replayability review)
 - **Castle map / completion view** — post-game map showing solved vs unexplored rooms.
 - **Second solutions** — hidden bonus objective in select rooms (bullseye-with-star glyph).
