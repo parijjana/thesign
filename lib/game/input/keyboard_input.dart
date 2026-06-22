@@ -10,6 +10,11 @@ class KeyboardInput extends Component with KeyboardHandler {
 
   final GameInput input;
 
+  /// Edge keys we've already counted as "down", so OS key-repeat (which fires
+  /// extra KeyDownEvents on Windows while a key is held) can't re-trigger a
+  /// one-shot. Cleared per key on its KeyUpEvent — a real new press re-fires.
+  final Set<LogicalKeyboardKey> _edgeHeld = {};
+
   static const _left = [LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.keyA];
   static const _right = [
     LogicalKeyboardKey.arrowRight,
@@ -30,14 +35,19 @@ class KeyboardInput extends Component with KeyboardHandler {
     input.moveAxis = (anyDown(_right) ? 1 : 0) - (anyDown(_left) ? 1 : 0);
     input.jumpHeld = anyDown(_jump);
 
-    if (event is KeyDownEvent) {
+    if (event is KeyUpEvent) {
+      _edgeHeld.remove(event.logicalKey);
+    } else if (event is KeyDownEvent) {
       final key = event.logicalKey;
-      if (_jump.contains(key)) input.jumpPressed = true;
-      if (_interact.contains(key)) input.interactPressed = true;
-      if (key == LogicalKeyboardKey.keyR) input.restartPressed = true;
-      if (key == LogicalKeyboardKey.escape) input.pausePressed = true;
-      if (key == LogicalKeyboardKey.f2) input.devResetPressed = true;
-      if (key == LogicalKeyboardKey.f3) input.debugTogglePressed = true;
+      // Drop OS key-repeat: only the first down of a real press counts.
+      if (_edgeHeld.add(key)) {
+        if (_jump.contains(key)) input.jumpPressed = true;
+        if (_interact.contains(key)) input.interactPressed = true;
+        if (key == LogicalKeyboardKey.keyR) input.restartPressed = true;
+        if (key == LogicalKeyboardKey.escape) input.pausePressed = true;
+        if (key == LogicalKeyboardKey.f2) input.devResetPressed = true;
+        if (key == LogicalKeyboardKey.f3) input.debugTogglePressed = true;
+      }
     }
     return true;
   }

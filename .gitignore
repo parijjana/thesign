@@ -25,3 +25,6 @@ ios/Pods/
 windows/flutter/ephemeral/
 linux/flutter/ephemeral/
 macos/Flutter/ephemeral/
+
+# Claude Code agent workspace + LLM-meta skills (kept local, see memory)
+.claude/

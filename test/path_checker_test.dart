@@ -29,6 +29,21 @@ void main() {
             'fix the geometry (or the start) before shipping this level.',
       );
     });
+
+    // No portal soft-locks: a reachable room must always let the player
+    // activate its portal and reach it from every way in (the exit_hall trap).
+    test('every portal in ${node.id} is a guaranteed way out', () {
+      final level = LevelData.fromJson(
+        jsonDecode(File('assets/levels/${node.file}').readAsStringSync())
+            as Map<String, dynamic>,
+      );
+      final result = checkPortalSafety(level);
+      expect(
+        result.violations,
+        isEmpty,
+        reason: '${node.id}: ${result.violations.join('; ')}',
+      );
+    });
   }
 
   test('world start node exists and its level parses', () {

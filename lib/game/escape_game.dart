@@ -1,8 +1,10 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 
 import 'components/claw_reset.dart';
 import 'components/player.dart';
@@ -27,18 +29,18 @@ import 'ui/feedback_popups.dart';
 import 'ui/hud.dart';
 import 'ui/interact_prompt.dart';
 import 'ui/powerup_hud.dart';
+import 'ui/spine_hud.dart';
+import 'ui/touch_controls.dart';
+
+/// App-level phase (M7 shell, GDD §10b). The play space only ticks in
+/// [playing]; [title] and [paused] freeze it behind a Flutter overlay.
+enum GamePhase { title, playing, paused }
 
 /// The game shell: fixed-resolution letterboxed camera, active palette,
 /// input plumbing, collision world, the world graph, and the no-death reset
 /// orchestration (ARCHITECTURE.md §5).
 class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
-  EscapeGame()
-      : super(
-          camera: CameraComponent.withFixedResolution(
-            width: Config.viewportWidth,
-            height: Config.viewportHeight,
-          ),
-        );
+  EscapeGame() : super(camera: CameraComponent());
 
   /// The active palette; rooms swap this when they declare a discipline
   /// palette (LEVEL_FORMAT.md §3).
@@ -80,6 +82,55 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// DEV: F3 toggles the room-id overlay.
   bool showDebug = false;
 
+  /// App phase (M7 shell). Starts at the title; the play space ticks only in
+  /// [GamePhase.playing]. Overlay names match `main.dart`'s overlayBuilderMap.
+  GamePhase phase = GamePhase.title;
+
+  static const titleOverlay = 'title';
+  static const pauseOverlay = 'pause';
+  static const mapOverlay = 'map';
+
+  /// Title → play. (Also returns from pause via [setPlaying].)
+  void startGame() => setPlaying();
+
+  void setPlaying() {
+    phase = GamePhase.playing;
+    overlays.remove(titleOverlay);
+    overlays.remove(pauseOverlay);
+  }
+
+  void pauseGame() {
+    if (phase != GamePhase.playing) return;
+    phase = GamePhase.paused;
+    overlays.add(pauseOverlay);
+  }
+
+  void resumeGame() {
+    if (phase != GamePhase.paused) return;
+    setPlaying();
+  }
+
+  /// Leave the run and show the title (the play space stays loaded behind it).
+  void exitToTitle() {
+    phase = GamePhase.title;
+    overlays.remove(pauseOverlay);
+    overlays.add(titleOverlay);
+  }
+
+  void togglePause() =>
+      phase == GamePhase.paused ? resumeGame() : pauseGame();
+
+  /// Castle map (MAZE.md §5) — opened from pause, returns to pause on close.
+  void showMap() {
+    overlays.remove(pauseOverlay);
+    overlays.add(mapOverlay);
+  }
+
+  void hideMap() {
+    overlays.remove(mapOverlay);
+    overlays.add(pauseOverlay);
+  }
+
   /// Rooms solved this session (persisted by the save service in M4).
   final Set<String> solvedRooms = {};
 
@@ -96,6 +147,13 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   final Set<Powerup> powerups = {};
 
   bool hasPowerup(Powerup p) => powerups.contains(p);
+
+  /// Show on-screen touch controls on touch-first platforms (ROADMAP M5).
+  /// v1 is platform-gated (Android/iOS); web touch-vs-mouse runtime detection
+  /// is a documented follow-up.
+  bool get useTouchControls =>
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
 
   /// The node `start` in px — the NO-DEATH reset point the claw returns to.
   final Vector2 startPoint = Vector2.zero();
@@ -123,13 +181,35 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
   /// Entity lookup in the current room (cranks resolve their targets here).
   T? roomEntity<T>(String id) => _room?.byId<T>(id);
 
-  /// Letterbox bars render in ink, framing the room like a sign's border.
+  /// Any uncovered margin renders in ink, framing the room like a sign's border.
   @override
   Color backgroundColor() => palette.ink;
 
+  /// Cover-fit the fixed 24×14 logical room to the device screen: zoom so the
+  /// room fills the whole viewport (no bars), centred — the screen crops the
+  /// decorative top/bottom (ceiling brick, floor base) on tall/wide aspects
+  /// while the play area stays framed. (Replaces the M1 letterbox now that
+  /// mobile makes pillarboxing waste too much of a small screen — ROADMAP M5.)
+  void _fitCamera(Vector2 size) {
+    if (size.x <= 0 || size.y <= 0) return;
+    camera.viewfinder.zoom = math.max(
+      size.x / Config.viewportWidth,
+      size.y / Config.viewportHeight,
+    );
+  }
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    _fitCamera(size);
+  }
+
   @override
   Future<void> onLoad() async {
-    camera.viewfinder.anchor = Anchor.topLeft;
+    camera.viewfinder.anchor = Anchor.center;
+    camera.viewfinder.position =
+        Vector2(Config.viewportWidth / 2, Config.viewportHeight / 2);
+    _fitCamera(size);
     add(KeyboardInput(input));
     registry = await RoomRegistry.load(assets);
     player = Player();
@@ -146,18 +226,26 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
       powerups.addAll(
           progress.powerups.map(Powerup.byId).whereType<Powerup>());
     }
-    final startNode =
-        (progress != null && registry.world.nodes.containsKey(progress.currentNode))
-            ? progress.currentNode
-            : registry.world.start;
-    await loadNode(startNode);
+    // Always boot at the meadow HUB (world.start), not the last room — the
+    // meadow is home base (M7). Progress (solved/visited/powerups, and so the
+    // lit teleporters) is restored above, so you resume by re-entering a portal
+    // rather than mid-room. Kinder and consistent with "you start in the meadow".
+    await loadNode(registry.world.start);
 
     world.add(player);
     world.add(claw);
     world.add(InteractPrompt());
     world.add(feedback);
-    camera.viewport.add(Hud());
+    // The top-right meta row (claw/settings/pause) is a desktop display row;
+    // on touch the TouchControls overlay owns the (tappable) claw, so showing
+    // both would duplicate the glyph — pick one per platform.
+    if (useTouchControls) {
+      camera.viewport.add(TouchControls());
+    } else {
+      camera.viewport.add(Hud());
+    }
     camera.viewport.add(PowerupHud());
+    camera.viewport.add(SpineHud());
     camera.viewport.add(DebugHud());
   }
 
@@ -302,6 +390,17 @@ class EscapeGame extends FlameGame with HasKeyboardHandlerComponents {
 
   @override
   void update(double dt) {
+    // The pause toggle is honoured even while frozen (Esc / touch pause btn).
+    if (input.pausePressed) {
+      togglePause();
+      input.clearEdges();
+      return;
+    }
+    // Title/pause freeze the play space behind the Flutter overlay.
+    if (phase != GamePhase.playing) {
+      input.clearEdges();
+      return;
+    }
     _clock += dt;
     super.update(dt); // components read edges during their update...
 

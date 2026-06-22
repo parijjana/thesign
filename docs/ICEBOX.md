@@ -42,6 +42,45 @@
   which the ramp work now provides). Pairs with the M7.5 motion pass. The `weightOn` balance logic is
   sound and worth reusing.
 
+## Exit, escape & re-entry — a replayability milestone *(needs its own design pass)*
+> Promote to a milestone once designed. Surfaced during the M6 playthrough at `exit_hall`.
+- **Principle (non-negotiable, already true): you may leave whenever you reach the exit** — no
+  exploration/collection gate on escaping (GDD §0 kindness; the validator keeps `exit_hall`
+  reachable with an empty kit). Completion is a *reward to chase*, never a *requirement to leave*.
+- **Current state:** the exit is a stub — `exit_hall`'s swirl is a decorative `spawn` sign; there's
+  no win/escape trigger yet. So the real "you escaped" moment is unbuilt, and that's where this
+  milestone lives.
+- **The idea:** make escaping a satisfying beat that *opens* replay rather than ending the game —
+  **re-entry rooms**: after escaping, the player can re-enter the castle from new access points to
+  chase the things they skipped (unexplored wings, powerup secrets, etchings, second solutions).
+  Turns "the end" into "lap two, but on your terms."
+- **Why it needs design (open questions):** where re-entry points sit and how they telegraph; what
+  persists vs. re-presents on re-entry; how it relates to the **NG+ twist** (exit-is-a-teleporter,
+  fusion-form rooms) below and the **castle map / completion view**; whether re-entry is free-roam
+  or curated "unfinished business" hops. Touches save data, the map screen (M7), and the exit
+  trigger — so it's a real design gate, not a quick add.
+- **Connects to:** the NG+ twist + castle map + second-solutions entries just below (this milestone
+  likely subsumes or sequences them).
+
+## Progress & objective display — spine ribbon + objective lenses *(prototype landed)*
+> Surfaced during the M6 playthrough ("hard to tell if I'm progressing toward the exit; also want
+> goals like explore-all-swimming-rooms"). Reuses existing grammar — no new HUD language.
+- **A1 — street-spine ribbon (PROTOTYPE in code, `lib/game/ui/spine_hud.dart`):** the corridor
+  street-badge family (○ △ □ ◇ ☆) in castle order, capped by the exit swirl, top-centre. Faint
+  outline until you set foot on a street, then fills ink; current street rides a goal-green chip.
+  Wordless "how lit is the spine" = sense of progress + scale. Reads end-to-end as of this
+  playtest. **Open:** full-spine-upfront (shows scale, mild spoiler) vs. reveal-as-discovered
+  (preserves mystery) — a 1–2 line toggle. Verdict pending.
+- **B1 — objective pip-ribbon:** a row of discipline glyphs (droplet, gear, sun…), each trailing a
+  `q_pips` row (●●●○○ = 3 of 5 rooms) for "explore all X" goals. Active objective enlarges.
+- **B2/C — objectives as lenses (M7 map territory):** pick a goal glyph → the castle map recolours
+  to that lens (solved = filled, unsolved = outline) + a "you are here" wayfinding directory. The
+  exit objective uses the fire-exit running figure (ISO standard).
+- **Boundary flag:** progress meters sit near the no-numerals / play-space-vs-shell line
+  (STYLE_GUIDE §8b) and overlap M7's map/collection scope — settle the boundary in docs before
+  promoting beyond the prototype. Avoid an explicit arrow/compass *to* the exit (kills the maze's
+  "wait, I've been here" — GDD §4); ambient "lit spine" is the kinder cue.
+
 ## Other parked ideas (from the replayability review)
 - **Castle map / completion view** — post-game map showing solved vs unexplored rooms.
 - **Second solutions** — hidden bonus objective in select rooms (bullseye-with-star glyph).

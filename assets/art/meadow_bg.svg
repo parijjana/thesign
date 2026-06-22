@@ -1,0 +1,107 @@
+<svg viewBox="0 0 680 400" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#0c1124"/>
+<stop offset="0.55" stop-color="#1a2b4b"/>
+<stop offset="1" stop-color="#34597d"/>
+</linearGradient>
+<linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#3a6886"/>
+<stop offset="1" stop-color="#1a3450"/>
+</linearGradient>
+<linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#274c34"/>
+<stop offset="1" stop-color="#10271a"/>
+</linearGradient>
+<radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+<stop offset="0" stop-color="#bfe0f2" stop-opacity="0.5"/>
+<stop offset="1" stop-color="#bfe0f2" stop-opacity="0"/>
+</radialGradient>
+</defs>
+
+<rect x="0" y="0" width="680" height="400" fill="url(#sky)"/>
+
+<g fill="#cdd9f0">
+<circle cx="120" cy="40" r="1.4"/><circle cx="160" cy="70" r="1"/><circle cx="210" cy="35" r="1.2"/>
+<circle cx="250" cy="90" r="0.9"/><circle cx="300" cy="55" r="1.5"/><circle cx="340" cy="30" r="1"/>
+<circle cx="380" cy="80" r="1.1"/><circle cx="430" cy="45" r="1.3"/><circle cx="470" cy="95" r="0.9"/>
+<circle cx="520" cy="60" r="1.2"/><circle cx="560" cy="38" r="1"/><circle cx="590" cy="100" r="1.3"/>
+<circle cx="150" cy="130" r="1"/><circle cx="225" cy="150" r="1.2"/><circle cx="280" cy="120" r="0.9"/>
+<circle cx="360" cy="150" r="1"/><circle cx="440" cy="135" r="1.2"/><circle cx="600" cy="150" r="1"/>
+<circle cx="95" cy="95" r="1"/><circle cx="630" cy="65" r="1.2"/><circle cx="190" cy="105" r="0.8"/>
+<circle cx="410" cy="105" r="0.9"/><circle cx="500" cy="120" r="1"/><circle cx="335" cy="95" r="0.8"/>
+</g>
+<g fill="#eaf3ff">
+<path d="M205 58 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/>
+<path d="M455 78 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z"/>
+<path d="M300 138 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z"/>
+</g>
+
+<circle cx="500" cy="170" r="36" fill="url(#halo)"/>
+<circle cx="500" cy="170" r="20" fill="#d2e8f4"/>
+<circle cx="493" cy="164" r="4" fill="#b4d0e0"/>
+<circle cx="507" cy="177" r="3" fill="#b4d0e0"/>
+<circle cx="503" cy="161" r="2.4" fill="#b4d0e0"/>
+
+<path d="M0 238 L70 206 L150 224 L235 198 L320 222 L405 202 L495 226 L585 206 L680 224 L680 238 Z" fill="#2a4a69"/>
+<path d="M0 238 L95 220 L185 236 L285 212 L385 234 L470 216 L560 234 L680 218 L680 238 Z" fill="#1a3450"/>
+
+<rect x="0" y="236" width="680" height="24" fill="url(#water)"/>
+<rect x="489" y="236" width="22" height="24" fill="#bfe3f0" opacity="0.45"/>
+<rect x="466" y="242" width="68" height="1.6" fill="#9fd0e6" opacity="0.5"/>
+<rect x="452" y="250" width="96" height="1.6" fill="#9fd0e6" opacity="0.4"/>
+<rect x="120" y="246" width="40" height="1.4" fill="#7fb6d4" opacity="0.4"/>
+<rect x="300" y="252" width="34" height="1.4" fill="#7fb6d4" opacity="0.35"/>
+
+<path d="M0 256 L680 256 L680 400 L0 400 Z" fill="url(#grass)"/>
+<g fill="#2f5a3e">
+<path d="M60 400 L70 360 L80 400 Z"/><path d="M140 400 L150 366 L160 400 Z"/>
+<path d="M250 400 L262 356 L274 400 Z"/><path d="M360 400 L370 368 L380 400 Z"/>
+<path d="M470 400 L482 360 L494 400 Z"/><path d="M560 400 L570 366 L580 400 Z"/>
+<path d="M200 400 L208 376 L216 400 Z"/><path d="M420 400 L428 376 L436 400 Z"/>
+</g>
+<g stroke="#3f7a52" stroke-width="2" stroke-linecap="round">
+<path d="M100 400 L104 372"/><path d="M310 400 L314 374"/><path d="M520 400 L516 372"/>
+<path d="M180 400 L176 380"/><path d="M390 400 L394 378"/><path d="M610 400 L606 380"/>
+</g>
+<g>
+<circle cx="170" cy="330" r="5" fill="#d8f0a0" opacity="0.18"/><circle cx="170" cy="330" r="1.6" fill="#e8ffb0"/>
+<circle cx="350" cy="300" r="5" fill="#d8f0a0" opacity="0.18"/><circle cx="350" cy="300" r="1.6" fill="#e8ffb0"/>
+<circle cx="470" cy="340" r="5" fill="#d8f0a0" opacity="0.18"/><circle cx="470" cy="340" r="1.6" fill="#e8ffb0"/>
+<circle cx="260" cy="350" r="1.4" fill="#cfe89a"/><circle cx="540" cy="312" r="1.4" fill="#cfe89a"/>
+</g>
+
+<path d="M0 0 L80 0 L72 120 L94 260 L108 400 L0 400 Z" fill="#161122"/>
+<path d="M680 0 L600 0 L608 120 L586 260 L572 400 L680 400 Z" fill="#161122"/>
+<g stroke="#251d39" stroke-width="3" fill="none" opacity="0.7" stroke-linecap="round">
+<path d="M28 18 L34 392"/><path d="M52 20 L60 300"/><path d="M652 18 L646 392"/><path d="M628 20 L620 300"/>
+</g>
+<g stroke="#433a5e" stroke-width="1.6" fill="none" opacity="0.6">
+<path d="M80 0 L72 120 L94 260 L108 400"/><path d="M600 0 L608 120 L586 260 L572 400"/>
+</g>
+
+<g fill="#1b1530">
+<!-- decorative upper canopy -->
+<path d="M72 50 C 185 52 275 70 358 65 C 285 86 178 88 76 82 Z"/>
+<path d="M608 96 C 500 98 410 114 326 109 C 405 128 508 130 604 124 Z"/>
+<path d="M598 332 C 520 334 460 342 402 339 C 470 352 540 354 594 350 Z"/>
+<!-- PLATFORM branches: flat tops spanning each portal's invisible floor and
+     rooted INTO the trunk. star x57-320@y114 · circle x71-330@y269 ·
+     square x354-620@y191 (svg space; floors widened to match in meadow.json) -->
+<path d="M55 120 C 150 113 240 112 325 112 C 245 124 150 127 60 126 Z"/>
+<path d="M68 276 C 165 268 255 267 333 267 C 258 280 165 283 76 282 Z"/>
+<path d="M622 200 C 520 191 440 190 352 190 C 442 202 528 205 614 205 Z"/>
+</g>
+<g stroke="#463c62" stroke-width="1.4" fill="none" opacity="0.65" stroke-linecap="round">
+<path d="M72 50 C 185 52 275 70 358 65"/>
+<path d="M608 96 C 500 98 410 114 326 109"/>
+<path d="M55 120 C 150 113 240 112 325 112"/>
+<path d="M68 276 C 165 268 255 267 333 267"/>
+<path d="M622 200 C 520 191 440 190 352 190"/>
+</g>
+<g stroke="#171225" stroke-width="5" fill="none" stroke-linecap="round">
+<path d="M325 112 l 16 -8 M321 114 l 13 6"/>
+<path d="M333 267 l 16 -8 M329 269 l 13 6"/>
+<path d="M352 190 l -16 -8 M358 192 l -13 6"/>
+</g>
+</svg>

@@ -11,7 +11,13 @@ import 'brickwork.dart';
 /// Registers itself as collision geometry on mount. All masonry — floors,
 /// walls, ceilings — carries the same shared brick motif, consistently.
 class Floor extends PositionComponent with HasGameReference<EscapeGame> {
-  Floor(Vector2 position, Vector2 size) : super(position: position, size: size);
+  Floor(Vector2 position, Vector2 size, {this.invisible = false})
+      : super(position: position, size: size);
+
+  /// Solid but unpainted — used where authored art (an SVG backdrop) already
+  /// depicts the ground/branch, so we want the collision without a flat slab
+  /// drawn over it (the meadow, M7).
+  final bool invisible;
 
   @override
   void onMount() {
@@ -21,6 +27,7 @@ class Floor extends PositionComponent with HasGameReference<EscapeGame> {
 
   @override
   void render(Canvas canvas) {
+    if (invisible) return;
     final p = game.palette;
     final r = RRect.fromRectAndRadius(size.toRect(), const Radius.circular(8));
     canvas.drawRRect(r, Paint()..color = p.surface);

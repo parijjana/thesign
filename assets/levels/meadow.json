@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "id": "meadow",
+  "code": "MDW",
+  "type": "meadow",
+  "name": "The night meadow - start, hub & escape (dev label)",
+  "size": { "w": 24, "h": 14 },
+  "palette": "meadow",
+  "entryPoints": { "start": { "x": 3, "y": 11 } },
+  "start": { "x": 3, "y": 11 },
+  "entities": [
+    { "type": "backdrop", "x": 0, "y": 0, "w": 24, "h": 14,
+      "props": { "svg": "art/meadow_bg.svg" } },
+
+    { "type": "floor", "x": 0, "y": 12, "w": 24, "h": 2, "props": { "invisible": true } },
+    { "type": "floor", "x": 0, "y": 0, "w": 0.75, "h": 12, "props": { "invisible": true } },
+    { "type": "floor", "x": 23.25, "y": 0, "w": 0.75, "h": 12, "props": { "invisible": true } },
+
+    { "type": "teleporter", "x": 2.0, "y": 9.9, "w": 1.7, "h": 2.1,
+      "props": { "isExit": true } },
+
+    { "type": "floor", "x": 2.5, "y": 9.4, "w": 9.15, "h": 0.4, "props": { "invisible": true } },
+    { "type": "teleporter", "x": 9.5, "y": 7.3, "w": 1.7, "h": 2.1,
+      "props": { "exit": "to_circle", "availableFromStart": true, "badge": "street_circle",
+                 "completesRooms": ["room_plates", "room_stack"] } },
+
+    { "type": "floor", "x": 12.5, "y": 6.7, "w": 9.4, "h": 0.4, "props": { "invisible": true } },
+    { "type": "teleporter", "x": 13.7, "y": 4.6, "w": 1.7, "h": 2.1,
+      "props": { "exit": "to_square", "requiresVisited": "corridor_03", "badge": "street_square",
+                 "completesRooms": ["room_counter", "room_sokoban"] } },
+
+    { "type": "floor", "x": 2.0, "y": 4.0, "w": 9.3, "h": 0.4, "props": { "invisible": true } },
+    { "type": "teleporter", "x": 9.1, "y": 1.9, "w": 1.7, "h": 2.1,
+      "props": { "exit": "to_star", "requiresVisited": "corridor_05", "badge": "street_star",
+                 "completesRooms": ["room_splitter", "room_sequence"] } }
+  ]
+}

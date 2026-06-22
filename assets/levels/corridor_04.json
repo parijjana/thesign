@@ -27,6 +27,13 @@
     { "type": "street_badge", "x": 1.05, "y": 4, "w": 1.2, "h": 1.2,
       "props": { "glyph": "street_diamond" } },
 
+    { "type": "trail_mark", "x": 4.3, "y": 11.05, "w": 0.85, "h": 0.85,
+      "props": { "glyph": "powerFlippers" } },
+    { "type": "trail_mark", "x": 3.4, "y": 11.05, "w": 0.85, "h": 0.85,
+      "props": { "glyph": "powerFlippers" } },
+    { "type": "trail_mark", "x": 2.5, "y": 11.05, "w": 0.85, "h": 0.85,
+      "props": { "glyph": "powerFlippers" } },
+
     { "id": "doorSouth", "type": "door", "x": 3, "y": 10, "w": 1.2, "h": 2,
       "props": { "exit": "south" } },
 

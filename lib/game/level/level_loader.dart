@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import '../components/backdrop.dart';
 import '../components/boulder.dart';
 import '../components/counter_lift.dart';
 import '../components/door.dart';
@@ -14,6 +15,9 @@ import '../components/pushable_block.dart';
 import '../components/ramp.dart';
 import '../components/sign.dart';
 import '../components/street_badge.dart';
+import '../components/teleporter.dart';
+import '../components/tree.dart';
+import '../components/trail_mark.dart';
 import '../components/wall.dart';
 import '../components/water_pool.dart';
 import '../components/warning_sign.dart';
@@ -142,7 +146,8 @@ class RoomComponent extends PositionComponent
   Component _otherEntity(EntityData e, Vector2 pos, Vector2 size) {
     const t = Config.tileSize;
     return switch (e.type) {
-      'floor' => Floor(pos, size),
+      'floor' => Floor(pos, size,
+          invisible: e.props['invisible'] as bool? ?? false),
       'wall' => Wall(pos, size),
       'ramp' => RampComponent(pos, size,
           highSide: e.props['highSide'] as String? ?? 'left'),
@@ -156,6 +161,7 @@ class RoomComponent extends PositionComponent
         ),
       'street_badge' =>
         StreetBadge(pos, size, glyph: _glyph(e.props['glyph'])),
+      'trail_mark' => TrailMark(pos, size, glyph: _glyph(e.props['glyph'])),
       'door' => _door(e),
       'moving_platform' => MovingPlatform(
           pos,
@@ -194,6 +200,20 @@ class RoomComponent extends PositionComponent
               (throw FormatException(
                   '${data.id}: bad powerup "${e.props['powerup']}"')),
         ),
+      'teleporter' => Teleporter(
+          pos,
+          size,
+          exitName: e.props['exit'] as String?,
+          requiresVisited: e.props['requiresVisited'] as String?,
+          completesRooms:
+              (e.props['completesRooms'] as List?)?.cast<String>() ?? const [],
+          availableFromStart: e.props['availableFromStart'] as bool? ?? false,
+          isExit: e.props['isExit'] as bool? ?? false,
+          badge: e.props['badge'] != null ? _glyph(e.props['badge']) : null,
+        ),
+      'tree' => Tree(pos, size, mirror: e.props['mirror'] as bool? ?? false),
+      'backdrop' => Backdrop(pos, size,
+          asset: 'assets/${e.props['svg'] as String}'),
       'pushable_block' => PushableBlock(pos, size),
       'crank' => Crank(
           pos,

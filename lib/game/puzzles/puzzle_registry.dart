@@ -13,7 +13,8 @@ const Map<String, PuzzleFactory> puzzleRegistry = {
   'p1_pressure_plates': P1PressurePlates.new,
   // Physical puzzles (stacking, counterweight): the component does the
   // physics, a goal lever ends them — the stub script fits. (The seesaw was
-  // retired to the icebox; room_fulcrum now uses the counterweight lift.)
+  // retired to the icebox; room_fulcrum was rebuilt as a Mechanics
+  // pressure-plate room — p1_pressure_plates — so it no longer dups RCO.)
   'p2_box_stack': StubSwitchPuzzle.new,
   'p_counterweight': StubSwitchPuzzle.new,
   'optics_mirror': OpticsMirrorPuzzle.new,
