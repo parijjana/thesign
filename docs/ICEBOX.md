@@ -108,6 +108,33 @@
 - **Connects to:** the profile-select screen (M7, already built), POWERUPS.md (overlap to resolve),
   and the NG+/remix replay ideas below (different-avatar runs are a replay axis).
 
+## Wordless hint halo *(built a v1, scrapped on looks — revisit)*
+> Was an M7 deliverable; built a working v1 during the shell pass, but the visual didn't land, so it
+> was reverted (working tree back to the collection-board commit) and parked here. The *mechanism* was
+> sound; the *look* needs a real design pass (pairs with the M7.5 art stage).
+- **The idea (STYLE_GUIDE §8d):** an **opt-in** hint. The player toggles it (H key / a touch
+  lightbulb / the HUD lightbulb glyph lit while active); a wordless glow appears around the thing to
+  focus on — "look here," never "do this." v1 is a single target; chain-walking later.
+- **What the v1 did (all reverted, recoverable from git history at the collection-board commit):**
+  - Added `PuzzleScript.hintTargetId` (a getter scripts override, returning the entity id to glow
+    around). Could reflect **live state** for a *progressive* hint — e.g. P1 pressure-plate returned
+    `plateA` until the plate was pressed, then `goalSwitch` ("weigh this, now go pull that"). Wired in
+    `P1PressurePlates` + `StubSwitchPuzzle` (goal lever) as the two demo types.
+  - `EscapeGame.hintActive` + `hintTargetCenter()` (resolve id → `byId<PositionComponent>` → centre);
+    a `HintHalo` world component (priority −5, under the player) drawing a pulsing breathing disc +
+    ring in `accentHint`; toggle on H (keyboard) and a new touch lightbulb `_Btn.hint`; HUD gained a
+    lightbulb glyph that lit (`accentHint` chip) while active.
+- **Why parked:** the glow itself **looked bad** (the pulsing amber disc/ring read as cheap/unclear,
+  not the crisp signage language). Needs an art-led treatment — maybe a drawn signage "look-here"
+  mark (a framed arrow/target glyph that pops over the entity) rather than a soft glow, or an
+  animated bracket. Decide the visual in the **M7.5 art pass**, then rebuild on the same mechanism.
+- **Open questions for the revisit:** the visual treatment (glow vs. drawn mark vs. bracket); whether
+  it nudges toward a *target* or a *direction* (avoid an explicit compass to the exit — GDD §4); how
+  it advances for multi-step puzzles (the progressive-`hintTargetId` hook is there); and authoring
+  cost — only P1 + stub-switch had targets, every bespoke M6 script would need one.
+- **Connects to:** STYLE_GUIDE §8d, the M7.5 art stage, and the symbol/feedback language (the
+  lightbulb is already `SymbolId.hint`, the `fb_idea` glyph).
+
 ## Other parked ideas (from the replayability review)
 - **Castle map / completion view** — post-game map showing solved vs unexplored rooms.
 - **Second solutions** — hidden bonus objective in select rooms (bullseye-with-star glyph).

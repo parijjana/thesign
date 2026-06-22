@@ -151,8 +151,10 @@ Remaining: user playthrough + kid test.)*
   (`url_launcher`) — the most text-heavy shell screen (plain ink-on-bg typography). The registry
   itself starts the moment the first CC0 asset lands (asset + credit enter the repo together,
   ARCHITECTURE §5.10).
-- **Hint halo**: HUD lightbulb pulses a halo glow on the active script's `hintTargetId`
-  (STYLE_GUIDE §8d); v1 targets only, chain-walking later.
+- ~~**Hint halo**: HUD lightbulb pulses a halo glow on the active script's `hintTargetId`~~
+  **(DEFERRED → icebox)** — a working v1 was built (the `hintTargetId` mechanism + progressive
+  hints + a pulsing glow) but the glow *looked* bad, so it was reverted. The visual needs an art-led
+  treatment; rebuild on the same mechanism during/after M7.5. See ICEBOX "Wordless hint halo".
 - `symbol_legend.dart` as the **collection screen — this is the achievements screen**: glyphs stamp
   in when earned (discipline glyphs on first solve, `INV` glyphs when taught), discipline rows
   complete, plus the **etchings gallery**. First-use teaching for each invented symbol. Completed
