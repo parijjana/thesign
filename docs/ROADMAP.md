@@ -164,7 +164,10 @@ Remaining: user playthrough + kid test.)*
   claw's whir + whirlwind); every adopted file registered in `credits.json` as it lands.
 - Claw-reset feel/timing polish (abbreviate on repeats), transition polish, telegraph review.
 - Discipline palettes filled in beyond amber + indigo (chemistry teal, fluids blue, …) per PUZZLES.md.
-- CI/lint guard: **no user-facing strings / number rendering** in gameplay paths.
+- ✅ CI/lint guard: **no user-facing strings / number rendering** in gameplay paths —
+  `test/no_text_in_gameplay_test.dart` bans canvas text APIs (TextPaint/TextPainter/TextComponent/
+  ParagraphBuilder/drawParagraph) outside the shell + dev tooling; GitHub Actions
+  (`.github/workflows/ci.yml`) runs analyze + the full suite on every push/PR.
 - **Exit criteria:** no rough edges in the core loop; a stranger (or a child) can play unaided.
 
 ## M7.3 — Grand Castle Expansion *(the "many hours" content build)*
